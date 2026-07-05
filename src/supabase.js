@@ -1,0 +1,226 @@
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = 'https://ejbxxfbszdwggswzgzni.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_x58XCR8y-UAqXl3KV-ww2w_wWv3l-u5';
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const guard = async (promise, label) => {
+  const { data, error } = await promise;
+  if (error) {
+    console.error(`[Supabase] ${label}:`, error.message);
+    return null;
+  }
+  return data;
+};
+
+export const uploadPhoto = async (patientId, category, file) => {
+  const ext = file.name.split('.').pop();
+  const path = `${patientId}/${category}/${Date.now()}.${ext}`;
+  const { data, error } = await supabase.storage
+    .from('patient-photos')
+    .upload(path, file);
+  if (error) {
+    console.error('Upload error:', error.message);
+    return null;
+  }
+  const { data: urlData } = supabase.storage
+    .from('patient-photos')
+    .getPublicUrl(path);
+  return urlData.publicUrl;
+};
+
+export const deletePhoto = async (url) => {
+  const path = url.split('patient-photos/')[1];
+  await supabase.storage.from('patient-photos').remove([path]);
+};
+
+export const uploadReceipt = async (file) => {
+  const ext = file.name.split('.').pop();
+  const path = `${Date.now()}_${Math.random()
+    .toString(36)
+    .substring(7)}.${ext}`;
+  const { data, error } = await supabase.storage
+    .from('receipts')
+    .upload(path, file);
+  if (error) {
+    console.error('Receipt upload error:', error.message);
+    return null;
+  }
+  const { data: urlData } = supabase.storage
+    .from('receipts')
+    .getPublicUrl(path);
+  return urlData.publicUrl;
+};
+
+export const fetchKullanicilar = () =>
+  guard(
+    supabase.from('app_users').select('*').order('id'),
+    'fetchKullanicilar'
+  );
+export const fetchAjanslar = () =>
+  guard(supabase.from('agencies').select('*').order('id'), 'fetchAjanslar');
+export const fetchLiderler = (region = 'istanbul') =>
+  guard(
+    supabase
+      .from('leads')
+      .select('*')
+      .eq('region', region)
+      .order('id', { ascending: false }),
+    'fetchLiderler'
+  );
+export const fetchHastalar = (region = 'istanbul') =>
+  guard(
+    supabase
+      .from('patients')
+      .select('*')
+      .eq('region', region)
+      .order('id', { ascending: false }),
+    'fetchHastalar'
+  );
+export const fetchGiderler = (region = 'istanbul') =>
+  guard(
+    supabase
+      .from('expenses')
+      .select('*')
+      .eq('region', region)
+      .order('id', { ascending: false }),
+    'fetchGiderler'
+  );
+export const fetchReceivables = (region = 'suudi') =>
+  guard(
+    supabase
+      .from('receivables')
+      .select('*')
+      .eq('region', region)
+      .order('created_at', { ascending: false }),
+    'fetchReceivables'
+  );
+
+export const insertLider = (row) =>
+  guard(supabase.from('leads').insert([row]).select().single(), 'insertLider');
+export const updateLider = (id, updates) =>
+  guard(
+    supabase.from('leads').update(updates).eq('id', id).select().single(),
+    'updateLider'
+  );
+export const deleteLider = (id) =>
+  guard(supabase.from('leads').delete().eq('id', id), 'deleteLider');
+
+export const insertHasta = (row) =>
+  guard(
+    supabase.from('patients').insert([row]).select().single(),
+    'insertHasta'
+  );
+export const updateHasta = (id, updates) =>
+  guard(
+    supabase.from('patients').update(updates).eq('id', id).select().single(),
+    'updateHasta'
+  );
+export const deleteHasta = (id) =>
+  guard(supabase.from('patients').delete().eq('id', id), 'deleteHasta');
+
+export const insertGider = (row) =>
+  guard(
+    supabase.from('expenses').insert([row]).select().single(),
+    'insertGider'
+  );
+export const insertAjans = (row) =>
+  guard(
+    supabase.from('agencies').insert([row]).select().single(),
+    'insertAjans'
+  );
+
+export const insertReceivable = (row) =>
+  guard(
+    supabase.from('receivables').insert([row]).select().single(),
+    'insertReceivable'
+  );
+export const updateReceivable = (id, updates) =>
+  guard(
+    supabase.from('receivables').update(updates).eq('id', id).select().single(),
+    'updateReceivable'
+  );
+export const deleteReceivable = (id) =>
+  guard(supabase.from('receivables').delete().eq('id', id), 'deleteReceivable');
+
+export const insertKullanici = (row) =>
+  guard(
+    supabase.from('app_users').insert([row]).select().single(),
+    'insertKullanici'
+  );
+export const updateKullanici = (id, updates) =>
+  guard(
+    supabase.from('app_users').update(updates).eq('id', id).select().single(),
+    'updateKullanici'
+  );
+export const deleteKullanici = (id) =>
+  guard(supabase.from('app_users').delete().eq('id', id), 'deleteKullanici');
+
+export const insertLog = (row) =>
+  guard(
+    supabase.from('activity_logs').insert([row]).select().single(),
+    'insertLog'
+  );
+export const fetchLogs = (region = 'istanbul') =>
+  guard(
+    supabase
+      .from('activity_logs')
+      .select('*')
+      .eq('region', region)
+      .order('created_at', { ascending: false })
+      .limit(500),
+    'fetchLogs'
+  );
+
+export const fetchAll = async (region = 'istanbul') => {
+  const [kullanicilar, ajanslar, liderler, hastalar, giderler, receivables] =
+    await Promise.all([
+      fetchKullanicilar(),
+      fetchAjanslar(),
+      fetchLiderler(region),
+      fetchHastalar(region),
+      fetchGiderler(region),
+      fetchReceivables(region),
+    ]);
+  return {
+    kullanicilar: kullanicilar ?? [],
+    ajanslar: ajanslar ?? [],
+    liderler: liderler ?? [],
+    hastalar: hastalar ?? [],
+    giderler: giderler ?? [],
+    receivables: receivables ?? [],
+  };
+};
+export const fetchPatientPayments = (region = 'suudi') =>
+  guard(
+    supabase
+      .from('patient_payments')
+      .select('*')
+      .eq('region', region)
+      .order('created_at', { ascending: false }),
+    'fetchPatientPayments'
+  );
+
+export const insertPatientPayment = (row) =>
+  guard(
+    supabase.from('patient_payments').insert([row]).select().single(),
+    'insertPatientPayment'
+  );
+
+export const updatePatientPayment = (id, updates) =>
+  guard(
+    supabase
+      .from('patient_payments')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single(),
+    'updatePatientPayment'
+  );
+
+export const deletePatientPayment = (id) =>
+  guard(
+    supabase.from('patient_payments').delete().eq('id', id),
+    'deletePatientPayment'
+  );
