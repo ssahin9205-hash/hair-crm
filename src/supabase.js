@@ -104,10 +104,12 @@ export const deleteMedikalTedarikci = (id) => guard(supabase.from('medikal_tedar
 
 export const fetchMedikalAlimlar = () => guard(supabase.from('medikal_alimlar').select('*').order('created_at', { ascending: false }), 'fetchMedikalAlimlar');
 export const insertMedikalAlim = (row) => guard(supabase.from('medikal_alimlar').insert([row]).select().single(), 'insertMedikalAlim');
+export const updateMedikalAlim = (id, updates) => guard(supabase.from('medikal_alimlar').update(updates).eq('id', id).select().single(), 'updateMedikalAlim');
 export const deleteMedikalAlim = (id) => guard(supabase.from('medikal_alimlar').delete().eq('id', id), 'deleteMedikalAlim');
 
 export const fetchMedikalSatislar = () => guard(supabase.from('medikal_satislar').select('*').order('created_at', { ascending: false }), 'fetchMedikalSatislar');
 export const insertMedikalSatis = (row) => guard(supabase.from('medikal_satislar').insert([row]).select().single(), 'insertMedikalSatis');
+export const updateMedikalSatis = (id, updates) => guard(supabase.from('medikal_satislar').update(updates).eq('id', id).select().single(), 'updateMedikalSatis');
 export const deleteMedikalSatis = (id) => guard(supabase.from('medikal_satislar').delete().eq('id', id), 'deleteMedikalSatis');
 
 export const fetchMedikalGiderler = () => guard(supabase.from('medikal_giderler').select('*').order('date', { ascending: false }), 'fetchMedikalGiderler');
