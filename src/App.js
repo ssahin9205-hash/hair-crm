@@ -1219,13 +1219,13 @@ function MedikalSatis({ user }) {
 }
 
 function MedikalUrunler({ urunler, setUrunler }) {
-  const [form, setForm] = useState({ name: '', alis_fiyati: '', kritik_stok: '5' });
+  const [form, setForm] = useState({ name: '', alis_fiyati: '', kritik_stok: '5', currency: 'TRY' });
   const add = async () => {
     if (!form.name) return;
-    const row = { name: form.name, alis_fiyati: Number(form.alis_fiyati) || 0, kritik_stok: Number(form.kritik_stok) || 5, stok_miktari: 0 };
+    const row = { name: form.name, alis_fiyati: Number(form.alis_fiyati) || 0, kritik_stok: Number(form.kritik_stok) || 5, stok_miktari: 0, currency: form.currency };
     const saved = await insertMedikalUrun(row);
     if (saved) setUrunler((us) => [...us, saved].sort((a, b) => a.name.localeCompare(b.name)));
-    setForm({ name: '', alis_fiyati: '', kritik_stok: '5' });
+    setForm({ name: '', alis_fiyati: '', kritik_stok: '5', currency: 'TRY' });
   };
   const remove = async (id) => {
     if (!window.confirm('Ürün silinsin mi?')) return;
@@ -1236,9 +1236,10 @@ function MedikalUrunler({ urunler, setUrunler }) {
     <div>
       <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
         <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>+ Yeni Ürün</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8 }}>
           <Inp ph="Ürün adı" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} />
           <Inp ph="Alış fiyatı" type="number" val={form.alis_fiyati} set={(v) => setForm((f) => ({ ...f, alis_fiyati: v }))} />
+          <Sel val={form.currency} set={(v) => setForm((f) => ({ ...f, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }]} />
           <Inp ph="Kritik stok" type="number" val={form.kritik_stok} set={(v) => setForm((f) => ({ ...f, kritik_stok: v }))} />
           <Btn onClick={add}>Ekle</Btn>
         </div>
@@ -1256,7 +1257,7 @@ function MedikalUrunler({ urunler, setUrunler }) {
                   <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px' }}>{u.name}</td>
                   <td style={{ color: low ? '#f04040' : '#22c55e', fontWeight: 800, padding: '10px' }}>{u.stok_miktari} {low && '⚠️'}</td>
                   <td style={{ color: '#4a5270', padding: '10px' }}>{u.kritik_stok}</td>
-                  <td style={{ color: '#4a5270', padding: '10px' }}>₺{Number(u.alis_fiyati).toLocaleString()}</td>
+                  <td style={{ color: '#4a5270', padding: '10px' }}>{u.currency === 'USD' ? '$' : '₺'}{Number(u.alis_fiyati).toLocaleString()}</td>
                   <td style={{ padding: '10px' }}><button onClick={() => remove(u.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button></td>
                 </tr>
               );
@@ -1346,24 +1347,24 @@ function MedikalTedarikciler({ tedarikciler, setTedarikciler }) {
 }
 
 function MedikalAlim({ urunler, setUrunler, tedarikciler, alimlar, setAlimlar }) {
-  const [form, setForm] = useState({ tedarikci_name: '', product_name: '', quantity: '', alis_fiyati: '', alim_tarihi: dd(0) });
+  const [form, setForm] = useState({ tedarikci_name: '', product_name: '', quantity: '', alis_fiyati: '', currency: 'TRY', alim_tarihi: dd(0) });
   const save = async () => {
     if (!form.product_name || !form.quantity) return;
     const qty = Number(form.quantity) || 0;
     const price = Number(form.alis_fiyati) || 0;
-    const row = { tedarikci_name: form.tedarikci_name, product_name: form.product_name, quantity: qty, alis_fiyati: price, currency: 'TRY', alim_tarihi: form.alim_tarihi };
+    const row = { tedarikci_name: form.tedarikci_name, product_name: form.product_name, quantity: qty, alis_fiyati: price, currency: form.currency, alim_tarihi: form.alim_tarihi };
     const saved = await insertMedikalAlim(row);
     if (saved) setAlimlar((as) => [saved, ...as]);
 
     let existing = urunler.find((u) => u.name.toLowerCase() === form.product_name.toLowerCase());
     if (existing) {
-      const updated = await updateMedikalUrun(existing.id, { stok_miktari: Number(existing.stok_miktari) + qty, alis_fiyati: price });
+      const updated = await updateMedikalUrun(existing.id, { stok_miktari: Number(existing.stok_miktari) + qty, alis_fiyati: price, currency: form.currency });
       if (updated) setUrunler((us) => us.map((u) => (u.id === existing.id ? updated : u)));
     } else {
-      const newProd = await insertMedikalUrun({ name: form.product_name, alis_fiyati: price, stok_miktari: qty, kritik_stok: 5 });
+      const newProd = await insertMedikalUrun({ name: form.product_name, alis_fiyati: price, stok_miktari: qty, kritik_stok: 5, currency: form.currency });
       if (newProd) setUrunler((us) => [...us, newProd].sort((a, b) => a.name.localeCompare(b.name)));
     }
-    setForm({ tedarikci_name: '', product_name: '', quantity: '', alis_fiyati: '', alim_tarihi: dd(0) });
+    setForm({ tedarikci_name: '', product_name: '', quantity: '', alis_fiyati: '', currency: 'TRY', alim_tarihi: dd(0) });
   };
   const remove = async (id) => {
     if (!window.confirm('Kayıt silinsin mi? (Stok otomatik geri alınmaz)')) return;
@@ -1386,9 +1387,10 @@ function MedikalAlim({ urunler, setUrunler, tedarikciler, alimlar, setAlimlar })
             <datalist id="urun-list">{urunler.map((u) => <option key={u.id} value={u.name} />)}</datalist>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: 8 }}>
           <Inp ph="Adet" type="number" val={form.quantity} set={(v) => setForm((f) => ({ ...f, quantity: v }))} />
           <Inp ph="Alış fiyatı (birim)" type="number" val={form.alis_fiyati} set={(v) => setForm((f) => ({ ...f, alis_fiyati: v }))} />
+          <Sel val={form.currency} set={(v) => setForm((f) => ({ ...f, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }]} />
           <Inp type="date" ph="" val={form.alim_tarihi} set={(v) => setForm((f) => ({ ...f, alim_tarihi: v }))} />
           <Btn onClick={save}>Kaydet</Btn>
         </div>
@@ -1398,9 +1400,9 @@ function MedikalAlim({ urunler, setUrunler, tedarikciler, alimlar, setAlimlar })
         <div key={a.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <div style={{ flex: 1 }}>
             <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{a.product_name} × {a.quantity}</div>
-            <div style={{ color: '#4a5270', fontSize: 11 }}>{a.tedarikci_name || 'Tedarikçi belirtilmedi'} · {fmt(a.alim_tarihi)} · Birim: ₺{Number(a.alis_fiyati).toLocaleString()}</div>
+            <div style={{ color: '#4a5270', fontSize: 11 }}>{a.tedarikci_name || 'Tedarikçi belirtilmedi'} · {fmt(a.alim_tarihi)} · Birim: {a.currency === 'USD' ? '$' : '₺'}{Number(a.alis_fiyati).toLocaleString()}</div>
           </div>
-          <div style={{ color: '#f97316', fontWeight: 800 }}>₺{(Number(a.quantity) * Number(a.alis_fiyati)).toLocaleString()}</div>
+          <div style={{ color: '#f97316', fontWeight: 800 }}>{a.currency === 'USD' ? '$' : '₺'}{(Number(a.quantity) * Number(a.alis_fiyati)).toLocaleString()}</div>
           <button onClick={() => remove(a.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
         </div>
       ))}
@@ -1427,11 +1429,12 @@ function MedikalSatisGirisi({ urunler, setUrunler, musteriler, satislar, setSati
     if (!preview.customer_name || !preview.product_name || !preview.sale_price) { alert('Müşteri, ürün ve fiyat gerekli'); return; }
     const matched = urunler.find((u) => u.name.toLowerCase() === preview.product_name.toLowerCase());
     const costPrice = matched ? Number(matched.alis_fiyati) : 0;
+    const costCurrency = matched ? (matched.currency || 'TRY') : 'TRY';
     const qty = Number(preview.quantity) || 1;
     const row = {
       customer_name: preview.customer_name, product_name: preview.product_name, quantity: qty,
       sale_price: Number(preview.sale_price), cost_price: costPrice, currency: preview.currency,
-      payment_type: preview.payment_type, sale_date: preview.sale_date, raw_text: preview.raw_text,
+      cost_currency: costCurrency, payment_type: preview.payment_type, sale_date: preview.sale_date, raw_text: preview.raw_text,
     };
     const saved = await insertMedikalSatis(row);
     if (saved) setSatislar((ss) => [saved, ...ss]);
@@ -1580,18 +1583,26 @@ function MedikalRaporlar({ urunler, satislar, alimlar, giderler }) {
   const filteredSales = satislar.filter((s) => inRange(s.sale_date));
   const filteredExpenses = giderler.filter((g) => inRange(g.date));
 
-  const totalRevenue = filteredSales.reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
-  const totalCOGS = filteredSales.reduce((s, x) => s + Number(x.cost_price) * Number(x.quantity), 0);
+  const calcFor = (cur) => {
+    const sales = filteredSales.filter((s) => (s.currency || 'TRY') === cur);
+    const revenue = sales.reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+    const cogs = sales.reduce((s, x) => s + (((x.cost_currency || 'TRY') === cur) ? Number(x.cost_price) * Number(x.quantity) : 0), 0);
+    const acikHesap = sales.filter((s) => s.payment_type === 'Açık Hesap').reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+    return { revenue, cogs, acikHesap };
+  };
+  const tryStats = calcFor('TRY');
+  const usdStats = calcFor('USD');
   const totalExpenses = filteredExpenses.reduce((s, x) => s + Number(x.amount), 0);
-  const netProfit = totalRevenue - totalCOGS - totalExpenses;
-  const acikHesap = filteredSales.filter((s) => s.payment_type === 'Açık Hesap').reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+  const netProfitTRY = tryStats.revenue - tryStats.cogs - totalExpenses;
+  const netProfitUSD = usdStats.revenue - usdStats.cogs;
 
   const productStats = {};
   filteredSales.forEach((s) => {
-    if (!productStats[s.product_name]) productStats[s.product_name] = { qty: 0, revenue: 0, cost: 0 };
-    productStats[s.product_name].qty += Number(s.quantity);
-    productStats[s.product_name].revenue += Number(s.sale_price) * Number(s.quantity);
-    productStats[s.product_name].cost += Number(s.cost_price) * Number(s.quantity);
+    const key = `${s.product_name}__${s.currency || 'TRY'}`;
+    if (!productStats[key]) productStats[key] = { name: s.product_name, currency: s.currency || 'TRY', qty: 0, revenue: 0, cost: 0 };
+    productStats[key].qty += Number(s.quantity);
+    productStats[key].revenue += Number(s.sale_price) * Number(s.quantity);
+    productStats[key].cost += Number(s.cost_price) * Number(s.quantity);
   });
 
   return (
@@ -1607,13 +1618,13 @@ function MedikalRaporlar({ urunler, satislar, alimlar, giderler }) {
           <Inp type="date" ph="" val={customTo} set={setCustomTo} />
         </div>
       )}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10, marginBottom: 10 }}>
         {[
-          { lbl: 'Toplam Gelir', val: `₺${totalRevenue.toLocaleString()}`, clr: '#22c55e' },
-          { lbl: 'Maliyet (COGS)', val: `₺${totalCOGS.toLocaleString()}`, clr: '#f97316' },
-          { lbl: 'Giderler', val: `₺${totalExpenses.toLocaleString()}`, clr: '#f04040' },
-          { lbl: 'Net Kâr', val: `₺${netProfit.toLocaleString()}`, clr: netProfit >= 0 ? '#22c55e' : '#f04040' },
-          { lbl: 'Açık Hesap', val: `₺${acikHesap.toLocaleString()}`, clr: '#f0b429' },
+          { lbl: '₺ Gelir (TL)', val: `₺${tryStats.revenue.toLocaleString()}`, clr: '#22c55e' },
+          { lbl: '₺ Maliyet (TL)', val: `₺${tryStats.cogs.toLocaleString()}`, clr: '#f97316' },
+          { lbl: '₺ Giderler', val: `₺${totalExpenses.toLocaleString()}`, clr: '#f04040' },
+          { lbl: '₺ Net Kâr (TL)', val: `₺${netProfitTRY.toLocaleString()}`, clr: netProfitTRY >= 0 ? '#22c55e' : '#f04040' },
+          { lbl: '₺ Açık Hesap', val: `₺${tryStats.acikHesap.toLocaleString()}`, clr: '#f0b429' },
         ].map((k) => (
           <div key={k.lbl} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '14px 16px' }}>
             <div style={{ color: '#4a5270', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>{k.lbl}</div>
@@ -1621,6 +1632,20 @@ function MedikalRaporlar({ urunler, satislar, alimlar, giderler }) {
           </div>
         ))}
       </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10, marginBottom: 20 }}>
+        {[
+          { lbl: '$ Gelir (USD)', val: `$${usdStats.revenue.toLocaleString()}`, clr: '#22c55e' },
+          { lbl: '$ Maliyet (USD)', val: `$${usdStats.cogs.toLocaleString()}`, clr: '#f97316' },
+          { lbl: '$ Net Kâr (USD)', val: `$${netProfitUSD.toLocaleString()}`, clr: netProfitUSD >= 0 ? '#22c55e' : '#f04040' },
+          { lbl: '$ Açık Hesap', val: `$${usdStats.acikHesap.toLocaleString()}`, clr: '#f0b429' },
+        ].map((k) => (
+          <div key={k.lbl} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ color: '#4a5270', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>{k.lbl}</div>
+            <div style={{ color: k.clr, fontSize: 18, fontWeight: 900 }}>{k.val}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ color: '#4a5270', fontSize: 11, marginBottom: 14 }}>💡 TL ve Dolar tutarları karışmasın diye ayrı hesaplanır, otomatik kur çevrimi yapılmaz.</div>
       <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>📦 Ürün Bazlı Rapor</div>
       <div style={{ overflowX: 'auto', marginBottom: 20 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
@@ -1628,15 +1653,16 @@ function MedikalRaporlar({ urunler, satislar, alimlar, giderler }) {
             {['Ürün', 'Satılan Adet', 'Gelir', 'Maliyet', 'Kâr', 'Güncel Stok'].map((h) => <th key={h} style={{ color: '#4a5270', padding: '8px 10px', textAlign: 'left' }}>{h}</th>)}
           </tr></thead>
           <tbody>
-            {Object.entries(productStats).map(([name, st]) => {
-              const prod = urunler.find((u) => u.name === name);
+            {Object.values(productStats).map((st) => {
+              const prod = urunler.find((u) => u.name === st.name);
+              const sym = st.currency === 'USD' ? '$' : '₺';
               return (
-                <tr key={name} style={{ borderBottom: '1px solid #1c2035' }}>
-                  <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px' }}>{name}</td>
+                <tr key={st.name + st.currency} style={{ borderBottom: '1px solid #1c2035' }}>
+                  <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px' }}>{st.name} <span style={{ color: '#4a5270', fontSize: 10 }}>({st.currency})</span></td>
                   <td style={{ color: '#4a5270', padding: '10px' }}>{st.qty}</td>
-                  <td style={{ color: '#22c55e', padding: '10px' }}>₺{st.revenue.toLocaleString()}</td>
-                  <td style={{ color: '#f97316', padding: '10px' }}>₺{st.cost.toLocaleString()}</td>
-                  <td style={{ color: '#22c55e', fontWeight: 800, padding: '10px' }}>₺{(st.revenue - st.cost).toLocaleString()}</td>
+                  <td style={{ color: '#22c55e', padding: '10px' }}>{sym}{st.revenue.toLocaleString()}</td>
+                  <td style={{ color: '#f97316', padding: '10px' }}>{sym}{st.cost.toLocaleString()}</td>
+                  <td style={{ color: '#22c55e', fontWeight: 800, padding: '10px' }}>{sym}{(st.revenue - st.cost).toLocaleString()}</td>
                   <td style={{ color: prod && prod.stok_miktari <= prod.kritik_stok ? '#f04040' : '#4a5270', padding: '10px' }}>{prod ? prod.stok_miktari : '-'}</td>
                 </tr>
               );
