@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import jsPDF from 'jspdf';
 import {
   fetchAll,
   insertLider,
@@ -24,6 +25,28 @@ import {
   insertPatientPayment,
   updatePatientPayment,
   deletePatientPayment,
+  fetchMedikalUrunler,
+  insertMedikalUrun,
+  updateMedikalUrun,
+  deleteMedikalUrun,
+  fetchMedikalMusteriler,
+  insertMedikalMusteri,
+  deleteMedikalMusteri,
+  fetchMedikalTedarikciler,
+  insertMedikalTedarikci,
+  deleteMedikalTedarikci,
+  fetchMedikalAlimlar,
+  insertMedikalAlim,
+  deleteMedikalAlim,
+  fetchMedikalSatislar,
+  insertMedikalSatis,
+  deleteMedikalSatis,
+  fetchMedikalGiderler,
+  insertMedikalGider,
+  deleteMedikalGider,
+  fetchMedikalTeklifler,
+  insertMedikalTeklif,
+  deleteMedikalTeklif,
 } from './supabase';
 import {
   initDrive,
@@ -1111,11 +1134,655 @@ function Settings({ users, setUsers, user, region }) {
   );
 }
 
+const parseSaleText = (text, urunler, musteriler) => {
+  const lower = text.toLowerCase();
+  let customerGuess = '', productGuess = '', quantity = 1, price = '', currency = 'TRY';
+  const priceMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(\$|dolar|usd|tl|₺|lira)/i);
+  if (priceMatch) {
+    price = priceMatch[1].replace(',', '.');
+    const cur = priceMatch[2].toLowerCase();
+    currency = (cur === '$' || cur === 'dolar' || cur === 'usd') ? 'USD' : 'TRY';
+  }
+  const qtyMatch = text.match(/(\d+)\s*(tane|adet)/i);
+  if (qtyMatch) quantity = Number(qtyMatch[1]);
+  const custMatch = text.match(/([A-ZÇĞİÖŞÜ][a-zçğıöşüA-ZÇĞİÖŞÜ]*)'(?:e|ye|a|ya|nin|nın|ın|in)/);
+  if (custMatch) {
+    const nameGuess = custMatch[1];
+    const found = musteriler.find((m) => m.name.toLowerCase() === nameGuess.toLowerCase());
+    customerGuess = found ? found.name : nameGuess;
+  } else {
+    const found = musteriler.find((m) => lower.includes(m.name.toLowerCase()));
+    if (found) customerGuess = found.name;
+  }
+  const foundProduct = urunler.find((p) => lower.includes(p.name.toLowerCase()));
+  if (foundProduct) productGuess = foundProduct.name;
+  return { customerGuess, productGuess, quantity, price, currency };
+};
+
+const MEDIKAL_TABS = [
+  { id: 'urunler', ico: '📦', lbl: 'Ürünler' },
+  { id: 'musteriler', ico: '👥', lbl: 'Müşteriler' },
+  { id: 'tedarikciler', ico: '🚚', lbl: 'Tedarikçiler' },
+  { id: 'alim', ico: '📥', lbl: 'Stok Girişi' },
+  { id: 'satis', ico: '🛒', lbl: 'Satış' },
+  { id: 'giderler', ico: '💸', lbl: 'Giderler' },
+  { id: 'raporlar', ico: '📊', lbl: 'Raporlar' },
+  { id: 'teklif', ico: '📄', lbl: 'Teklif' },
+];
+
+function MedikalSatis({ user }) {
+  const [sub, setSub] = useState('urunler');
+  const [loading, setLoading] = useState(true);
+  const [urunler, setUrunler] = useState([]);
+  const [musteriler, setMusteriler] = useState([]);
+  const [tedarikciler, setTedarikciler] = useState([]);
+  const [alimlar, setAlimlar] = useState([]);
+  const [satislar, setSatislar] = useState([]);
+  const [giderler, setGiderler] = useState([]);
+  const [teklifler, setTeklifler] = useState([]);
+
+  const refreshAll = async () => {
+    setLoading(true);
+    const [u, m, t, a, s, g, tk] = await Promise.all([
+      fetchMedikalUrunler(), fetchMedikalMusteriler(), fetchMedikalTedarikciler(),
+      fetchMedikalAlimlar(), fetchMedikalSatislar(), fetchMedikalGiderler(), fetchMedikalTeklifler(),
+    ]);
+    setUrunler(u || []); setMusteriler(m || []); setTedarikciler(t || []);
+    setAlimlar(a || []); setSatislar(s || []); setGiderler(g || []); setTeklifler(tk || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { refreshAll(); }, []);
+
+  if (loading) return <div style={{ color: '#4a5270', padding: 30 }}>Yükleniyor...</div>;
+
+  return (
+    <div>
+      <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900, marginBottom: 16 }}>💊 Medikal Satış</div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 20 }}>
+        {MEDIKAL_TABS.map((t) => (
+          <button key={t.id} onClick={() => setSub(t.id)} style={{ padding: '8px 14px', borderRadius: 20, border: `1px solid ${sub === t.id ? '#4f7cff' : '#1c2035'}`, background: sub === t.id ? 'rgba(79,124,255,0.15)' : '#121525', color: sub === t.id ? '#4f7cff' : '#9ba8bc', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+            {t.ico} {t.lbl}
+          </button>
+        ))}
+      </div>
+      {sub === 'urunler' && <MedikalUrunler urunler={urunler} setUrunler={setUrunler} />}
+      {sub === 'musteriler' && <MedikalMusteriler musteriler={musteriler} setMusteriler={setMusteriler} />}
+      {sub === 'tedarikciler' && <MedikalTedarikciler tedarikciler={tedarikciler} setTedarikciler={setTedarikciler} />}
+      {sub === 'alim' && <MedikalAlim urunler={urunler} setUrunler={setUrunler} tedarikciler={tedarikciler} alimlar={alimlar} setAlimlar={setAlimlar} />}
+      {sub === 'satis' && <MedikalSatisGirisi urunler={urunler} setUrunler={setUrunler} musteriler={musteriler} satislar={satislar} setSatislar={setSatislar} />}
+      {sub === 'giderler' && <MedikalGiderler giderler={giderler} setGiderler={setGiderler} />}
+      {sub === 'raporlar' && <MedikalRaporlar urunler={urunler} satislar={satislar} alimlar={alimlar} giderler={giderler} />}
+      {sub === 'teklif' && <MedikalTeklif urunler={urunler} musteriler={musteriler} teklifler={teklifler} setTeklifler={setTeklifler} />}
+    </div>
+  );
+}
+
+function MedikalUrunler({ urunler, setUrunler }) {
+  const [form, setForm] = useState({ name: '', alis_fiyati: '', kritik_stok: '5' });
+  const add = async () => {
+    if (!form.name) return;
+    const row = { name: form.name, alis_fiyati: Number(form.alis_fiyati) || 0, kritik_stok: Number(form.kritik_stok) || 5, stok_miktari: 0 };
+    const saved = await insertMedikalUrun(row);
+    if (saved) setUrunler((us) => [...us, saved].sort((a, b) => a.name.localeCompare(b.name)));
+    setForm({ name: '', alis_fiyati: '', kritik_stok: '5' });
+  };
+  const remove = async (id) => {
+    if (!window.confirm('Ürün silinsin mi?')) return;
+    await deleteMedikalUrun(id);
+    setUrunler((us) => us.filter((u) => u.id !== id));
+  };
+  return (
+    <div>
+      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>+ Yeni Ürün</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 8 }}>
+          <Inp ph="Ürün adı" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} />
+          <Inp ph="Alış fiyatı" type="number" val={form.alis_fiyati} set={(v) => setForm((f) => ({ ...f, alis_fiyati: v }))} />
+          <Inp ph="Kritik stok" type="number" val={form.kritik_stok} set={(v) => setForm((f) => ({ ...f, kritik_stok: v }))} />
+          <Btn onClick={add}>Ekle</Btn>
+        </div>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <thead><tr style={{ borderBottom: '1px solid #1c2035' }}>
+            {['Ürün', 'Stok', 'Kritik Stok', 'Alış Fiyatı', ''].map((h) => <th key={h} style={{ color: '#4a5270', padding: '8px 10px', textAlign: 'left' }}>{h}</th>)}
+          </tr></thead>
+          <tbody>
+            {urunler.map((u) => {
+              const low = Number(u.stok_miktari) <= Number(u.kritik_stok);
+              return (
+                <tr key={u.id} style={{ borderBottom: '1px solid #1c2035' }}>
+                  <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px' }}>{u.name}</td>
+                  <td style={{ color: low ? '#f04040' : '#22c55e', fontWeight: 800, padding: '10px' }}>{u.stok_miktari} {low && '⚠️'}</td>
+                  <td style={{ color: '#4a5270', padding: '10px' }}>{u.kritik_stok}</td>
+                  <td style={{ color: '#4a5270', padding: '10px' }}>₺{Number(u.alis_fiyati).toLocaleString()}</td>
+                  <td style={{ padding: '10px' }}><button onClick={() => remove(u.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {urunler.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Henüz ürün yok.</div>}
+      </div>
+    </div>
+  );
+}
+
+function MedikalMusteriler({ musteriler, setMusteriler }) {
+  const [form, setForm] = useState({ name: '', phone: '', notes: '' });
+  const add = async () => {
+    if (!form.name) return;
+    const saved = await insertMedikalMusteri(form);
+    if (saved) setMusteriler((ms) => [...ms, saved].sort((a, b) => a.name.localeCompare(b.name)));
+    setForm({ name: '', phone: '', notes: '' });
+  };
+  const remove = async (id) => {
+    if (!window.confirm('Müşteri silinsin mi?')) return;
+    await deleteMedikalMusteri(id);
+    setMusteriler((ms) => ms.filter((m) => m.id !== id));
+  };
+  return (
+    <div>
+      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>+ Yeni Müşteri</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8 }}>
+          <Inp ph="İsim" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} />
+          <Inp ph="Telefon" val={form.phone} set={(v) => setForm((f) => ({ ...f, phone: v }))} />
+          <Inp ph="Not" val={form.notes} set={(v) => setForm((f) => ({ ...f, notes: v }))} />
+          <Btn onClick={add}>Ekle</Btn>
+        </div>
+      </div>
+      {musteriler.map((m) => (
+        <div key={m.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{m.name}</div>
+            <div style={{ color: '#4a5270', fontSize: 11 }}>{m.phone} {m.notes && `· ${m.notes}`}</div>
+          </div>
+          <button onClick={() => remove(m.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+        </div>
+      ))}
+      {musteriler.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Henüz müşteri yok.</div>}
+    </div>
+  );
+}
+
+function MedikalTedarikciler({ tedarikciler, setTedarikciler }) {
+  const [form, setForm] = useState({ name: '', phone: '', notes: '' });
+  const add = async () => {
+    if (!form.name) return;
+    const saved = await insertMedikalTedarikci(form);
+    if (saved) setTedarikciler((ts) => [...ts, saved].sort((a, b) => a.name.localeCompare(b.name)));
+    setForm({ name: '', phone: '', notes: '' });
+  };
+  const remove = async (id) => {
+    if (!window.confirm('Tedarikçi silinsin mi?')) return;
+    await deleteMedikalTedarikci(id);
+    setTedarikciler((ts) => ts.filter((t) => t.id !== id));
+  };
+  return (
+    <div>
+      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>+ Yeni Tedarikçi</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8 }}>
+          <Inp ph="Firma adı" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} />
+          <Inp ph="Telefon" val={form.phone} set={(v) => setForm((f) => ({ ...f, phone: v }))} />
+          <Inp ph="Not" val={form.notes} set={(v) => setForm((f) => ({ ...f, notes: v }))} />
+          <Btn onClick={add}>Ekle</Btn>
+        </div>
+      </div>
+      {tedarikciler.map((t) => (
+        <div key={t.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{t.name}</div>
+            <div style={{ color: '#4a5270', fontSize: 11 }}>{t.phone} {t.notes && `· ${t.notes}`}</div>
+          </div>
+          <button onClick={() => remove(t.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+        </div>
+      ))}
+      {tedarikciler.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Henüz tedarikçi yok.</div>}
+    </div>
+  );
+}
+
+function MedikalAlim({ urunler, setUrunler, tedarikciler, alimlar, setAlimlar }) {
+  const [form, setForm] = useState({ tedarikci_name: '', product_name: '', quantity: '', alis_fiyati: '', alim_tarihi: dd(0) });
+  const save = async () => {
+    if (!form.product_name || !form.quantity) return;
+    const qty = Number(form.quantity) || 0;
+    const price = Number(form.alis_fiyati) || 0;
+    const row = { tedarikci_name: form.tedarikci_name, product_name: form.product_name, quantity: qty, alis_fiyati: price, currency: 'TRY', alim_tarihi: form.alim_tarihi };
+    const saved = await insertMedikalAlim(row);
+    if (saved) setAlimlar((as) => [saved, ...as]);
+
+    let existing = urunler.find((u) => u.name.toLowerCase() === form.product_name.toLowerCase());
+    if (existing) {
+      const updated = await updateMedikalUrun(existing.id, { stok_miktari: Number(existing.stok_miktari) + qty, alis_fiyati: price });
+      if (updated) setUrunler((us) => us.map((u) => (u.id === existing.id ? updated : u)));
+    } else {
+      const newProd = await insertMedikalUrun({ name: form.product_name, alis_fiyati: price, stok_miktari: qty, kritik_stok: 5 });
+      if (newProd) setUrunler((us) => [...us, newProd].sort((a, b) => a.name.localeCompare(b.name)));
+    }
+    setForm({ tedarikci_name: '', product_name: '', quantity: '', alis_fiyati: '', alim_tarihi: dd(0) });
+  };
+  const remove = async (id) => {
+    if (!window.confirm('Kayıt silinsin mi? (Stok otomatik geri alınmaz)')) return;
+    await deleteMedikalAlim(id);
+    setAlimlar((as) => as.filter((a) => a.id !== id));
+  };
+  return (
+    <div>
+      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>📥 Stok Girişi (Alım)</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+          <div>
+            <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TEDARİKÇİ</div>
+            <input list="tedarikci-list" value={form.tedarikci_name} onChange={(e) => setForm((f) => ({ ...f, tedarikci_name: e.target.value }))} placeholder="Tedarikçi adı" style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+            <datalist id="tedarikci-list">{tedarikciler.map((t) => <option key={t.id} value={t.name} />)}</datalist>
+          </div>
+          <div>
+            <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ÜRÜN</div>
+            <input list="urun-list" value={form.product_name} onChange={(e) => setForm((f) => ({ ...f, product_name: e.target.value }))} placeholder="Ürün adı (yoksa otomatik oluşur)" style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+            <datalist id="urun-list">{urunler.map((u) => <option key={u.id} value={u.name} />)}</datalist>
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8 }}>
+          <Inp ph="Adet" type="number" val={form.quantity} set={(v) => setForm((f) => ({ ...f, quantity: v }))} />
+          <Inp ph="Alış fiyatı (birim)" type="number" val={form.alis_fiyati} set={(v) => setForm((f) => ({ ...f, alis_fiyati: v }))} />
+          <Inp type="date" ph="" val={form.alim_tarihi} set={(v) => setForm((f) => ({ ...f, alim_tarihi: v }))} />
+          <Btn onClick={save}>Kaydet</Btn>
+        </div>
+      </div>
+      <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Son Alımlar</div>
+      {alimlar.slice(0, 30).map((a) => (
+        <div key={a.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{a.product_name} × {a.quantity}</div>
+            <div style={{ color: '#4a5270', fontSize: 11 }}>{a.tedarikci_name || 'Tedarikçi belirtilmedi'} · {fmt(a.alim_tarihi)} · Birim: ₺{Number(a.alis_fiyati).toLocaleString()}</div>
+          </div>
+          <div style={{ color: '#f97316', fontWeight: 800 }}>₺{(Number(a.quantity) * Number(a.alis_fiyati)).toLocaleString()}</div>
+          <button onClick={() => remove(a.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+        </div>
+      ))}
+      {alimlar.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Henüz alım yok.</div>}
+    </div>
+  );
+}
+
+function MedikalSatisGirisi({ urunler, setUrunler, musteriler, satislar, setSatislar }) {
+  const [rawText, setRawText] = useState('');
+  const [preview, setPreview] = useState(null);
+
+  const analyze = () => {
+    if (!rawText.trim()) return;
+    const parsed = parseSaleText(rawText, urunler, musteriler);
+    setPreview({
+      customer_name: parsed.customerGuess, product_name: parsed.productGuess,
+      quantity: parsed.quantity || 1, sale_price: parsed.price || '', currency: parsed.currency || 'TRY',
+      payment_type: 'Nakit', sale_date: dd(0), raw_text: rawText,
+    });
+  };
+
+  const confirmSave = async () => {
+    if (!preview.customer_name || !preview.product_name || !preview.sale_price) { alert('Müşteri, ürün ve fiyat gerekli'); return; }
+    const matched = urunler.find((u) => u.name.toLowerCase() === preview.product_name.toLowerCase());
+    const costPrice = matched ? Number(matched.alis_fiyati) : 0;
+    const qty = Number(preview.quantity) || 1;
+    const row = {
+      customer_name: preview.customer_name, product_name: preview.product_name, quantity: qty,
+      sale_price: Number(preview.sale_price), cost_price: costPrice, currency: preview.currency,
+      payment_type: preview.payment_type, sale_date: preview.sale_date, raw_text: preview.raw_text,
+    };
+    const saved = await insertMedikalSatis(row);
+    if (saved) setSatislar((ss) => [saved, ...ss]);
+    if (matched) {
+      const updated = await updateMedikalUrun(matched.id, { stok_miktari: Number(matched.stok_miktari) - qty });
+      if (updated) setUrunler((us) => us.map((u) => (u.id === matched.id ? updated : u)));
+    }
+    setPreview(null);
+    setRawText('');
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm('Satış silinsin mi? (Stok otomatik geri alınmaz)')) return;
+    await deleteMedikalSatis(id);
+    setSatislar((ss) => ss.filter((s) => s.id !== id));
+  };
+
+  return (
+    <div>
+      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>🛒 Hızlı Satış Girişi</div>
+        <Inp ph="Örn: Ahmet'e 5 tane Minoxidil 100 dolardan verdim" val={rawText} set={setRawText} rows={2} />
+        <div style={{ marginTop: 8 }}><Btn onClick={analyze}>🔍 Analiz Et</Btn></div>
+      </div>
+
+      {preview && (
+        <div style={{ background: '#121525', border: '1px solid #4f7cff44', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+          <div style={{ color: '#4f7cff', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>✓ Önizleme — Kontrol Edip Onaylayın</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+            <div>
+              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>MÜŞTERİ</div>
+              <input list="sale-cust-list" value={preview.customer_name} onChange={(e) => setPreview((p) => ({ ...p, customer_name: e.target.value }))} style={{ width: '100%', padding: '9px 12px', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+              <datalist id="sale-cust-list">{musteriler.map((m) => <option key={m.id} value={m.name} />)}</datalist>
+            </div>
+            <div>
+              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ÜRÜN</div>
+              <input list="sale-prod-list" value={preview.product_name} onChange={(e) => setPreview((p) => ({ ...p, product_name: e.target.value }))} style={{ width: '100%', padding: '9px 12px', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+              <datalist id="sale-prod-list">{urunler.map((u) => <option key={u.id} value={u.name} />)}</datalist>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+            <div>
+              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ADET</div>
+              <Inp type="number" ph="" val={preview.quantity} set={(v) => setPreview((p) => ({ ...p, quantity: v }))} />
+            </div>
+            <div>
+              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>BİRİM FİYAT</div>
+              <Inp type="number" ph="" val={preview.sale_price} set={(v) => setPreview((p) => ({ ...p, sale_price: v }))} />
+            </div>
+            <div>
+              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>PARA BİRİMİ</div>
+              <Sel val={preview.currency} set={(v) => setPreview((p) => ({ ...p, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }]} />
+            </div>
+            <div>
+              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ÖDEME TİPİ</div>
+              <Sel val={preview.payment_type} set={(v) => setPreview((p) => ({ ...p, payment_type: v }))} opts={[{ v: 'Nakit', l: '💵 Nakit' }, { v: 'Havale', l: '🏦 Havale' }, { v: 'Açık Hesap', l: '📒 Açık Hesap' }]} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Btn v="s" onClick={() => setPreview(null)}>İptal</Btn>
+            <Btn onClick={confirmSave}>✓ Onayla ve Kaydet</Btn>
+          </div>
+        </div>
+      )}
+
+      <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Son Satışlar</div>
+      {satislar.slice(0, 30).map((s) => {
+        const kar = (Number(s.sale_price) - Number(s.cost_price)) * Number(s.quantity);
+        return (
+          <div key={s.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{s.customer_name} — {s.product_name} × {s.quantity}</div>
+              <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(s.sale_date)} · {s.payment_type} · Birim: {s.currency === 'USD' ? '$' : '₺'}{Number(s.sale_price).toLocaleString()}</div>
+            </div>
+            <div style={{ color: '#22c55e', fontWeight: 800 }}>Kâr: {s.currency === 'USD' ? '$' : '₺'}{kar.toLocaleString()}</div>
+            <button onClick={() => remove(s.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+          </div>
+        );
+      })}
+      {satislar.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Henüz satış yok.</div>}
+    </div>
+  );
+}
+
+function MedikalGiderler({ giderler, setGiderler }) {
+  const [form, setForm] = useState({ description: '', amount: '', category: 'Diğer', date: dd(0) });
+  const add = async () => {
+    if (!form.description || !form.amount) return;
+    const row = { ...form, amount: Number(form.amount), currency: 'TRY' };
+    const saved = await insertMedikalGider(row);
+    if (saved) setGiderler((gs) => [saved, ...gs]);
+    setForm({ description: '', amount: '', category: 'Diğer', date: dd(0) });
+  };
+  const remove = async (id) => {
+    if (!window.confirm('Silinsin mi?')) return;
+    await deleteMedikalGider(id);
+    setGiderler((gs) => gs.filter((g) => g.id !== id));
+  };
+  const total = giderler.reduce((s, g) => s + Number(g.amount || 0), 0);
+  return (
+    <div>
+      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>💸 Gider Ekle</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8 }}>
+          <Inp ph="Açıklama" val={form.description} set={(v) => setForm((f) => ({ ...f, description: v }))} />
+          <Inp ph="Tutar" type="number" val={form.amount} set={(v) => setForm((f) => ({ ...f, amount: v }))} />
+          <Sel val={form.category} set={(v) => setForm((f) => ({ ...f, category: v }))} opts={['Kira', 'Nakliye', 'Personel', 'Diğer']} />
+          <Inp type="date" ph="" val={form.date} set={(v) => setForm((f) => ({ ...f, date: v }))} />
+          <Btn onClick={add}>Ekle</Btn>
+        </div>
+      </div>
+      <div style={{ color: '#f04040', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Toplam Gider: ₺{total.toLocaleString()}</div>
+      {giderler.map((g) => (
+        <div key={g.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: '#dde3ef', fontSize: 13 }}>{g.description}</div>
+            <div style={{ color: '#4a5270', fontSize: 11 }}>{g.category} · {fmt(g.date)}</div>
+          </div>
+          <div style={{ color: '#f04040', fontWeight: 800 }}>-₺{Number(g.amount).toLocaleString()}</div>
+          <button onClick={() => remove(g.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MedikalRaporlar({ urunler, satislar, alimlar, giderler }) {
+  const [range, setRange] = useState('ay');
+  const [customFrom, setCustomFrom] = useState(dd(-30));
+  const [customTo, setCustomTo] = useState(dd(0));
+
+  const getBounds = () => {
+    const today = new Date();
+    if (range === 'bugun') return [dd(0), dd(0)];
+    if (range === 'hafta') return [dd(-7), dd(0)];
+    if (range === 'ay') return [dd(-30), dd(0)];
+    if (range === 'ozel') return [customFrom, customTo];
+    return [null, null];
+  };
+  const [from, to] = getBounds();
+  const inRange = (dateStr) => {
+    if (!from) return true;
+    return dateStr >= from && dateStr <= to;
+  };
+
+  const filteredSales = satislar.filter((s) => inRange(s.sale_date));
+  const filteredExpenses = giderler.filter((g) => inRange(g.date));
+
+  const totalRevenue = filteredSales.reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+  const totalCOGS = filteredSales.reduce((s, x) => s + Number(x.cost_price) * Number(x.quantity), 0);
+  const totalExpenses = filteredExpenses.reduce((s, x) => s + Number(x.amount), 0);
+  const netProfit = totalRevenue - totalCOGS - totalExpenses;
+  const acikHesap = filteredSales.filter((s) => s.payment_type === 'Açık Hesap').reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+
+  const productStats = {};
+  filteredSales.forEach((s) => {
+    if (!productStats[s.product_name]) productStats[s.product_name] = { qty: 0, revenue: 0, cost: 0 };
+    productStats[s.product_name].qty += Number(s.quantity);
+    productStats[s.product_name].revenue += Number(s.sale_price) * Number(s.quantity);
+    productStats[s.product_name].cost += Number(s.cost_price) * Number(s.quantity);
+  });
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
+        {[{ v: 'bugun', l: 'Bugün' }, { v: 'hafta', l: 'Bu Hafta' }, { v: 'ay', l: 'Bu Ay' }, { v: 'tum', l: 'Tüm Zamanlar' }, { v: 'ozel', l: 'Özel Tarih' }].map((r) => (
+          <button key={r.v} onClick={() => setRange(r.v)} style={{ padding: '7px 14px', borderRadius: 20, border: `1px solid ${range === r.v ? '#4f7cff' : '#1c2035'}`, background: range === r.v ? 'rgba(79,124,255,0.15)' : '#121525', color: range === r.v ? '#4f7cff' : '#9ba8bc', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{r.l}</button>
+        ))}
+      </div>
+      {range === 'ozel' && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+          <Inp type="date" ph="" val={customFrom} set={setCustomFrom} />
+          <Inp type="date" ph="" val={customTo} set={setCustomTo} />
+        </div>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10, marginBottom: 20 }}>
+        {[
+          { lbl: 'Toplam Gelir', val: `₺${totalRevenue.toLocaleString()}`, clr: '#22c55e' },
+          { lbl: 'Maliyet (COGS)', val: `₺${totalCOGS.toLocaleString()}`, clr: '#f97316' },
+          { lbl: 'Giderler', val: `₺${totalExpenses.toLocaleString()}`, clr: '#f04040' },
+          { lbl: 'Net Kâr', val: `₺${netProfit.toLocaleString()}`, clr: netProfit >= 0 ? '#22c55e' : '#f04040' },
+          { lbl: 'Açık Hesap', val: `₺${acikHesap.toLocaleString()}`, clr: '#f0b429' },
+        ].map((k) => (
+          <div key={k.lbl} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ color: '#4a5270', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>{k.lbl}</div>
+            <div style={{ color: k.clr, fontSize: 18, fontWeight: 900 }}>{k.val}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>📦 Ürün Bazlı Rapor</div>
+      <div style={{ overflowX: 'auto', marginBottom: 20 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <thead><tr style={{ borderBottom: '1px solid #1c2035' }}>
+            {['Ürün', 'Satılan Adet', 'Gelir', 'Maliyet', 'Kâr', 'Güncel Stok'].map((h) => <th key={h} style={{ color: '#4a5270', padding: '8px 10px', textAlign: 'left' }}>{h}</th>)}
+          </tr></thead>
+          <tbody>
+            {Object.entries(productStats).map(([name, st]) => {
+              const prod = urunler.find((u) => u.name === name);
+              return (
+                <tr key={name} style={{ borderBottom: '1px solid #1c2035' }}>
+                  <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px' }}>{name}</td>
+                  <td style={{ color: '#4a5270', padding: '10px' }}>{st.qty}</td>
+                  <td style={{ color: '#22c55e', padding: '10px' }}>₺{st.revenue.toLocaleString()}</td>
+                  <td style={{ color: '#f97316', padding: '10px' }}>₺{st.cost.toLocaleString()}</td>
+                  <td style={{ color: '#22c55e', fontWeight: 800, padding: '10px' }}>₺{(st.revenue - st.cost).toLocaleString()}</td>
+                  <td style={{ color: prod && prod.stok_miktari <= prod.kritik_stok ? '#f04040' : '#4a5270', padding: '10px' }}>{prod ? prod.stok_miktari : '-'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {Object.keys(productStats).length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Bu tarih aralığında satış yok.</div>}
+      </div>
+    </div>
+  );
+}
+
+function MedikalTeklif({ urunler, musteriler, teklifler, setTeklifler }) {
+  const [customerName, setCustomerName] = useState('');
+  const [validUntil, setValidUntil] = useState(dd(15));
+  const [notes, setNotes] = useState('');
+  const [items, setItems] = useState([{ product_name: '', quantity: 1, unit_price: '' }]);
+
+  const addItem = () => setItems((it) => [...it, { product_name: '', quantity: 1, unit_price: '' }]);
+  const removeItem = (idx) => setItems((it) => it.filter((_, i) => i !== idx));
+  const updateItem = (idx, field, val) => setItems((it) => it.map((row, i) => (i === idx ? { ...row, [field]: val } : row)));
+
+  const total = items.reduce((s, it) => s + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0), 0);
+
+  const generatePDF = (teklifData) => {
+    const doc = new jsPDF();
+    doc.setFillColor(42, 157, 178);
+    doc.rect(0, 0, 210, 30, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('HAIR MEDICAL GROUP', 14, 18);
+    doc.setFontSize(11);
+    doc.setTextColor(20, 20, 20);
+    doc.text('FİYAT TEKLİFİ', 14, 40);
+    doc.setFontSize(10);
+    doc.text(`Müşteri: ${teklifData.customer_name || '-'}`, 14, 50);
+    doc.text(`Tarih: ${fmt(new Date().toISOString().split('T')[0])}`, 14, 57);
+    doc.text(`Geçerlilik: ${fmt(teklifData.valid_until)}`, 14, 64);
+
+    let y = 78;
+    doc.setFillColor(230, 230, 230);
+    doc.rect(14, y - 6, 182, 8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.text('Ürün', 16, y);
+    doc.text('Adet', 110, y);
+    doc.text('Birim Fiyat', 135, y);
+    doc.text('Toplam', 170, y);
+    doc.setFont('helvetica', 'normal');
+    y += 10;
+    teklifData.items.forEach((it) => {
+      const lineTotal = (Number(it.quantity) || 0) * (Number(it.unit_price) || 0);
+      doc.text(String(it.product_name || '-'), 16, y);
+      doc.text(String(it.quantity), 110, y);
+      doc.text(`₺${Number(it.unit_price).toLocaleString()}`, 135, y);
+      doc.text(`₺${lineTotal.toLocaleString()}`, 170, y);
+      y += 8;
+    });
+    y += 4;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, y, 196, y);
+    y += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text(`TOPLAM: ₺${teklifData.total_amount.toLocaleString()}`, 130, y);
+    if (teklifData.notes) {
+      y += 15;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text('Notlar:', 14, y);
+      y += 7;
+      doc.text(String(teklifData.notes), 14, y, { maxWidth: 180 });
+    }
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text('Hair Medical Group', 14, 285);
+    doc.save(`Teklif_${(teklifData.customer_name || 'musteri').replace(/\s+/g, '_')}.pdf`);
+  };
+
+  const saveAndDownload = async () => {
+    if (!customerName || items.some((it) => !it.product_name || !it.unit_price)) { alert('Müşteri adı ve tüm ürün satırları doldurulmalı'); return; }
+    const teklifData = { customer_name: customerName, items, total_amount: total, currency: 'TRY', valid_until: validUntil, notes };
+    const saved = await insertMedikalTeklif(teklifData);
+    if (saved) setTeklifler((ts) => [saved, ...ts]);
+    generatePDF(teklifData);
+    setCustomerName(''); setNotes(''); setItems([{ product_name: '', quantity: 1, unit_price: '' }]);
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm('Teklif silinsin mi?')) return;
+    await deleteMedikalTeklif(id);
+    setTeklifler((ts) => ts.filter((t) => t.id !== id));
+  };
+
+  return (
+    <div>
+      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>📄 Yeni Fiyat Teklifi</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+          <div>
+            <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>MÜŞTERİ</div>
+            <input list="teklif-cust-list" value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={{ width: '100%', padding: '9px 12px', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+            <datalist id="teklif-cust-list">{musteriler.map((m) => <option key={m.id} value={m.name} />)}</datalist>
+          </div>
+          <div>
+            <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>GEÇERLİLİK TARİHİ</div>
+            <Inp type="date" ph="" val={validUntil} set={setValidUntil} />
+          </div>
+        </div>
+        {items.map((it, idx) => (
+          <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 8, marginBottom: 6 }}>
+            <input list="teklif-urun-list" value={it.product_name} onChange={(e) => updateItem(idx, 'product_name', e.target.value)} placeholder="Ürün" style={{ padding: '9px 12px', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13 }} />
+            <Inp ph="Adet" type="number" val={it.quantity} set={(v) => updateItem(idx, 'quantity', v)} />
+            <Inp ph="Birim Fiyat" type="number" val={it.unit_price} set={(v) => updateItem(idx, 'unit_price', v)} />
+            <button onClick={() => removeItem(idx)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>×</button>
+          </div>
+        ))}
+        <datalist id="teklif-urun-list">{urunler.map((u) => <option key={u.id} value={u.name} />)}</datalist>
+        <div style={{ marginBottom: 10 }}><Btn v="s" sm onClick={addItem}>+ Satır Ekle</Btn></div>
+        <Inp ph="Notlar" val={notes} set={setNotes} rows={2} />
+        <div style={{ color: '#22c55e', fontWeight: 900, fontSize: 16, margin: '10px 0' }}>Toplam: ₺{total.toLocaleString()}</div>
+        <Btn onClick={saveAndDownload}>📄 PDF Oluştur ve Kaydet</Btn>
+      </div>
+
+      <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Geçmiş Teklifler</div>
+      {teklifler.map((t) => (
+        <div key={t.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{t.customer_name}</div>
+            <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(t.created_at)} · Geçerlilik: {fmt(t.valid_until)}</div>
+          </div>
+          <div style={{ color: '#22c55e', fontWeight: 800 }}>₺{Number(t.total_amount).toLocaleString()}</div>
+          <button onClick={() => generatePDF(t)} style={{ padding: '4px 10px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 11, cursor: 'pointer' }}>📄 İndir</button>
+          <button onClick={() => remove(t.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const NAV = [
   { id: 'dashboard', ico: '🏠', lbl: 'Panel', perm: 'view_dashboard' },
   { id: 'leads', ico: '📋', lbl: 'Leadler', perm: 'view_leads' },
   { id: 'patients', ico: '💎', lbl: 'Hastalar', perm: 'view_patients' },
   { id: 'finance', ico: '💰', lbl: 'Muhasebe', perm: 'view_finance' },
+  { id: 'medikal', ico: '💊', lbl: 'Medikal', perm: 'view_dashboard' },
   { id: 'logs', ico: '📜', lbl: 'Aktivite', perm: 'view_logs' },
   { id: 'settings', ico: '⚙️', lbl: 'Ayarlar', perm: 'manage_users' },
 ];
@@ -1328,6 +1995,7 @@ export default function App() {
         {page === 'patients' && <Patients user={user} region={region} patients={patients} setPatients={setPatients} driveConnected={driveConnected} />}
         {page === 'finance' && region === 'suudi' && user.role === 'admin' && <SuudiFinance user={user} region={region} patients={patients} receivables={receivables} setReceivables={setReceivables} />}
         {page === 'finance' && region === 'istanbul' && <Finance patients={patients} expenses={expenses} setExpenses={setExpenses} user={user} region={region} />}
+        {page === 'medikal' && <MedikalSatis user={user} />}
         {page === 'logs' && <ActivityLog region={region} />}
         {page === 'settings' && <Settings users={users} setUsers={setUsers} user={user} region={region} />}
       </div>
