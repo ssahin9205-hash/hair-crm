@@ -336,7 +336,7 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
   const [uploading, setUploading] = useState(false);
   const [lightboxIdx, setLightboxIdx] = useState(null);
   const [lastUpload, setLastUpload] = useState(null);
-  const [form, setForm] = useState({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [] });
+  const [form, setForm] = useState({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [], ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' });
 
   const getPhotos = (p) => { try { return typeof p.photos === 'string' ? JSON.parse(p.photos) : p.photos || {}; } catch { return {}; } };
 
@@ -354,12 +354,16 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
         const linked = await fetchPatientPayments('suudi');
         const match = (linked || []).find((p) => p.patient_name === editingPatient.name);
         if (match) {
-          await updatePatientPayment(match.id, { patient_name: form.name, surgery_date: form.surgeryDate || null, technique: form.technique, total_price: tp });
+          await updatePatientPayment(match.id, {
+            patient_name: form.name, surgery_date: form.surgeryDate || null, technique: form.technique, total_price: tp,
+            ali_haydar_fee: Number(form.ali_haydar_fee) || 0, yusuf_fee: Number(form.yusuf_fee) || 0,
+            mete_fee: Number(form.mete_fee) || 0, seyit_fee: Number(form.seyit_fee) || 0,
+          });
         }
       } catch (e) {}
       setEditingPatient(null);
       setShowAdd(false);
-      setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [] });
+      setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [], ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' });
       return;
     }
 
@@ -380,19 +384,27 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
           surgery_date: form.surgeryDate || null,
           technique: form.technique,
           total_price: tp,
-          ali_haydar_fee: 0,
-          yusuf_fee: 0,
-          mete_fee: 0,
-          seyit_fee: 0,
+          ali_haydar_fee: Number(form.ali_haydar_fee) || 0,
+          yusuf_fee: Number(form.yusuf_fee) || 0,
+          mete_fee: Number(form.mete_fee) || 0,
+          seyit_fee: Number(form.seyit_fee) || 0,
           notes: notesParts.join(' · '),
         });
       } catch (e) {}
     }
     setShowAdd(false);
-    setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [] });
+    setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [], ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' });
   };
 
-  const startEditPatient = (p) => {
+  const startEditPatient = async (p) => {
+    let fees = { ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' };
+    if (region === 'suudi') {
+      try {
+        const linked = await fetchPatientPayments('suudi');
+        const match = (linked || []).find((x) => x.patient_name === p.name);
+        if (match) fees = { ali_haydar_fee: match.ali_haydar_fee || '', yusuf_fee: match.yusuf_fee || '', mete_fee: match.mete_fee || '', seyit_fee: match.seyit_fee || '' };
+      } catch (e) {}
+    }
     setForm({
       name: p.name || '',
       phone: p.phone || '',
@@ -405,6 +417,7 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
       sourceType: p.source_type || 'hair_international',
       sourceName: p.source_name || '',
       operatorNames: p.operator_name ? p.operator_name.split(',').map(s => s.trim()).filter(Boolean) : [],
+      ...fees,
     });
     setEditingPatient(p);
     setShowAdd(true);
@@ -542,7 +555,7 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
         ))}
       </div>
       {showAdd && (
-        <Modal title={editingPatient ? `${editingPatient.name} - Düzenle` : 'Yeni Hasta'} onClose={() => { setShowAdd(false); setEditingPatient(null); setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [] }); }} wide>
+        <Modal title={editingPatient ? `${editingPatient.name} - Düzenle` : 'Yeni Hasta'} onClose={() => { setShowAdd(false); setEditingPatient(null); setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [], ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' }); }} wide>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div><div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>AD SOYAD *</div><Inp ph="Ad" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} /></div>
             <div><div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TELEFON</div><Inp ph="Tel" val={form.phone} set={(v) => setForm((f) => ({ ...f, phone: v }))} /></div>
@@ -586,9 +599,32 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
                 </div>
               </div>
             )}
+            {region === 'suudi' && (
+              <div style={{ gridColumn: '1/-1', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 10, padding: 12, marginTop: 6 }}>
+                <div style={{ color: '#f0b429', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>💰 EKİP ÜCRETİ DAĞILIMI ($)</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+                  <div>
+                    <div style={{ color: '#4a5270', fontSize: 9, marginBottom: 3 }}>ALİ HAYDAR</div>
+                    <Inp type="number" ph="0" val={form.ali_haydar_fee} set={(v) => setForm((f) => ({ ...f, ali_haydar_fee: v }))} />
+                  </div>
+                  <div>
+                    <div style={{ color: '#4a5270', fontSize: 9, marginBottom: 3 }}>YUSUF</div>
+                    <Inp type="number" ph="0" val={form.yusuf_fee} set={(v) => setForm((f) => ({ ...f, yusuf_fee: v }))} />
+                  </div>
+                  <div>
+                    <div style={{ color: '#4a5270', fontSize: 9, marginBottom: 3 }}>METE</div>
+                    <Inp type="number" ph="0" val={form.mete_fee} set={(v) => setForm((f) => ({ ...f, mete_fee: v }))} />
+                  </div>
+                  <div>
+                    <div style={{ color: '#4a5270', fontSize: 9, marginBottom: 3 }}>SEYİT</div>
+                    <Inp type="number" ph="0" val={form.seyit_fee} set={(v) => setForm((f) => ({ ...f, seyit_fee: v }))} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-            <Btn v="s" onClick={() => { setShowAdd(false); setEditingPatient(null); setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [] }); }}>Iptal</Btn>
+            <Btn v="s" onClick={() => { setShowAdd(false); setEditingPatient(null); setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [], ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' }); }}>Iptal</Btn>
             <Btn onClick={save}>{editingPatient ? 'Güncelle' : 'Kaydet'}</Btn>
           </div>
         </Modal>
@@ -1331,7 +1367,8 @@ function MedikalMusteriler({ musteriler, setMusteriler, satislar }) {
       <Inp ph="🔍 Müşteri ara (isim veya telefon)..." val={search} set={setSearch} style={{ marginBottom: 12 }} />
       {filtered.map((m) => {
         const hist = getHistory(m.name);
-        const totalSpent = hist.reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+        const totalSpentTRY = hist.filter((x) => (x.currency || 'TRY') === 'TRY').reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+        const totalSpentUSD = hist.filter((x) => x.currency === 'USD').reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
         const unpaidCount = hist.filter((x) => x.payment_type === 'Açık Hesap' && !x.paid).length;
         return (
           <div key={m.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer' }} onClick={() => setSelCustomer(m)}>
@@ -1339,7 +1376,10 @@ function MedikalMusteriler({ musteriler, setMusteriler, satislar }) {
               <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{m.name} {unpaidCount > 0 && <span style={{ color: '#f0b429', fontSize: 10 }}>📒 {unpaidCount} açık hesap</span>}</div>
               <div style={{ color: '#4a5270', fontSize: 11 }}>{m.phone} {m.notes && `· ${m.notes}`} · {hist.length} işlem</div>
             </div>
-            <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 12 }}>₺{totalSpent.toLocaleString()}</div>
+            <div style={{ textAlign: 'right' }}>
+              {totalSpentTRY > 0 && <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 12 }}>₺{totalSpentTRY.toLocaleString()}</div>}
+              {totalSpentUSD > 0 && <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 12 }}>${totalSpentUSD.toLocaleString()}</div>}
+            </div>
             <button onClick={(e) => { e.stopPropagation(); remove(m.id); }} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
           </div>
         );
@@ -1350,18 +1390,24 @@ function MedikalMusteriler({ musteriler, setMusteriler, satislar }) {
         <Modal title={`${selCustomer.name} - Geçmiş`} onClose={() => setSelCustomer(null)} wide>
           {(() => {
             const hist = getHistory(selCustomer.name);
-            const totalSpent = hist.reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
-            const totalUnpaid = hist.filter((x) => x.payment_type === 'Açık Hesap' && !x.paid).reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+            const totalSpentTRY = hist.filter((x) => (x.currency || 'TRY') === 'TRY').reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+            const totalSpentUSD = hist.filter((x) => x.currency === 'USD').reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+            const totalUnpaidTRY = hist.filter((x) => x.payment_type === 'Açık Hesap' && !x.paid && (x.currency || 'TRY') === 'TRY').reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
+            const totalUnpaidUSD = hist.filter((x) => x.payment_type === 'Açık Hesap' && !x.paid && x.currency === 'USD').reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
             return (
               <div>
-                <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-                  <div style={{ flex: 1, background: '#1a1d30', borderRadius: 8, padding: 12 }}>
-                    <div style={{ color: '#4a5270', fontSize: 10 }}>TOPLAM HARCAMA</div>
-                    <div style={{ color: '#22c55e', fontWeight: 900, fontSize: 18 }}>₺{totalSpent.toLocaleString()}</div>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: 140, background: '#1a1d30', borderRadius: 8, padding: 12 }}>
+                    <div style={{ color: '#4a5270', fontSize: 10 }}>TOPLAM HARCAMA (TL)</div>
+                    <div style={{ color: '#22c55e', fontWeight: 900, fontSize: 18 }}>₺{totalSpentTRY.toLocaleString()}</div>
                   </div>
-                  <div style={{ flex: 1, background: '#1a1d30', borderRadius: 8, padding: 12 }}>
+                  <div style={{ flex: 1, minWidth: 140, background: '#1a1d30', borderRadius: 8, padding: 12 }}>
+                    <div style={{ color: '#4a5270', fontSize: 10 }}>TOPLAM HARCAMA ($)</div>
+                    <div style={{ color: '#22c55e', fontWeight: 900, fontSize: 18 }}>${totalSpentUSD.toLocaleString()}</div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 140, background: '#1a1d30', borderRadius: 8, padding: 12 }}>
                     <div style={{ color: '#4a5270', fontSize: 10 }}>BEKLEYEN AÇIK HESAP</div>
-                    <div style={{ color: '#f0b429', fontWeight: 900, fontSize: 18 }}>₺{totalUnpaid.toLocaleString()}</div>
+                    <div style={{ color: '#f0b429', fontWeight: 900, fontSize: 16 }}>₺{totalUnpaidTRY.toLocaleString()} + ${totalUnpaidUSD.toLocaleString()}</div>
                   </div>
                 </div>
                 {hist.map((s) => (
