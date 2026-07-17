@@ -338,6 +338,11 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
   const [lastUpload, setLastUpload] = useState(null);
   const [form, setForm] = useState({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', alim_kisi: '', kanal_kisi: '', ekim_kisi: '', feeRows: [{ name: '', amount: '' }] });
   const addFeeRow = () => setForm(f => ({ ...f, feeRows: [...f.feeRows, { name: '', amount: '' }] }));
+  const quickAddFeePerson = (name) => setForm(f => {
+    if (f.feeRows.some(r => r.name === name)) return f;
+    const rows = (f.feeRows.length === 1 && !f.feeRows[0].name) ? [{ name, amount: '' }] : [...f.feeRows, { name, amount: '' }];
+    return { ...f, feeRows: rows };
+  });
   const removeFeeRow = (idx) => setForm(f => ({ ...f, feeRows: f.feeRows.filter((_, i) => i !== idx) }));
   const updateFeeRow = (idx, field, val) => setForm(f => ({ ...f, feeRows: f.feeRows.map((r, i) => (i === idx ? { ...r, [field]: val } : r)) }));
   const feeTotal = form.feeRows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
@@ -617,6 +622,11 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
             {region === 'suudi' && (
               <div style={{ gridColumn: '1/-1', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 10, padding: 12, marginTop: 6 }}>
                 <div style={{ color: '#f0b429', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>💰 EKİP ÜCRETİ DAĞILIMI ($)</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  {['Ali', 'Muhammet', 'Furkan'].map((name) => (
+                    <button key={name} type="button" onClick={() => quickAddFeePerson(name)} style={{ padding: '6px 12px', borderRadius: 20, border: '1px solid #f0b42944', background: 'rgba(240,180,41,0.1)', color: '#f0b429', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>+ {name}</button>
+                  ))}
+                </div>
                 {form.feeRows.map((row, idx) => (
                   <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: 8, marginBottom: 6 }}>
                     <input value={row.name} onChange={(e) => updateFeeRow(idx, 'name', e.target.value)} placeholder="Kişi adı" style={{ padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }} />
