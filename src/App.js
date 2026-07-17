@@ -619,7 +619,7 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
                 </div>
               </>
             )}
-            {region === 'suudi' && (
+            {region === 'suudi' && user?.name?.toLowerCase().includes('seyit') && (
               <div style={{ gridColumn: '1/-1', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 10, padding: 12, marginTop: 6 }}>
                 <div style={{ color: '#f0b429', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>💰 EKİP ÜCRETİ DAĞILIMI ($)</div>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
