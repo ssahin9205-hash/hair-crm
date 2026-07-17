@@ -336,47 +336,54 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
   const [uploading, setUploading] = useState(false);
   const [lightboxIdx, setLightboxIdx] = useState(null);
   const [lastUpload, setLastUpload] = useState(null);
-  const [form, setForm] = useState({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [], ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' });
+  const [form, setForm] = useState({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', alim_kisi: '', kanal_kisi: '', ekim_kisi: '', feeRows: [{ name: '', amount: '' }] });
+  const addFeeRow = () => setForm(f => ({ ...f, feeRows: [...f.feeRows, { name: '', amount: '' }] }));
+  const removeFeeRow = (idx) => setForm(f => ({ ...f, feeRows: f.feeRows.filter((_, i) => i !== idx) }));
+  const updateFeeRow = (idx, field, val) => setForm(f => ({ ...f, feeRows: f.feeRows.map((r, i) => (i === idx ? { ...r, [field]: val } : r)) }));
+  const feeTotal = form.feeRows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
 
   const getPhotos = (p) => { try { return typeof p.photos === 'string' ? JSON.parse(p.photos) : p.photos || {}; } catch { return {}; } };
 
   const save = async () => {
     if (!form.name) return;
     const tp = Number(form.totalPrice) || 0, dep = Number(form.deposit) || 0;
-    const operatorStr = form.operatorNames.join(', ');
-    const obj = { name: form.name, phone: form.phone, country: form.country, surgeryDate: form.surgeryDate, technique: form.technique, grafts: Number(form.grafts) || 0, totalPrice: tp, deposit: dep, remaining: Math.max(0, tp - dep), totalPaid: dep, source_type: form.sourceType, source_name: form.sourceType === 'acenta' ? form.sourceName : null, operator_name: operatorStr || null };
+    const validFees = form.feeRows.filter(r => r.name && Number(r.amount) > 0);
+    const feeSummary = validFees.map(r => `${r.name}: $${r.amount}`).join(', ');
+    const findFee = (nm) => validFees.filter(r => r.name.toLowerCase() === nm.toLowerCase()).reduce((s, r) => s + Number(r.amount), 0);
+    const obj = { name: form.name, phone: form.phone, country: form.country, surgeryDate: form.surgeryDate, technique: form.technique, grafts: Number(form.grafts) || 0, totalPrice: tp, deposit: dep, remaining: Math.max(0, tp - dep), totalPaid: dep, source_type: form.sourceType, source_name: form.sourceType === 'acenta' ? form.sourceName : null, alim_kisi: form.alim_kisi || null, kanal_kisi: form.kanal_kisi || null, ekim_kisi: form.ekim_kisi || null };
 
     if (editingPatient) {
       await updateHasta(editingPatient.id, obj);
       setPatients((ps) => ps.map((p) => (p.id === editingPatient.id ? { ...p, ...obj } : p)));
-      await logAction(user, region, 'Hasta güncellendi', 'Hasta', form.name, `Op: ${operatorStr || '-'}`);
+      await logAction(user, region, 'Hasta güncellendi', 'Hasta', form.name, `Alım: ${form.alim_kisi || '-'} · Kanal: ${form.kanal_kisi || '-'} · Ekim: ${form.ekim_kisi || '-'}`);
       try {
         const linked = await fetchPatientPayments('suudi');
         const match = (linked || []).find((p) => p.patient_name === editingPatient.name);
         if (match) {
           await updatePatientPayment(match.id, {
             patient_name: form.name, surgery_date: form.surgeryDate || null, technique: form.technique, total_price: tp,
-            ali_haydar_fee: Number(form.ali_haydar_fee) || 0, yusuf_fee: Number(form.yusuf_fee) || 0,
-            mete_fee: Number(form.mete_fee) || 0, seyit_fee: Number(form.seyit_fee) || 0,
+            fee_distribution: JSON.stringify(validFees),
+            ali_haydar_fee: findFee('Ali Haydar'), yusuf_fee: findFee('Yusuf'), mete_fee: findFee('Mete'), seyit_fee: findFee('Seyit'),
+            notes: feeSummary ? `Ücret dağılımı: ${feeSummary}` : '',
           });
         }
       } catch (e) {}
       setEditingPatient(null);
       setShowAdd(false);
-      setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [], ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' });
+      setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', alim_kisi: '', kanal_kisi: '', ekim_kisi: '', feeRows: [{ name: '', amount: '' }] });
       return;
     }
 
     const fullObj = { ...obj, status: 'planli', photos: JSON.stringify({}), region };
     const saved = await insertHasta(fullObj);
     setPatients((ps) => [saved ?? { ...fullObj, id: Date.now() }, ...ps]);
-    await logAction(user, region, 'Hasta eklendi', 'Hasta', form.name, `Op: ${operatorStr || '-'}`);
+    await logAction(user, region, 'Hasta eklendi', 'Hasta', form.name, `Alım: ${form.alim_kisi || '-'} · Kanal: ${form.kanal_kisi || '-'} · Ekim: ${form.ekim_kisi || '-'}`);
     if (region === 'suudi') {
       try {
         const graftNum = Number(form.grafts) || 0;
         const suggestedFee = graftNum > 0 ? (graftNum < 3000 ? 400 : 500) : null;
         const notesParts = [];
-        if (operatorStr) notesParts.push(`Operatör: ${operatorStr}`);
+        if (feeSummary) notesParts.push(`Ücret dağılımı: ${feeSummary}`);
         if (suggestedFee) notesParts.push(`Önerilen ekip ücreti: $${suggestedFee} (${graftNum} greft)`);
         await insertPatientPayment({
           region: 'suudi',
@@ -384,25 +391,41 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
           surgery_date: form.surgeryDate || null,
           technique: form.technique,
           total_price: tp,
-          ali_haydar_fee: Number(form.ali_haydar_fee) || 0,
-          yusuf_fee: Number(form.yusuf_fee) || 0,
-          mete_fee: Number(form.mete_fee) || 0,
-          seyit_fee: Number(form.seyit_fee) || 0,
+          fee_distribution: JSON.stringify(validFees),
+          ali_haydar_fee: findFee('Ali Haydar'),
+          yusuf_fee: findFee('Yusuf'),
+          mete_fee: findFee('Mete'),
+          seyit_fee: findFee('Seyit'),
           notes: notesParts.join(' · '),
         });
       } catch (e) {}
     }
     setShowAdd(false);
-    setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [], ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' });
+    setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', alim_kisi: '', kanal_kisi: '', ekim_kisi: '', feeRows: [{ name: '', amount: '' }] });
   };
 
   const startEditPatient = async (p) => {
-    let fees = { ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' };
+    let feeRows = [{ name: '', amount: '' }];
     if (region === 'suudi') {
       try {
         const linked = await fetchPatientPayments('suudi');
         const match = (linked || []).find((x) => x.patient_name === p.name);
-        if (match) fees = { ali_haydar_fee: match.ali_haydar_fee || '', yusuf_fee: match.yusuf_fee || '', mete_fee: match.mete_fee || '', seyit_fee: match.seyit_fee || '' };
+        if (match) {
+          if (match.fee_distribution) {
+            try {
+              const parsed = typeof match.fee_distribution === 'string' ? JSON.parse(match.fee_distribution) : match.fee_distribution;
+              if (Array.isArray(parsed) && parsed.length > 0) feeRows = parsed;
+            } catch (e) {}
+          }
+          if (feeRows.length === 1 && !feeRows[0].name) {
+            const legacy = [];
+            if (Number(match.ali_haydar_fee) > 0) legacy.push({ name: 'Ali Haydar', amount: match.ali_haydar_fee });
+            if (Number(match.yusuf_fee) > 0) legacy.push({ name: 'Yusuf', amount: match.yusuf_fee });
+            if (Number(match.mete_fee) > 0) legacy.push({ name: 'Mete', amount: match.mete_fee });
+            if (Number(match.seyit_fee) > 0) legacy.push({ name: 'Seyit', amount: match.seyit_fee });
+            if (legacy.length > 0) feeRows = legacy;
+          }
+        }
       } catch (e) {}
     }
     setForm({
@@ -416,8 +439,10 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
       deposit: p.deposit || '',
       sourceType: p.source_type || 'hair_international',
       sourceName: p.source_name || '',
-      operatorNames: p.operator_name ? p.operator_name.split(',').map(s => s.trim()).filter(Boolean) : [],
-      ...fees,
+      alim_kisi: p.alim_kisi || '',
+      kanal_kisi: p.kanal_kisi || '',
+      ekim_kisi: p.ekim_kisi || '',
+      feeRows,
     });
     setEditingPatient(p);
     setShowAdd(true);
@@ -517,13 +542,7 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
 
   const currentPhotos = sel ? getPhotos(sel)[activeTab] || [] : [];
   const currentVideos = sel ? getPhotos(sel)[`${activeTab}_videos`] || [] : [];
-  const operatorList = ['Ali Haydar', 'Yusuf', 'Mete', 'Seyit'];
-  const toggleOperator = (name) => {
-    setForm(f => {
-      const has = f.operatorNames.includes(name);
-      return { ...f, operatorNames: has ? f.operatorNames.filter(n => n !== name) : [...f.operatorNames, name] };
-    });
-  };
+  
 
   return (
     <div>
@@ -549,13 +568,19 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
                 </div>
               </div>
               <div style={{ color: '#4a5270', fontSize: 11 }}>📅 {fmt(p.surgeryDate)} · {p.technique}</div>
-              {p.operator_name && <div style={{ color: '#60a5fa', fontSize: 11, marginTop: 3 }}>👤 {p.operator_name}</div>}
+              {(p.alim_kisi || p.kanal_kisi || p.ekim_kisi) && (
+                <div style={{ color: '#60a5fa', fontSize: 11, marginTop: 3 }}>
+                  {p.alim_kisi && <>🔹 Alım: {p.alim_kisi} </>}
+                  {p.kanal_kisi && <>🔹 Kanal: {p.kanal_kisi} </>}
+                  {p.ekim_kisi && <>🔹 Ekim: {p.ekim_kisi}</>}
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
       {showAdd && (
-        <Modal title={editingPatient ? `${editingPatient.name} - Düzenle` : 'Yeni Hasta'} onClose={() => { setShowAdd(false); setEditingPatient(null); setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [], ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' }); }} wide>
+        <Modal title={editingPatient ? `${editingPatient.name} - Düzenle` : 'Yeni Hasta'} onClose={() => { setShowAdd(false); setEditingPatient(null); setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', alim_kisi: '', kanal_kisi: '', ekim_kisi: '', feeRows: [{ name: '', amount: '' }] }); }} wide>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div><div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>AD SOYAD *</div><Inp ph="Ad" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} /></div>
             <div><div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TELEFON</div><Inp ph="Tel" val={form.phone} set={(v) => setForm((f) => ({ ...f, phone: v }))} /></div>
@@ -571,60 +596,45 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
             </div>
             <div><div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TEKNIK</div><Sel val={form.technique} set={(v) => setForm((f) => ({ ...f, technique: v }))} opts={['FUE', 'DHI', 'Safir FUE', 'PRP']} /></div>
             {region === 'suudi' && (
-              <div style={{ gridColumn: '1/-1' }}>
-                <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 6 }}>HASTAYI KİM YAPTI * (birden fazla seçilebilir)</div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {operatorList.map(name => {
-                    const active = form.operatorNames.includes(name);
-                    return (
-                      <button
-                        key={name}
-                        type="button"
-                        onClick={() => toggleOperator(name)}
-                        style={{
-                          padding: '8px 14px',
-                          borderRadius: 20,
-                          border: `1px solid ${active ? '#4f7cff' : '#1c2035'}`,
-                          background: active ? 'rgba(79,124,255,0.18)' : '#121525',
-                          color: active ? '#4f7cff' : '#9ba8bc',
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {active ? '✓ ' : ''}👤 {name}
-                      </button>
-                    );
-                  })}
+              <>
+                <div>
+                  <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ALIM</div>
+                  <input list="alim-list" value={form.alim_kisi} onChange={(e) => setForm((f) => ({ ...f, alim_kisi: e.target.value }))} placeholder="Kim yaptı?" style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+                  <datalist id="alim-list">{[...new Set(patients.filter(p => p.alim_kisi).map(p => p.alim_kisi))].map((v) => <option key={v} value={v} />)}</datalist>
                 </div>
-              </div>
+                <div>
+                  <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>KANAL</div>
+                  <input list="kanal-list" value={form.kanal_kisi} onChange={(e) => setForm((f) => ({ ...f, kanal_kisi: e.target.value }))} placeholder="Kim yaptı?" style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+                  <datalist id="kanal-list">{[...new Set(patients.filter(p => p.kanal_kisi).map(p => p.kanal_kisi))].map((v) => <option key={v} value={v} />)}</datalist>
+                </div>
+                <div>
+                  <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>EKİM</div>
+                  <input list="ekim-list" value={form.ekim_kisi} onChange={(e) => setForm((f) => ({ ...f, ekim_kisi: e.target.value }))} placeholder="Kim yaptı?" style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+                  <datalist id="ekim-list">{[...new Set(patients.filter(p => p.ekim_kisi).map(p => p.ekim_kisi))].map((v) => <option key={v} value={v} />)}</datalist>
+                </div>
+              </>
             )}
             {region === 'suudi' && (
               <div style={{ gridColumn: '1/-1', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 10, padding: 12, marginTop: 6 }}>
                 <div style={{ color: '#f0b429', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>💰 EKİP ÜCRETİ DAĞILIMI ($)</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
-                  <div>
-                    <div style={{ color: '#4a5270', fontSize: 9, marginBottom: 3 }}>ALİ HAYDAR</div>
-                    <Inp type="number" ph="0" val={form.ali_haydar_fee} set={(v) => setForm((f) => ({ ...f, ali_haydar_fee: v }))} />
+                {form.feeRows.map((row, idx) => (
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: 8, marginBottom: 6 }}>
+                    <input value={row.name} onChange={(e) => updateFeeRow(idx, 'name', e.target.value)} placeholder="Kişi adı" style={{ padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }} />
+                    <input type="number" value={row.amount} onChange={(e) => updateFeeRow(idx, 'amount', e.target.value)} placeholder="Tutar" style={{ padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }} />
+                    <button type="button" onClick={() => removeFeeRow(idx)} style={{ padding: '4px 10px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 12, cursor: 'pointer' }}>×</button>
                   </div>
-                  <div>
-                    <div style={{ color: '#4a5270', fontSize: 9, marginBottom: 3 }}>YUSUF</div>
-                    <Inp type="number" ph="0" val={form.yusuf_fee} set={(v) => setForm((f) => ({ ...f, yusuf_fee: v }))} />
-                  </div>
-                  <div>
-                    <div style={{ color: '#4a5270', fontSize: 9, marginBottom: 3 }}>METE</div>
-                    <Inp type="number" ph="0" val={form.mete_fee} set={(v) => setForm((f) => ({ ...f, mete_fee: v }))} />
-                  </div>
-                  <div>
-                    <div style={{ color: '#4a5270', fontSize: 9, marginBottom: 3 }}>SEYİT</div>
-                    <Inp type="number" ph="0" val={form.seyit_fee} set={(v) => setForm((f) => ({ ...f, seyit_fee: v }))} />
-                  </div>
+                ))}
+                <div style={{ marginTop: 6, marginBottom: 10 }}>
+                  <Btn v="s" sm onClick={addFeeRow}>+ Kişi Ekle</Btn>
+                </div>
+                <div style={{ borderTop: '1px solid #1c2035', paddingTop: 8, textAlign: 'right', color: '#22c55e', fontWeight: 900, fontSize: 15 }}>
+                  Toplam Ekip Ücreti: ${feeTotal.toLocaleString()}
                 </div>
               </div>
             )}
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-            <Btn v="s" onClick={() => { setShowAdd(false); setEditingPatient(null); setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', operatorNames: [], ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '' }); }}>Iptal</Btn>
+            <Btn v="s" onClick={() => { setShowAdd(false); setEditingPatient(null); setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', alim_kisi: '', kanal_kisi: '', ekim_kisi: '', feeRows: [{ name: '', amount: '' }] }); }}>Iptal</Btn>
             <Btn onClick={save}>{editingPatient ? 'Güncelle' : 'Kaydet'}</Btn>
           </div>
         </Modal>
@@ -640,7 +650,13 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
           <div style={{ marginBottom: 16 }}>
             <div style={{ color: '#4a5270', fontSize: 11 }}>📞 {sel.phone}</div>
             <div style={{ color: '#4a5270', fontSize: 11 }}>⚗️ {sel.technique} · {sel.grafts} greft</div>
-            {sel.operator_name && <div style={{ color: '#60a5fa', fontSize: 12, marginTop: 6, fontWeight: 700 }}>👤 Operatör: {sel.operator_name}</div>}
+            {(sel.alim_kisi || sel.kanal_kisi || sel.ekim_kisi) && (
+              <div style={{ color: '#60a5fa', fontSize: 12, marginTop: 6, fontWeight: 700 }}>
+                {sel.alim_kisi && <div>🔹 Alım: {sel.alim_kisi}</div>}
+                {sel.kanal_kisi && <div>🔹 Kanal: {sel.kanal_kisi}</div>}
+                {sel.ekim_kisi && <div>🔹 Ekim: {sel.ekim_kisi}</div>}
+              </div>
+            )}
             {driveConnected && (
               <button onClick={openDriveFolder} style={{ marginTop: 8, padding: '6px 12px', background: 'rgba(66,133,244,0.15)', border: '1px solid #4285f4', borderRadius: 6, color: '#4285f4', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>📁 Drive</button>
             )}
