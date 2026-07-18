@@ -57,6 +57,7 @@ export const updateHasta = (id, updates) => guard(supabase.from('patients').upda
 export const deleteHasta = (id) => guard(supabase.from('patients').delete().eq('id', id), 'deleteHasta');
 
 export const insertGider = (row) => guard(supabase.from('expenses').insert([row]).select().single(), 'insertGider');
+export const deleteGider = (id) => guard(supabase.from('expenses').delete().eq('id', id), 'deleteGider');
 export const insertAjans = (row) => guard(supabase.from('agencies').insert([row]).select().single(), 'insertAjans');
 
 export const insertReceivable = (row) => guard(supabase.from('receivables').insert([row]).select().single(), 'insertReceivable');
