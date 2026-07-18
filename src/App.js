@@ -717,6 +717,23 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [recForm, setRecForm] = useState({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel' });
   const [form, setForm] = useState({ patient_name: '', surgery_date: '', technique: 'DHI', total_price: '', ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '', notes: '' });
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
+
+  const AY_ISIMLERI = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  const getMonthLabel = (monthKey) => {
+    const [y, m] = monthKey.split('-');
+    return `${AY_ISIMLERI[Number(m) - 1]} ${y}`;
+  };
+  const shiftMonth = (delta) => {
+    const [y, m] = selectedMonth.split('-').map(Number);
+    const d = new Date(y, m - 1 + delta, 1);
+    setSelectedMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  };
+  const getRecordMonth = (p) => (p.surgery_date || p.created_at || '').slice(0, 7);
+  const monthlyPayments = payments.filter((p) => getRecordMonth(p) === selectedMonth);
 
   useEffect(() => {
     (async () => {
@@ -754,11 +771,11 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     setShowAdd(true);
   };
 
-  const totalRevenue = payments.reduce((s, p) => s + Number(p.total_price || 0), 0) + payments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
-  const totalAli = payments.reduce((s, p) => s + Number(p.ali_haydar_fee || 0), 0);
-  const totalYusuf = payments.reduce((s, p) => s + Number(p.yusuf_fee || 0), 0);
-  const totalMete = payments.reduce((s, p) => s + Number(p.mete_fee || 0), 0);
-  const totalSeyit = payments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
+  const totalRevenue = monthlyPayments.reduce((s, p) => s + Number(p.total_price || 0), 0) + monthlyPayments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
+  const totalAli = monthlyPayments.reduce((s, p) => s + Number(p.ali_haydar_fee || 0), 0);
+  const totalYusuf = monthlyPayments.reduce((s, p) => s + Number(p.yusuf_fee || 0), 0);
+  const totalMete = monthlyPayments.reduce((s, p) => s + Number(p.mete_fee || 0), 0);
+  const totalSeyit = monthlyPayments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
   const totalTeam = totalAli + totalYusuf + totalMete + totalSeyit;
   const netProfit = totalRevenue - totalTeam;
 
@@ -827,17 +844,24 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
         ))}
       </div>
 
+      {/* AY SEÇİMİ */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 18, background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '12px 16px' }}>
+        <button onClick={() => shiftMonth(-1)} style={{ padding: '8px 14px', background: '#1a1d30', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 14, cursor: 'pointer', fontWeight: 700 }}>◀</button>
+        <div style={{ color: '#4f7cff', fontWeight: 900, fontSize: 16, minWidth: 160, textAlign: 'center' }}>📅 {getMonthLabel(selectedMonth)}</div>
+        <button onClick={() => shiftMonth(1)} style={{ padding: '8px 14px', background: '#1a1d30', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 14, cursor: 'pointer', fontWeight: 700 }}>▶</button>
+      </div>
+
       {/* HASTA LİSTESİ */}
       <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 18 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div>
-            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>👥 Hasta Ücret Kayıtları</div>
-            <div style={{ color: '#4a5270', fontSize: 11, marginTop: 2 }}>{payments.length} hasta</div>
+            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>👥 Hasta Ücret Kayıtları — {getMonthLabel(selectedMonth)}</div>
+            <div style={{ color: '#4a5270', fontSize: 11, marginTop: 2 }}>{monthlyPayments.length} hasta bu ay</div>
           </div>
           <Btn sm onClick={() => { resetForm(); setEditItem(null); setShowAdd(true); }}>+ Hasta Ekle</Btn>
         </div>
-        {payments.length === 0 ? (
-          <div style={{ color: '#4a5270', fontSize: 12, textAlign: 'center', padding: 30 }}>Henüz kayıt yok.</div>
+        {monthlyPayments.length === 0 ? (
+          <div style={{ color: '#4a5270', fontSize: 12, textAlign: 'center', padding: 30 }}>{getMonthLabel(selectedMonth)} ayında kayıt yok.</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
@@ -849,7 +873,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                 </tr>
               </thead>
               <tbody>
-                {payments.map(p => (
+                {monthlyPayments.map(p => (
                   <tr key={p.id} style={{ borderBottom: '1px solid #1c2035' }}>
                     <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px 10px' }}>{p.patient_name}</td>
                     <td style={{ color: '#4a5270', padding: '10px 10px', whiteSpace: 'nowrap' }}>{fmt(p.surgery_date)}</td>
@@ -871,11 +895,15 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
             </table>
           </div>
         )}
+        <details style={{ marginTop: 14 }}>
+          <summary style={{ color: '#4a5270', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>📦 Arşiv — Tüm Ayların Toplamı ({payments.length} hasta, tüm zamanlar)</summary>
+          <div style={{ color: '#4a5270', fontSize: 11, marginTop: 8 }}>Diğer ayları görmek için yukarıdaki ◀ ▶ ok butonlarını kullanın.</div>
+        </details>
       </div>
 
       {/* NET ÖDEME ÖZETİ (Kişisel Alacaklar Düşülmüş) */}
       <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 14 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14, marginBottom: 14 }}>💵 Net Ödenecek (Kişisel Alacaklar Düşülmüş)</div>
+        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14, marginBottom: 14 }}>💵 Net Ödenecek (Kişisel Alacaklar Düşülmüş) — {getMonthLabel(selectedMonth)}</div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
