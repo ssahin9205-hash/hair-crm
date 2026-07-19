@@ -952,8 +952,10 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const premiumHairRevenue = premiumHairPayments.reduce((s, p) => s + Number(p.total_price || 0), 0);
   const hairIntlRevenue = hairIntlPayments.reduce((s, p) => s + Number(p.total_price || 0), 0);
 
-  const pendingRec = receivables.filter(r => !r.paid);
-  const paidRec = receivables.filter(r => r.paid);
+  const getReceivableDateStr = (r) => r.date_added || r.created_at;
+  const periodReceivables = receivables.filter(r => getPeriodKeyFromDateStr(getReceivableDateStr(r)) === selectedMonth);
+  const pendingRec = periodReceivables.filter(r => !r.paid);
+  const paidRec = periodReceivables.filter(r => r.paid);
   const totalPending = pendingRec.reduce((s, r) => s + Number(r.amount || 0), 0);
 
   const toUSD = (r) => {
@@ -1257,7 +1259,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div>
-            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>📋 Alacaklar</div>
+            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>📋 Alacaklar — {getMonthLabel(selectedMonth)}</div>
             <div style={{ color: '#f97316', fontSize: 11, marginTop: 2 }}>Bekleyen: ₺{totalPending.toLocaleString()}</div>
           </div>
           <Btn sm onClick={() => setShowAddRec(true)}>+ Alacak</Btn>
@@ -1300,11 +1302,11 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       {/* AYLIK MASRAF ÖZETİ (Tüm Zamanlar - Analiz için) */}
       <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 14 }}>
         <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>📅 Aylık Masraf Özeti (Tüm Zamanlar)</div>
-        <div style={{ color: '#4a5270', fontSize: 11, marginBottom: 14 }}>Kişisel harcamalar, avanslar ve tüm alacak kayıtlarının ay ay dökümü — geriye dönük analiz için</div>
+        <div style={{ color: '#4a5270', fontSize: 11, marginBottom: 14 }}>Kişisel harcamalar, avanslar ve tüm alacak kayıtlarının 13'ünden 13'üne dönem dökümü — geriye dönük analiz için</div>
         {(() => {
           const byMonth = {};
           receivables.forEach(r => {
-            const key = (r.date_added || r.created_at || '').slice(0, 7);
+            const key = getPeriodKeyFromDateStr(r.date_added || r.created_at);
             if (!key) return;
             if (!byMonth[key]) byMonth[key] = { total: 0, items: [] };
             byMonth[key].total += Number(r.amount || 0);
@@ -1312,10 +1314,8 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
           });
           const months = Object.keys(byMonth).sort().reverse();
           if (months.length === 0) return <div style={{ color: '#4a5270', fontSize: 12, textAlign: 'center', padding: 10 }}>Henüz kayıt yok.</div>;
-          const AY_ISIMLERI2 = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
           return months.map(mk => {
-            const [y, m] = mk.split('-');
-            const label = `${AY_ISIMLERI2[Number(m) - 1]} ${y}`;
+            const label = getMonthLabel(mk);
             return (
               <details key={mk} style={{ marginBottom: 8 }}>
                 <summary style={{ color: '#dde3ef', fontSize: 12, fontWeight: 700, cursor: 'pointer', padding: '8px 0' }}>
