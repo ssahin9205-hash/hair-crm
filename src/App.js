@@ -734,7 +734,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const [editItem, setEditItem] = useState(null);
   const [showAddRec, setShowAddRec] = useState(false);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
-  const [recForm, setRecForm] = useState({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel' });
+  const [recForm, setRecForm] = useState({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0) });
   const [form, setForm] = useState({ patient_name: '', surgery_date: '', technique: 'DHI', total_price: '', ali_haydar_fee: '', seyit_fee: '', notes: '', kaynak: 'Premium Hair', otherFees: [{ name: '', amount: '' }] });
   const addOtherFeeRow = () => setForm(f => ({ ...f, otherFees: [...f.otherFees, { name: '', amount: '' }] }));
   const removeOtherFeeRow = (idx) => setForm(f => ({ ...f, otherFees: f.otherFees.filter((_, i) => i !== idx) }));
@@ -1025,17 +1025,34 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     doc.save(`Aylik_Rapor_${selectedMonth}.pdf`);
   };
 
+  const [editingRec, setEditingRec] = useState(null);
+
   const saveReceivable = async () => {
     if (!recForm.description || !recForm.amount) return;
     setUploadingReceipt(true);
-    let receiptUrl = null;
+    let receiptUrl = editingRec ? editingRec.receipt_url : null;
     if (recForm.receiptFile) receiptUrl = await uploadReceipt(recForm.receiptFile);
-    const row = { region, description: recForm.description, amount: Number(recForm.amount), currency: recForm.currency, notes: recForm.notes, receipt_url: receiptUrl, paid: false, person: recForm.person || 'Genel' };
-    const saved = await insertReceivable(row);
-    if (saved) setReceivables(rs => [saved, ...rs]);
+    const row = { region, description: recForm.description, amount: Number(recForm.amount), currency: recForm.currency, notes: recForm.notes, receipt_url: receiptUrl, person: recForm.person || 'Genel', date_added: recForm.date || dd(0) };
+    if (editingRec) {
+      const updated = await updateReceivable(editingRec.id, row);
+      if (updated) setReceivables(rs => rs.map(r => r.id === editingRec.id ? updated : r));
+      setEditingRec(null);
+    } else {
+      const saved = await insertReceivable({ ...row, paid: false });
+      if (saved) setReceivables(rs => [saved, ...rs]);
+    }
     setShowAddRec(false);
-    setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel' });
+    setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0) });
     setUploadingReceipt(false);
+  };
+
+  const startEditRec = (r) => {
+    setRecForm({
+      description: r.description || '', amount: r.amount || '', currency: r.currency || 'TRY',
+      notes: r.notes || '', receiptFile: null, person: r.person || 'Genel', date: r.date_added || dd(0),
+    });
+    setEditingRec(r);
+    setShowAddRec(true);
   };
 
   const markPaid = async (rec) => {
@@ -1280,6 +1297,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
             </div>
             <div style={{ color: '#f97316', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'EUR' ? '€' : '₺'}{Number(r.amount).toLocaleString()}</div>
             <button onClick={() => markPaid(r)} style={{ padding: '5px 10px', background: '#22c55e', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Tahsil</button>
+            <button onClick={() => startEditRec(r)} style={{ padding: '5px 8px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 11, cursor: 'pointer' }}>✏️</button>
             <button onClick={() => removeRec(r)} style={{ padding: '5px 8px', background: 'transparent', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>Sil</button>
           </div>
         ))}
@@ -1469,7 +1487,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
 
       {/* ALACAK EKLE MODAL */}
       {showAddRec && (
-        <Modal title="Alacak Ekle" onClose={() => setShowAddRec(false)}>
+        <Modal title={editingRec ? 'Alacağı Düzenle' : 'Alacak Ekle'} onClose={() => { setShowAddRec(false); setEditingRec(null); setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0) }); }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div>
               <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>KİM İÇİN? (kişisel harcama sahibi)</div>
@@ -1494,14 +1512,18 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
               <Inp ph="Tutar *" type="number" val={recForm.amount} set={v => setRecForm(f => ({ ...f, amount: v }))} />
               <Sel val={recForm.currency} set={v => setRecForm(f => ({ ...f, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }, { v: 'SAR', l: 'SAR' }]} />
             </div>
+            <div>
+              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TARİH (hangi döneme ait olacağını belirler)</div>
+              <Inp type="date" ph="" val={recForm.date} set={v => setRecForm(f => ({ ...f, date: v }))} />
+            </div>
             <Inp ph="Notlar" val={recForm.notes} set={v => setRecForm(f => ({ ...f, notes: v }))} />
             <div>
               <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>FİŞ FOTOĞRAFI (opsiyonel)</div>
               <input type="file" accept="image/*" onChange={e => setRecForm(f => ({ ...f, receiptFile: e.target.files[0] }))} style={{ width: '100%', padding: 8, background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12 }} />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <Btn v="s" onClick={() => setShowAddRec(false)}>İptal</Btn>
-              <Btn onClick={saveReceivable} disabled={uploadingReceipt}>{uploadingReceipt ? 'Yükleniyor...' : 'Kaydet'}</Btn>
+              <Btn v="s" onClick={() => { setShowAddRec(false); setEditingRec(null); setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0) }); }}>İptal</Btn>
+              <Btn onClick={saveReceivable} disabled={uploadingReceipt}>{uploadingReceipt ? 'Yükleniyor...' : (editingRec ? 'Güncelle' : 'Kaydet')}</Btn>
             </div>
           </div>
         </Modal>
