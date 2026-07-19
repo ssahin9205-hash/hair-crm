@@ -2681,6 +2681,100 @@ const NAV = [
   { id: 'settings', ico: '⚙️', lbl: 'Ayarlar', perm: 'manage_users' },
 ];
 
+function CurrencyConverterWidget() {
+  const [open, setOpen] = useState(false);
+  const [rate, setRate] = useState(null);
+  const [rateSource, setRateSource] = useState('yükleniyor');
+  const [amount, setAmount] = useState('');
+  const [from, setFrom] = useState('TRY');
+  const SAR_RATE = 3.75;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if (data && data.rates && data.rates.TRY) {
+          setRate(Math.round(data.rates.TRY * 100) / 100);
+          setRateSource('otomatik');
+        } else {
+          setRateSource('bulunamadı');
+        }
+      } catch (e) {
+        setRateSource('bulunamadı');
+      }
+    })();
+  }, []);
+
+  const toUsdBase = (amt, cur) => {
+    if (cur === 'USD') return amt;
+    if (cur === 'SAR') return amt / SAR_RATE;
+    if (cur === 'TRY') return rate ? amt / rate : null;
+    return null;
+  };
+
+  const amt = Number(amount) || 0;
+  const usdBase = toUsdBase(amt, from);
+  const results = {
+    TRY: from === 'TRY' ? amt : (usdBase !== null && rate ? usdBase * rate : null),
+    USD: from === 'USD' ? amt : usdBase,
+    SAR: from === 'SAR' ? amt : (usdBase !== null ? usdBase * SAR_RATE : null),
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(o => !o)}
+        title="Kur Çevirici"
+        style={{
+          position: 'fixed', bottom: 20, right: 20, width: 54, height: 54, borderRadius: '50%',
+          background: '#4f7cff', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer',
+          boxShadow: '0 4px 16px rgba(79,124,255,0.5)', zIndex: 300,
+        }}
+      >💱</button>
+      {open && (
+        <div style={{
+          position: 'fixed', bottom: 84, right: 20, width: 280, background: '#0e1020',
+          border: '1px solid #242840', borderRadius: 16, padding: 18, zIndex: 300,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13 }}>💱 Kur Çevirici</div>
+            <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: '#4a5270', fontSize: 18, cursor: 'pointer' }}>×</button>
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Tutar"
+              style={{ flex: 1, padding: '8px 10px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }}
+            />
+            <select
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              style={{ padding: '8px 10px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13 }}
+            >
+              <option value="TRY">₺ TL</option>
+              <option value="USD">$ USD</option>
+              <option value="SAR">SAR</option>
+            </select>
+          </div>
+          {['TRY', 'USD', 'SAR'].filter(c => c !== from).map(c => (
+            <div key={c} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', background: '#121525', borderRadius: 8, marginBottom: 6 }}>
+              <span style={{ color: '#4a5270', fontSize: 12 }}>{c === 'TRY' ? '₺ TL' : c === 'USD' ? '$ USD' : 'SAR'}</span>
+              <span style={{ color: '#22c55e', fontWeight: 700, fontSize: 13 }}>
+                {results[c] !== null ? results[c].toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}
+              </span>
+            </div>
+          ))}
+          <div style={{ color: '#4a5270', fontSize: 10, marginTop: 8 }}>1$ = {rate ?? '...'} ₺ ({rateSource}) · 1$ = {SAR_RATE} SAR (sabit)</div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function App() {
   const [appUnlocked, setAppUnlocked] = useState(false);
   const [appPass, setAppPass] = useState('');
@@ -2894,6 +2988,7 @@ export default function App() {
         {page === 'logs' && <ActivityLog region={region} />}
         {page === 'settings' && <Settings users={users} setUsers={setUsers} user={user} region={region} />}
       </div>
+      <CurrencyConverterWidget />
     </div>
   );
 }
