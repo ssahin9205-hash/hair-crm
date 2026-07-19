@@ -2817,17 +2817,17 @@ function MarketFisleri({ user, region }) {
   const [showAdd, setShowAdd] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [editingReceipt, setEditingReceipt] = useState(null);
-  const [form, setForm] = useState({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null });
+  const [form, setForm] = useState({ tip: 'market', description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null });
 
   const load = async () => {
     setLoading(true);
     const all = await fetchReceivables(region);
-    setReceipts((all || []).filter(r => r.person === 'Premium Hair (Market)'));
+    setReceipts((all || []).filter(r => r.person === 'Premium Hair (Market)' || r.person === 'Ali Haydar'));
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
 
-  const resetForm = () => setForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null });
+  const resetForm = () => setForm({ tip: 'market', description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null });
 
   const save = async () => {
     if (!form.description || !form.amount) return;
@@ -2841,16 +2841,17 @@ function MarketFisleri({ user, region }) {
         notes: form.notes, receipt_url: receiptUrl,
       });
       if (updated) setReceipts(rs => rs.map(r => r.id === editingReceipt.id ? updated : r));
-      await logAction(user, region, 'Market fişi güncellendi', 'Market', form.description);
+      await logAction(user, region, 'Kayıt güncellendi', 'Market/Avans', form.description);
       setEditingReceipt(null);
     } else {
       const row = {
         region, description: form.description, amount: Number(form.amount), currency: form.currency,
-        notes: form.notes, receipt_url: receiptUrl, paid: false, person: 'Premium Hair (Market)',
+        notes: form.notes, receipt_url: receiptUrl, paid: false,
+        person: form.tip === 'avans' ? 'Ali Haydar' : 'Premium Hair (Market)',
       };
       const saved = await insertReceivable(row);
       if (saved) setReceipts(rs => [saved, ...rs]);
-      await logAction(user, region, 'Market fişi eklendi', 'Market', form.description);
+      await logAction(user, region, form.tip === 'avans' ? 'Avans eklendi' : 'Market fişi eklendi', form.tip === 'avans' ? 'Avans' : 'Market', form.description);
     }
     setShowAdd(false);
     resetForm();
@@ -2858,43 +2859,61 @@ function MarketFisleri({ user, region }) {
   };
 
   const startEdit = (r) => {
-    setForm({ description: r.description || '', amount: r.amount || '', currency: r.currency || 'TRY', notes: r.notes || '', receiptFile: null });
+    setForm({ tip: r.person === 'Ali Haydar' ? 'avans' : 'market', description: r.description || '', amount: r.amount || '', currency: r.currency || 'TRY', notes: r.notes || '', receiptFile: null });
     setEditingReceipt(r);
     setShowAdd(true);
   };
 
   const removeReceipt = async (id) => {
-    if (!window.confirm('Bu fiş silinsin mi?')) return;
+    if (!window.confirm('Bu kayıt silinsin mi?')) return;
     await deleteReceivable(id);
     setReceipts(rs => rs.filter(r => r.id !== id));
   };
 
-  const pending = receipts.filter(r => !r.paid);
-  const paid = receipts.filter(r => r.paid);
+  const marketReceipts = receipts.filter(r => r.person === 'Premium Hair (Market)');
+  const avansReceipts = receipts.filter(r => r.person === 'Ali Haydar');
+  const pending = marketReceipts.filter(r => !r.paid);
+  const paid = marketReceipts.filter(r => r.paid);
+  const avansPending = avansReceipts.filter(r => !r.paid);
+  const avansPaid = avansReceipts.filter(r => r.paid);
   const totalPendingTRY = pending.filter(r => (r.currency || 'TRY') === 'TRY').reduce((s, r) => s + Number(r.amount || 0), 0);
   const totalPendingUSD = pending.filter(r => r.currency === 'USD').reduce((s, r) => s + Number(r.amount || 0), 0);
   const totalPendingSAR = pending.filter(r => r.currency === 'SAR').reduce((s, r) => s + Number(r.amount || 0), 0);
+  const avansTotalTRY = avansPending.filter(r => (r.currency || 'TRY') === 'TRY').reduce((s, r) => s + Number(r.amount || 0), 0);
+  const avansTotalUSD = avansPending.filter(r => r.currency === 'USD').reduce((s, r) => s + Number(r.amount || 0), 0);
+  const avansTotalSAR = avansPending.filter(r => r.currency === 'SAR').reduce((s, r) => s + Number(r.amount || 0), 0);
 
   if (loading) return <div style={{ color: '#7A7062', padding: 30 }}>Yükleniyor...</div>;
 
   return (
     <div>
-      <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900, marginBottom: 6 }}>🛒 Market Fişleri</div>
-      <div style={{ color: '#7A7062', fontSize: 12, marginBottom: 18 }}>Premium Hair adına yapılan market alışverişlerinin fişleri</div>
+      <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900, marginBottom: 6 }}>🛒 Market Fişleri & Avans</div>
+      <div style={{ color: '#7A7062', fontSize: 12, marginBottom: 18 }}>Premium Hair adına yapılan market alışverişleri ve kendi avanslarınız</div>
 
-      <div style={{ background: 'rgba(107,143,94,0.1)', border: '1px solid #6B8F5E44', borderRadius: 12, padding: 18, marginBottom: 18, textAlign: 'center' }}>
-        <div style={{ color: '#7A7062', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>BEKLEYEN ALACAK (Premium Hair'den)</div>
-        <div style={{ color: '#6B8F5E', fontSize: 22, fontWeight: 900, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {totalPendingTRY > 0 && <span>₺{totalPendingTRY.toLocaleString()}</span>}
-          {totalPendingUSD > 0 && <span>${totalPendingUSD.toLocaleString()}</span>}
-          {totalPendingSAR > 0 && <span>SAR {totalPendingSAR.toLocaleString()}</span>}
-          {totalPendingTRY === 0 && totalPendingUSD === 0 && totalPendingSAR === 0 && <span>0</span>}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
+        <div style={{ background: 'rgba(107,143,94,0.1)', border: '1px solid #6B8F5E44', borderRadius: 12, padding: 16, textAlign: 'center' }}>
+          <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700, marginBottom: 6 }}>BEKLEYEN ALACAK (Premium Hair'den)</div>
+          <div style={{ color: '#6B8F5E', fontSize: 18, fontWeight: 900, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {totalPendingTRY > 0 && <span>₺{totalPendingTRY.toLocaleString()}</span>}
+            {totalPendingUSD > 0 && <span>${totalPendingUSD.toLocaleString()}</span>}
+            {totalPendingSAR > 0 && <span>SAR {totalPendingSAR.toLocaleString()}</span>}
+            {totalPendingTRY === 0 && totalPendingUSD === 0 && totalPendingSAR === 0 && <span>0</span>}
+          </div>
+        </div>
+        <div style={{ background: 'rgba(193,85,74,0.08)', border: '1px solid #C1554A44', borderRadius: 12, padding: 16, textAlign: 'center' }}>
+          <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700, marginBottom: 6 }}>ALDIĞIM AVANS (Seyit'e Borcum)</div>
+          <div style={{ color: '#C1554A', fontSize: 18, fontWeight: 900, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {avansTotalTRY > 0 && <span>₺{avansTotalTRY.toLocaleString()}</span>}
+            {avansTotalUSD > 0 && <span>${avansTotalUSD.toLocaleString()}</span>}
+            {avansTotalSAR > 0 && <span>SAR {avansTotalSAR.toLocaleString()}</span>}
+            {avansTotalTRY === 0 && avansTotalUSD === 0 && avansTotalSAR === 0 && <span>0</span>}
+          </div>
         </div>
       </div>
 
-      <Btn onClick={() => { resetForm(); setEditingReceipt(null); setShowAdd(true); }} full>+ Yeni Fiş Ekle</Btn>
+      <Btn onClick={() => { resetForm(); setEditingReceipt(null); setShowAdd(true); }} full>+ Yeni Kayıt Ekle</Btn>
 
-      <div style={{ marginTop: 20, color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Bekleyen Fişler</div>
+      <div style={{ marginTop: 20, color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>🛒 Bekleyen Market Fişleri</div>
       {pending.length === 0 ? (
         <div style={{ color: '#7A7062', fontSize: 12, textAlign: 'center', padding: 20 }}>Bekleyen fiş yok.</div>
       ) : pending.map(r => (
@@ -2914,12 +2933,32 @@ function MarketFisleri({ user, region }) {
         </div>
       ))}
 
-      {paid.length > 0 && (
+      <div style={{ marginTop: 20, color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>💰 Aldığım Avanslar</div>
+      {avansPending.length === 0 ? (
+        <div style={{ color: '#7A7062', fontSize: 12, textAlign: 'center', padding: 20 }}>Kayıtlı avans yok.</div>
+      ) : avansPending.map(r => (
+        <div key={r.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '12px 14px', marginBottom: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <div style={{ color: '#33302A', fontWeight: 700, fontSize: 13 }}>{r.description}</div>
+              <div style={{ color: '#7A7062', fontSize: 11 }}>{fmt(r.date_added || r.created_at)} {r.notes && `· ${r.notes}`}</div>
+              {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#7E9A89', fontSize: 11 }}>📷 Fişi Gör</a>}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ color: '#C1554A', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
+              <button onClick={() => startEdit(r)} style={{ padding: '4px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>✏️</button>
+              <button onClick={() => removeReceipt(r.id)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {(paid.length > 0 || avansPaid.length > 0) && (
         <details style={{ marginTop: 16 }}>
-          <summary style={{ color: '#6B8F5E', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>✅ Ödenmiş Fişler ({paid.length})</summary>
-          {paid.map(r => (
+          <summary style={{ color: '#6B8F5E', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>✅ Kapanmış Kayıtlar ({paid.length + avansPaid.length})</summary>
+          {[...paid, ...avansPaid].map(r => (
             <div key={r.id} style={{ background: '#F1EBDE', borderLeft: '3px solid #6B8F5E', borderRadius: 6, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
-              <div style={{ color: '#33302A', fontSize: 12 }}>{r.description}</div>
+              <div style={{ color: '#33302A', fontSize: 12 }}>{r.person === 'Ali Haydar' ? '💰' : '🛒'} {r.description}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
                 <button onClick={() => startEdit(r)} style={{ padding: '3px 7px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 10, cursor: 'pointer' }}>✏️</button>
@@ -2930,9 +2969,16 @@ function MarketFisleri({ user, region }) {
       )}
 
       {showAdd && (
-        <Modal title={editingReceipt ? 'Market Fişini Düzenle' : 'Market Fişi Ekle'} onClose={() => { setShowAdd(false); setEditingReceipt(null); resetForm(); }}>
+        <Modal title={editingReceipt ? 'Kaydı Düzenle' : 'Yeni Kayıt Ekle'} onClose={() => { setShowAdd(false); setEditingReceipt(null); resetForm(); }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <Inp ph="Ne alındı? (açıklama) *" val={form.description} set={v => setForm(f => ({ ...f, description: v }))} />
+            <div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 6 }}>NE İÇİN?</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="button" onClick={() => setForm(f => ({ ...f, tip: 'market' }))} style={{ flex: 1, padding: '10px', borderRadius: 8, border: `1px solid ${form.tip === 'market' ? '#6B8F5E' : '#E3D9C7'}`, background: form.tip === 'market' ? 'rgba(107,143,94,0.12)' : '#FFFFFF', color: form.tip === 'market' ? '#6B8F5E' : '#7A7062', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>🛒 Market Fişi</button>
+                <button type="button" onClick={() => setForm(f => ({ ...f, tip: 'avans' }))} style={{ flex: 1, padding: '10px', borderRadius: 8, border: `1px solid ${form.tip === 'avans' ? '#C1554A' : '#E3D9C7'}`, background: form.tip === 'avans' ? 'rgba(193,85,74,0.1)' : '#FFFFFF', color: form.tip === 'avans' ? '#C1554A' : '#7A7062', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>💰 Avans Aldım</button>
+              </div>
+            </div>
+            <Inp ph={form.tip === 'avans' ? 'Açıklama * (örn: Seyit\'ten avans)' : 'Ne alındı? (açıklama) *'} val={form.description} set={v => setForm(f => ({ ...f, description: v }))} />
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8 }}>
               <Inp ph="Tutar *" type="number" val={form.amount} set={v => setForm(f => ({ ...f, amount: v }))} />
               <Sel val={form.currency} set={v => setForm(f => ({ ...f, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }, { v: 'SAR', l: 'SAR ﷼' }]} />
