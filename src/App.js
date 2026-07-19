@@ -50,6 +50,10 @@ import {
   updateMedikalSatis,
   deleteMedikalSatis,
   fetchMedikalGiderler,
+  fetchPremiumHairLedger,
+  insertPremiumHairLedger,
+  updatePremiumHairLedger,
+  deletePremiumHairLedger,
   insertMedikalGider,
   deleteMedikalGider,
   fetchMedikalTeklifler,
@@ -887,13 +891,58 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     });
   })();
 
+  const [ledgerEntries, setLedgerEntries] = useState([]);
+  const [showLedgerAdd, setShowLedgerAdd] = useState(false);
+  const [showLedgerOpening, setShowLedgerOpening] = useState(false);
+  const [ledgerForm, setLedgerForm] = useState({ amount: '', currency: 'USD', date: dd(0), notes: '' });
+  const [ledgerOpeningForm, setLedgerOpeningForm] = useState({ amount: '', currency: 'USD', date: dd(0), notes: '' });
+
   useEffect(() => {
     (async () => {
       const data = await fetchPatientPayments('suudi');
       setPayments(data || []);
       await loadKisiselGiderler();
+      const ledgerData = await fetchPremiumHairLedger();
+      setLedgerEntries(ledgerData || []);
     })();
   }, []);
+
+  const openingEntry = ledgerEntries.find(e => e.type === 'acilis');
+  const paymentEntries = ledgerEntries.filter(e => e.type === 'odeme');
+  const ledgerHastaGeliri = openingEntry
+    ? payments.filter(p => (p.kaynak || 'Premium Hair') === 'Premium Hair' && p.surgery_date && p.surgery_date >= openingEntry.date)
+        .reduce((s, p) => s + Number(p.total_price || 0), 0)
+    : 0;
+  const ledgerOdemeAlinan = paymentEntries.reduce((s, e) => s + toUSD(e), 0);
+  const ledgerNetBorc = (openingEntry ? Number(openingEntry.amount || 0) : 0) + ledgerHastaGeliri - ledgerOdemeAlinan;
+
+  const saveLedgerOpening = async () => {
+    if (ledgerOpeningForm.amount === '') return;
+    const row = { type: 'acilis', amount: Number(ledgerOpeningForm.amount) || 0, currency: ledgerOpeningForm.currency, date: ledgerOpeningForm.date, notes: ledgerOpeningForm.notes };
+    if (openingEntry) {
+      const updated = await updatePremiumHairLedger(openingEntry.id, row);
+      if (updated) setLedgerEntries(es => es.map(e => e.id === openingEntry.id ? updated : e));
+    } else {
+      const saved = await insertPremiumHairLedger(row);
+      if (saved) setLedgerEntries(es => [...es, saved]);
+    }
+    setShowLedgerOpening(false);
+  };
+
+  const saveLedgerPayment = async () => {
+    if (!ledgerForm.amount) return;
+    const row = { type: 'odeme', amount: Number(ledgerForm.amount) || 0, currency: ledgerForm.currency, date: ledgerForm.date, notes: ledgerForm.notes };
+    const saved = await insertPremiumHairLedger(row);
+    if (saved) setLedgerEntries(es => [...es, saved]);
+    setShowLedgerAdd(false);
+    setLedgerForm({ amount: '', currency: 'USD', date: dd(0), notes: '' });
+  };
+
+  const removeLedgerPayment = async (id) => {
+    if (!window.confirm('Bu ödeme kaydı silinsin mi?')) return;
+    await deletePremiumHairLedger(id);
+    setLedgerEntries(es => es.filter(e => e.id !== id));
+  };
 
   const resetForm = () => setForm({ patient_name: '', surgery_date: '', technique: 'DHI', total_price: '', ali_haydar_fee: '', seyit_fee: '', notes: '', kaynak: 'Premium Hair', otherFees: [{ name: '', amount: '' }] });
 
@@ -1121,6 +1170,99 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
         />
         <span style={{ color: '#7A7062', fontSize: 12 }}>₺ ({rateSource}) · 1$ = {SAR_USD_RATE} SAR (sabit)</span>
       </div>
+
+      {/* PREMIUM HAIR GENEL HESABI (kümülatif, dönemden bağımsız) */}
+      <div style={{ background: 'rgba(126,154,137,0.08)', border: '1px solid #7E9A8944', borderRadius: 12, padding: 18, marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+          <div style={{ color: '#7E9A89', fontWeight: 900, fontSize: 15 }}>🏢 Premium Hair Genel Hesabı (Tüm Zamanlar)</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Btn v="s" sm onClick={() => { setLedgerOpeningForm(openingEntry ? { amount: openingEntry.amount, currency: openingEntry.currency, date: openingEntry.date, notes: openingEntry.notes || '' } : { amount: '', currency: 'USD', date: dd(0), notes: '' }); setShowLedgerOpening(true); }}>
+              {openingEntry ? '✏️ Açılışı Düzenle' : '+ Açılış Bakiyesi Gir'}
+            </Btn>
+            <Btn sm onClick={() => setShowLedgerAdd(true)}>+ Ödeme Aldım</Btn>
+          </div>
+        </div>
+
+        {!openingEntry ? (
+          <div style={{ color: '#7A7062', fontSize: 12, textAlign: 'center', padding: 10 }}>Önce "Açılış Bakiyesi Gir" ile eski hesaptan kalan borcu ve tarihini girin.</div>
+        ) : (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10, marginBottom: 14 }}>
+              <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>AÇILIŞ BAKİYESİ ({fmt(openingEntry.date)}'den)</div>
+                <div style={{ color: '#33302A', fontWeight: 800, fontSize: 16 }}>{openingEntry.currency === 'USD' ? '$' : openingEntry.currency === 'SAR' ? 'SAR ' : '₺'}{Number(openingEntry.amount).toLocaleString()}</div>
+              </div>
+              <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>HASTA GELİRİ ({fmt(openingEntry.date)}'den bugüne)</div>
+                <div style={{ color: '#6B8F5E', fontWeight: 800, fontSize: 16 }}>+${ledgerHastaGeliri.toLocaleString()}</div>
+              </div>
+              <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>ALINAN ÖDEME (TOPLAM)</div>
+                <div style={{ color: '#C1554A', fontWeight: 800, fontSize: 16 }}>-${ledgerOdemeAlinan.toLocaleString()}</div>
+              </div>
+              <div style={{ background: '#FFFFFF', border: '2px solid #7E9A89', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>GÜNCEL NET BORÇ</div>
+                <div style={{ color: ledgerNetBorc >= 0 ? '#7E9A89' : '#C1554A', fontWeight: 900, fontSize: 18 }}>${ledgerNetBorc.toLocaleString()}</div>
+              </div>
+            </div>
+
+            {paymentEntries.length > 0 && (
+              <details>
+                <summary style={{ color: '#7A7062', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>💵 Alınan Ödemeler ({paymentEntries.length})</summary>
+                {paymentEntries.slice().reverse().map(e => (
+                  <div key={e.id} style={{ background: '#FFFFFF', borderRadius: 8, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6, border: '1px solid #E3D9C7' }}>
+                    <div>
+                      <div style={{ color: '#33302A', fontSize: 12, fontWeight: 700 }}>{fmt(e.date)} {e.notes && `· ${e.notes}`}</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 13 }}>{e.currency === 'USD' ? '$' : e.currency === 'SAR' ? 'SAR ' : '₺'}{Number(e.amount).toLocaleString()}</div>
+                      <button onClick={() => removeLedgerPayment(e.id)} style={{ padding: '3px 7px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 10, cursor: 'pointer' }}>🗑</button>
+                    </div>
+                  </div>
+                ))}
+              </details>
+            )}
+          </>
+        )}
+      </div>
+
+      {showLedgerOpening && (
+        <Modal title="Açılış Bakiyesi" onClose={() => setShowLedgerOpening(false)}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ color: '#7A7062', fontSize: 11 }}>Bu tarihten önceki tüm eski hesap kapanır, bu tarihten sonraki Premium Hair hastaları otomatik eklenir.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8 }}>
+              <Inp ph="Tutar *" type="number" val={ledgerOpeningForm.amount} set={v => setLedgerOpeningForm(f => ({ ...f, amount: v }))} />
+              <Sel val={ledgerOpeningForm.currency} set={v => setLedgerOpeningForm(f => ({ ...f, currency: v }))} opts={[{ v: 'USD', l: '$ USD' }, { v: 'TRY', l: '₺ TL' }, { v: 'SAR', l: 'SAR' }]} />
+            </div>
+            <div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>TARİH (bu tarihten itibaren hasta gelirleri sayılır)</div>
+              <Inp type="date" ph="" val={ledgerOpeningForm.date} set={v => setLedgerOpeningForm(f => ({ ...f, date: v }))} />
+            </div>
+            <Inp ph="Not (opsiyonel)" val={ledgerOpeningForm.notes} set={v => setLedgerOpeningForm(f => ({ ...f, notes: v }))} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Btn v="s" onClick={() => setShowLedgerOpening(false)}>İptal</Btn>
+              <Btn onClick={saveLedgerOpening}>Kaydet</Btn>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {showLedgerAdd && (
+        <Modal title="Premium Hair'den Ödeme Aldım" onClose={() => setShowLedgerAdd(false)}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8 }}>
+              <Inp ph="Tutar *" type="number" val={ledgerForm.amount} set={v => setLedgerForm(f => ({ ...f, amount: v }))} />
+              <Sel val={ledgerForm.currency} set={v => setLedgerForm(f => ({ ...f, currency: v }))} opts={[{ v: 'USD', l: '$ USD' }, { v: 'TRY', l: '₺ TL' }, { v: 'SAR', l: 'SAR' }]} />
+            </div>
+            <Inp type="date" ph="" val={ledgerForm.date} set={v => setLedgerForm(f => ({ ...f, date: v }))} />
+            <Inp ph="Not (opsiyonel)" val={ledgerForm.notes} set={v => setLedgerForm(f => ({ ...f, notes: v }))} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Btn v="s" onClick={() => setShowLedgerAdd(false)}>İptal</Btn>
+              <Btn onClick={saveLedgerPayment}>Kaydet</Btn>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* ÖZET KARTLAR */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10, marginBottom: 18 }}>
