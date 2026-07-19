@@ -769,9 +769,22 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   }, []);
   const SAR_USD_RATE = 3.75;
   const [kisiselGiderler, setKisiselGiderler] = useState([]);
+  // 13'ünden 13'üne dönem mantığı - hasta hesabıyla aynı sistem
+  const getPeriodKeyFromDateStr = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    let year = d.getFullYear();
+    let month = d.getMonth();
+    if (d.getDate() < 13) {
+      month -= 1;
+      if (month < 0) { month = 11; year -= 1; }
+    }
+    return `${year}-${String(month + 1).padStart(2, '0')}`;
+  };
   const [showAddGider, setShowAddGider] = useState(false);
   const [uploadingGider, setUploadingGider] = useState(false);
-  const [giderForm, setGiderForm] = useState({ desc: '', amount: '', currency: 'TRY', cat: 'Uçak Bileti', date: dd(0), receiptFile: null });
+  const [giderForm, setGiderForm] = useState({ desc: '', amount: '', currency: 'TRY', cat: 'Uçak Bileti', date: dd(0), receiptFile: null, person: 'Seyit' });
 
   const loadKisiselGiderler = async () => {
     const data = await fetchGiderler('suudi');
@@ -783,11 +796,11 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     setUploadingGider(true);
     let receiptUrl = null;
     if (giderForm.receiptFile) receiptUrl = await uploadReceipt(giderForm.receiptFile);
-    const row = { cat: giderForm.cat, desc: giderForm.desc, amount: Number(giderForm.amount), currency: giderForm.currency, date: giderForm.date, receipt_url: receiptUrl, region: 'suudi' };
+    const row = { cat: giderForm.cat, desc: giderForm.desc, amount: Number(giderForm.amount), currency: giderForm.currency, date: giderForm.date, receipt_url: receiptUrl, region: 'suudi', person: giderForm.person || 'Seyit' };
     const saved = await insertGider(row);
     if (saved) setKisiselGiderler(gs => [saved, ...gs]);
     setShowAddGider(false);
-    setGiderForm({ desc: '', amount: '', currency: 'TRY', cat: 'Uçak Bileti', date: dd(0), receiptFile: null });
+    setGiderForm({ desc: '', amount: '', currency: 'TRY', cat: 'Uçak Bileti', date: dd(0), receiptFile: null, person: 'Seyit' });
     setUploadingGider(false);
   };
 
@@ -951,15 +964,19 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     if (cur === 'TRY') return usdTryRate ? amt / usdTryRate : amt;
     return amt;
   };
-  const pendingAli = pendingRec.filter(r => normKey(r.person) === 'ali haydar').reduce((s, r) => s + toUSD(r), 0);
-  const pendingSeyit = pendingRec.filter(r => normKey(r.person) === 'seyit').reduce((s, r) => s + toUSD(r), 0);
+  const giderFor = (name) => kisiselGiderler
+    .filter(g => getPeriodKeyFromDateStr(g.date) === selectedMonth && normKey(g.person) === normKey(name))
+    .reduce((s, g) => s + toUSD(g), 0);
+
+  const pendingAli = pendingRec.filter(r => normKey(r.person) === 'ali haydar').reduce((s, r) => s + toUSD(r), 0) + giderFor('Ali Haydar');
+  const pendingSeyit = pendingRec.filter(r => normKey(r.person) === 'seyit').reduce((s, r) => s + toUSD(r), 0) + giderFor('Seyit');
   const pendingPremiumHair = pendingRec.filter(r => r.person === 'Premium Hair (Market)').reduce((s, r) => s + toUSD(r), 0);
   const pendingGenel = pendingRec.filter(r => !r.person || r.person === 'Genel').reduce((s, r) => s + toUSD(r), 0);
 
   const netAli = totalAli - pendingAli;
   const netSeyit = totalSeyit - pendingSeyit;
   const otherTeamRows = Object.values(otherFeeByName).map(({ display, total, count }) => {
-    const pending = pendingRec.filter(r => normKey(r.person) === normKey(display)).reduce((s, r) => s + toUSD(r), 0);
+    const pending = pendingRec.filter(r => normKey(r.person) === normKey(display)).reduce((s, r) => s + toUSD(r), 0) + giderFor(display);
     return { name: display, earned: total, count, pending, net: total - pending };
   });
 
@@ -1173,7 +1190,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #1c2035' }}>
-                {['Kişi', 'Vaka Sayısı', 'Hak Ediş', 'Alacak/Verecek (Avans, Market vs.)', 'Net Ödenecek'].map(h => (
+                {['Kişi', 'Vaka Sayısı', 'Hak Ediş', 'Alacak/Verecek (Avans, Market, Kişisel Gider vs.)', 'Net Ödenecek'].map(h => (
                   <th key={h} style={{ color: '#4a5270', fontWeight: 700, padding: '8px 10px', textAlign: 'left' }}>{h}</th>
                 ))}
               </tr>
@@ -1205,6 +1222,35 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
             🛒 Premium Hair'den Alacağımız: ${pendingPremiumHair.toLocaleString()} (market giderleri, ay sonu hesaplaşmada netleşir)
           </div>
         )}
+      </div>
+
+      {/* SEYİT'İN AYLIK HESAP ÖZETİ */}
+      <div style={{ background: 'rgba(155,89,247,0.08)', border: '1px solid #9333ea44', borderRadius: 12, padding: 18, marginBottom: 14 }}>
+        <div style={{ color: '#a855f7', fontWeight: 900, fontSize: 15, marginBottom: 14 }}>👑 Seyit'in Aylık Hesap Özeti — {getMonthLabel(selectedMonth)}</div>
+        {(() => {
+          const seyitGiderTotal = giderFor('Seyit');
+          const seyitAlacakTotal = pendingRec.filter(r => normKey(r.person) === 'seyit').reduce((s, r) => s + toUSD(r), 0);
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9333ea22' }}>
+                <span style={{ color: '#dde3ef', fontSize: 13 }}>Hak Ediş ({caseCountSeyit} vaka)</span>
+                <span style={{ color: '#22c55e', fontWeight: 700, fontSize: 13 }}>+${totalSeyit.toLocaleString()}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9333ea22' }}>
+                <span style={{ color: '#dde3ef', fontSize: 13 }}>Kişisel Giderler (uçak bileti vb.)</span>
+                <span style={{ color: seyitGiderTotal > 0 ? '#f04040' : '#4a5270', fontWeight: 700, fontSize: 13 }}>{seyitGiderTotal > 0 ? `-$${seyitGiderTotal.toLocaleString()}` : '-'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9333ea22' }}>
+                <span style={{ color: '#dde3ef', fontSize: 13 }}>Diğer Alacaklar (Avans vb.)</span>
+                <span style={{ color: seyitAlacakTotal > 0 ? '#f04040' : '#4a5270', fontWeight: 700, fontSize: 13 }}>{seyitAlacakTotal > 0 ? `-$${seyitAlacakTotal.toLocaleString()}` : '-'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 0 0' }}>
+                <span style={{ color: '#dde3ef', fontWeight: 900, fontSize: 15 }}>NET TOPLAM</span>
+                <span style={{ color: netSeyit >= 0 ? '#22c55e' : '#f04040', fontWeight: 900, fontSize: 20 }}>${netSeyit.toLocaleString()}</span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ALACAKLAR */}
@@ -1294,43 +1340,63 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       <div style={{ background: '#121525', border: '1px solid #9333ea44', borderRadius: 12, padding: 18, marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <div>
-            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>✈️ Kişisel Giderler (Karşılıksız)</div>
-            <div style={{ color: '#4a5270', fontSize: 11, marginTop: 2 }}>Uçak bileti vb. — geri alınmayan masraflar. Bu tutarlar hasta gelir/kâr hesabına dahil edilmez, sadece kayıt/analiz amaçlıdır.</div>
+            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>✈️ Kişisel Giderler (Karşılıksız) — {getMonthLabel(selectedMonth)}</div>
+            <div style={{ color: '#4a5270', fontSize: 11, marginTop: 2 }}>Uçak bileti vb. — geri alınmayan masraflar. Bu tutarlar hasta gelir/kâr hesabına dahil edilmez, sadece kayıt/analiz amaçlıdır. Yukarıdaki ana dönem seçimine (13'ünden 13'üne) göre gruplanır.</div>
           </div>
           <Btn sm v="s" onClick={() => setShowAddGider(true)}>+ Gider Ekle</Btn>
         </div>
-        <div style={{ marginTop: 12, color: '#a855f7', fontWeight: 900, fontSize: 16 }}>
-          Toplam: ₺{kisiselGiderler.filter(g => (g.currency || 'TRY') === 'TRY').reduce((s, g) => s + Number(g.amount || 0), 0).toLocaleString()}
-          {' + '}
-          ${kisiselGiderler.filter(g => g.currency === 'USD').reduce((s, g) => s + Number(g.amount || 0), 0).toLocaleString()}
-        </div>
-        <div style={{ marginTop: 12 }}>
-          {kisiselGiderler.length === 0 ? (
-            <div style={{ color: '#4a5270', fontSize: 12, textAlign: 'center', padding: 16 }}>Henüz kayıt yok.</div>
-          ) : kisiselGiderler.map(g => (
-            <div key={g.id} style={{ background: '#1a1d30', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div>
-                <div style={{ color: '#dde3ef', fontSize: 13, fontWeight: 700 }}>{g.desc} <span style={{ color: '#4a5270', fontSize: 10 }}>({g.cat})</span></div>
-                <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(g.date)}</div>
-                {g.receipt_url && <a href={g.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#4f7cff', fontSize: 11 }}>📷 Fiş</a>}
+
+        {(() => {
+          const monthlyGiderler = kisiselGiderler.filter(g => getPeriodKeyFromDateStr(g.date) === selectedMonth);
+          const totalTRY = monthlyGiderler.filter(g => (g.currency || 'TRY') === 'TRY').reduce((s, g) => s + Number(g.amount || 0), 0);
+          const totalUSD = monthlyGiderler.filter(g => g.currency === 'USD').reduce((s, g) => s + Number(g.amount || 0), 0);
+          return (
+            <>
+              <div style={{ color: '#a855f7', fontWeight: 900, fontSize: 16, margin: '12px 0' }}>
+                Bu Dönem Toplam: ₺{totalTRY.toLocaleString()} {' + '} ${totalUSD.toLocaleString()}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ color: '#a855f7', fontWeight: 800 }}>{g.currency === 'USD' ? '$' : '₺'}{Number(g.amount).toLocaleString()}</div>
-                <button onClick={() => removeKisiselGider(g.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
-              </div>
-            </div>
-          ))}
-        </div>
+              {monthlyGiderler.length === 0 ? (
+                <div style={{ color: '#4a5270', fontSize: 12, textAlign: 'center', padding: 16 }}>{getMonthLabel(selectedMonth)} döneminde kayıt yok.</div>
+              ) : monthlyGiderler.map(g => (
+                <div key={g.id} style={{ background: '#1a1d30', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div>
+                    <div style={{ color: '#dde3ef', fontSize: 13, fontWeight: 700 }}>{g.desc} <span style={{ color: '#4a5270', fontSize: 10 }}>({g.cat})</span></div>
+                    <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(g.date)}</div>
+                    {g.receipt_url && <a href={g.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#4f7cff', fontSize: 11 }}>📷 Fiş</a>}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ color: '#a855f7', fontWeight: 800 }}>{g.currency === 'USD' ? '$' : '₺'}{Number(g.amount).toLocaleString()}</div>
+                    <button onClick={() => removeKisiselGider(g.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+                  </div>
+                </div>
+              ))}
+            </>
+          );
+        })()}
       </div>
 
       {showAddGider && (
         <Modal title="Kişisel Gider Ekle" onClose={() => setShowAddGider(false)}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div>
+              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>KİME AİT? (hesabından düşülecek kişi)</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+                {['Seyit', 'Ali Haydar', ...Object.values(otherFeeByName).map(v => v.display)].map(p => (
+                  <button key={p} type="button" onClick={() => setGiderForm(f => ({ ...f, person: p }))} style={{ padding: '6px 12px', borderRadius: 20, border: `1px solid ${giderForm.person === p ? '#a855f7' : '#1c2035'}`, background: giderForm.person === p ? 'rgba(168,85,247,0.15)' : '#121525', color: giderForm.person === p ? '#a855f7' : '#9ba8bc', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{p}</button>
+                ))}
+              </div>
+              <input
+                value={giderForm.person}
+                onChange={(e) => setGiderForm(f => ({ ...f, person: e.target.value }))}
+                placeholder="Ya da başka bir isim yazın"
+                style={{ width: '100%', padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }}
+              />
+            </div>
             <Sel val={giderForm.cat} set={v => setGiderForm(f => ({ ...f, cat: v }))} opts={['Uçak Bileti', 'Konaklama', 'Ulaşım', 'Yemek', 'Diğer']} />
             <Inp ph="Açıklama * (örn: Mete'ye uçak bileti)" val={giderForm.desc} set={v => setGiderForm(f => ({ ...f, desc: v }))} />
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8 }}>
               <Inp ph="Tutar *" type="number" val={giderForm.amount} set={v => setGiderForm(f => ({ ...f, amount: v }))} />
-              <Sel val={giderForm.currency} set={v => setGiderForm(f => ({ ...f, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }]} />
+              <Sel val={giderForm.currency} set={v => setGiderForm(f => ({ ...f, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }, { v: 'SAR', l: 'SAR ﷼' }]} />
             </div>
             <Inp type="date" ph="" val={giderForm.date} set={v => setGiderForm(f => ({ ...f, date: v }))} />
             <div>
