@@ -19,6 +19,7 @@ import {
   deleteKullanici,
   insertLog,
   fetchLogs,
+  fetchReceivables,
   insertReceivable,
   updateReceivable,
   deleteReceivable,
