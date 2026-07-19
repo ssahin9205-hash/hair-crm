@@ -1,10 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import jsPDF from 'jspdf';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   fetchAll,
+  fetchLiderler,
   insertLider,
   updateLider,
   deleteLider,
+  fetchHastalar,
   insertHasta,
   updateHasta,
   deleteHasta,
@@ -339,6 +342,7 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
   const [uploading, setUploading] = useState(false);
   const [lightboxIdx, setLightboxIdx] = useState(null);
   const [lastUpload, setLastUpload] = useState(null);
+  const [search, setSearch] = useState('');
   const [form, setForm] = useState({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', alim_kisi: '', kanal_kisi: '', ekim_kisi: '', feeRows: [{ name: '', amount: '' }] });
   const addFeeRow = () => setForm(f => ({ ...f, feeRows: [...f.feeRows, { name: '', amount: '' }] }));
   const quickAddFeePerson = (name) => setForm(f => {
@@ -354,6 +358,13 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
 
   const save = async () => {
     if (!form.name) return;
+    if (!editingPatient) {
+      const dup = patients.find(p => p.name.trim().toLowerCase() === form.name.trim().toLowerCase() && p.surgeryDate === form.surgeryDate);
+      if (dup) {
+        const proceed = window.confirm(`"${form.name}" isimli ve ${fmt(form.surgeryDate)} tarihli bir hasta zaten kayıtlı. Yine de eklensin mi?`);
+        if (!proceed) return;
+      }
+    }
     const tp = Number(form.totalPrice) || 0, dep = Number(form.deposit) || 0;
     const validFees = form.feeRows.filter(r => r.name && Number(r.amount) > 0);
     const feeSummary = validFees.map(r => `${r.name}: $${r.amount}`).join(', ');
@@ -558,8 +569,13 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
         <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900 }}>💎 Hastalar</div>
         {can(user, 'edit_patients') && <Btn onClick={() => setShowAdd(true)} sm>+ Hasta Ekle</Btn>}
       </div>
+      <Inp ph="🔍 İsim veya tarih ile ara (örn: Ahmet veya 2026-07-15)..." val={search} set={setSearch} style={{ marginBottom: 14 }} />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 12 }}>
-        {patients.map((p) => (
+        {patients.filter(p => {
+          if (!search) return true;
+          const q = search.toLowerCase();
+          return (p.name || '').toLowerCase().includes(q) || (p.surgeryDate || '').includes(q) || fmt(p.surgeryDate).includes(q);
+        }).map((p) => (
           <div key={p.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, position: 'relative' }}>
             {can(user, 'edit_patients') && (
               <>
@@ -810,6 +826,29 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   };
   const monthlyPayments = payments.filter((p) => getRecordMonth(p) === selectedMonth);
 
+  const trendData = (() => {
+    const byPeriod = {};
+    payments.forEach(p => {
+      const key = getRecordMonth(p);
+      if (!key) return;
+      if (!byPeriod[key]) byPeriod[key] = { revenue: 0, cost: 0, count: 0 };
+      byPeriod[key].revenue += Number(p.total_price || 0) + Number(p.seyit_fee || 0);
+      byPeriod[key].cost += Number(p.ali_haydar_fee || 0) + Number(p.seyit_fee || 0) + Number(p.yusuf_fee || 0) + Number(p.mete_fee || 0);
+      byPeriod[key].count += 1;
+    });
+    const sortedKeys = Object.keys(byPeriod).sort();
+    const lastKeys = sortedKeys.slice(-6);
+    return lastKeys.map(key => {
+      const [y, m] = key.split('-').map(Number);
+      return {
+        period: `${AY_ISIMLERI[m - 1].slice(0, 3)} ${String(y).slice(2)}`,
+        Gelir: Math.round(byPeriod[key].revenue),
+        Kâr: Math.round(byPeriod[key].revenue - byPeriod[key].cost),
+        Hasta: byPeriod[key].count,
+      };
+    });
+  })();
+
   useEffect(() => {
     (async () => {
       const data = await fetchPatientPayments('suudi');
@@ -924,6 +963,49 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     return { name: display, earned: total, count, pending, net: total - pending };
   });
 
+  const generateMonthlyReportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFillColor(42, 157, 178);
+    doc.rect(0, 0, 210, 26, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('HAIR INTERNATIONAL - SUUDİ ARABİSTAN', 14, 16);
+    doc.setTextColor(20, 20, 20);
+    doc.setFontSize(13);
+    doc.text(`Aylık Rapor: ${getMonthLabel(selectedMonth)}`, 14, 36);
+
+    let y = 48;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Toplam Gelir: $${totalRevenue.toLocaleString()}`, 14, y); y += 7;
+    doc.text(`Ali Haydar: $${totalAli.toLocaleString()} (${caseCountAli} vaka)`, 14, y); y += 7;
+    otherTeamRows.forEach(row => {
+      doc.text(`${row.name}: $${row.earned.toLocaleString()} (${row.count} vaka) — Net: $${row.net.toLocaleString()}`, 14, y); y += 7;
+    });
+    doc.text(`Seyit: $${totalSeyit.toLocaleString()} (${caseCountSeyit} vaka)`, 14, y); y += 7;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`NET KÂR: $${netProfit.toLocaleString()}`, 14, y); y += 10;
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Premium Hair: ${premiumHairPayments.length} hasta — $${premiumHairRevenue.toLocaleString()}`, 14, y); y += 7;
+    doc.text(`Hair International: ${hairIntlPayments.length} hasta — $${hairIntlRevenue.toLocaleString()}`, 14, y); y += 12;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Hasta Listesi:', 14, y); y += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    monthlyPayments.forEach(p => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      doc.text(`${fmt(p.surgery_date)} — ${p.patient_name} — $${Number(p.total_price || 0).toLocaleString()}`, 14, y);
+      y += 6;
+    });
+
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Oluşturulma: ${new Date().toLocaleDateString('tr-TR')}`, 14, 290);
+    doc.save(`Aylik_Rapor_${selectedMonth}.pdf`);
+  };
+
   const saveReceivable = async () => {
     if (!recForm.description || !recForm.amount) return;
     setUploadingReceipt(true);
@@ -995,11 +1077,30 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       </div>
 
       {/* AY SEÇİMİ */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 18, background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '12px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 18, background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '12px 16px', flexWrap: 'wrap' }}>
         <button onClick={() => shiftMonth(-1)} style={{ padding: '8px 14px', background: '#1a1d30', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 14, cursor: 'pointer', fontWeight: 700 }}>◀</button>
         <div style={{ color: '#4f7cff', fontWeight: 900, fontSize: 16, minWidth: 160, textAlign: 'center' }}>📅 {getMonthLabel(selectedMonth)}</div>
         <button onClick={() => shiftMonth(1)} style={{ padding: '8px 14px', background: '#1a1d30', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 14, cursor: 'pointer', fontWeight: 700 }}>▶</button>
+        <Btn sm v="s" onClick={generateMonthlyReportPDF}>📄 Aylık Rapor PDF</Btn>
       </div>
+
+      {/* TREND GRAFİĞİ */}
+      {trendData.length > 1 && (
+        <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 18 }}>
+          <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14, marginBottom: 14 }}>📈 Son {trendData.length} Dönem Trend</div>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1c2035" />
+              <XAxis dataKey="period" stroke="#4a5270" fontSize={11} />
+              <YAxis stroke="#4a5270" fontSize={11} />
+              <Tooltip contentStyle={{ background: '#0e1020', border: '1px solid #242840', borderRadius: 8, color: '#dde3ef' }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Line type="monotone" dataKey="Gelir" stroke="#22c55e" strokeWidth={2} />
+              <Line type="monotone" dataKey="Kâr" stroke="#4f7cff" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       {/* HASTA LİSTESİ */}
       <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 18 }}>
@@ -1482,11 +1583,61 @@ function Settings({ users, setUsers, user, region }) {
     setEditUser(null);
     setNewPass('');
   };
+
+  const [backingUp, setBackingUp] = useState('');
+  const downloadCSV = (rows, filename) => {
+    if (!rows || rows.length === 0) { alert('Veri yok.'); return; }
+    const headers = Object.keys(rows[0]);
+    const csv = [headers, ...rows.map(r => headers.map(h => r[h]))]
+      .map(row => row.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  const backupDataset = async (label, fetchFn, filename) => {
+    setBackingUp(label);
+    try {
+      const data = await fetchFn();
+      downloadCSV(data || [], filename);
+    } catch (e) {
+      alert('Yedekleme sırasında hata oluştu.');
+    }
+    setBackingUp('');
+  };
+  const BACKUP_ITEMS = [
+    { label: 'Hastalar', fn: () => fetchHastalar(region), file: `hastalar_${region}.csv` },
+    { label: 'Leadler', fn: () => fetchLiderler(region), file: `leadler_${region}.csv` },
+    { label: 'Hasta Ücret Kayıtları', fn: () => fetchPatientPayments(region), file: `hasta_ucret_kayitlari_${region}.csv` },
+    { label: 'Alacaklar', fn: () => fetchReceivables(region), file: `alacaklar_${region}.csv` },
+    { label: 'Giderler', fn: () => fetchGiderler(region), file: `giderler_${region}.csv` },
+    { label: 'Medikal Ürünler', fn: fetchMedikalUrunler, file: 'medikal_urunler.csv' },
+    { label: 'Medikal Müşteriler', fn: fetchMedikalMusteriler, file: 'medikal_musteriler.csv' },
+    { label: 'Medikal Satışlar', fn: fetchMedikalSatislar, file: 'medikal_satislar.csv' },
+    { label: 'Medikal Alımlar', fn: fetchMedikalAlimlar, file: 'medikal_alimlar.csv' },
+    { label: 'Medikal Giderler', fn: fetchMedikalGiderler, file: 'medikal_giderler.csv' },
+  ];
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
         <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900 }}>⚙️ Kullanici Yonetimi</div>
         <Btn sm onClick={() => setShowAdd(true)}>+ Kullanici Ekle</Btn>
+      </div>
+      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 20 }}>
+        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>💾 Yedekleme</div>
+        <div style={{ color: '#4a5270', fontSize: 11, marginBottom: 12 }}>Her veri setini Excel'de açılabilir CSV dosyası olarak indirin — düzenli olarak yedek almanız önerilir.</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {BACKUP_ITEMS.map(item => (
+            <Btn key={item.label} sm v="s" disabled={backingUp === item.label} onClick={() => backupDataset(item.label, item.fn, item.file)}>
+              {backingUp === item.label ? '⏳...' : `📥 ${item.label}`}
+            </Btn>
+          ))}
+        </div>
       </div>
       {users.map((u) => {
         const role = ROLES[u.role];
