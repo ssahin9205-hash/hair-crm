@@ -719,7 +719,10 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const [showAddRec, setShowAddRec] = useState(false);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [recForm, setRecForm] = useState({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel' });
-  const [form, setForm] = useState({ patient_name: '', surgery_date: '', technique: 'DHI', total_price: '', ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '', notes: '', kaynak: 'Premium Hair' });
+  const [form, setForm] = useState({ patient_name: '', surgery_date: '', technique: 'DHI', total_price: '', ali_haydar_fee: '', seyit_fee: '', notes: '', kaynak: 'Premium Hair', otherFees: [{ name: '', amount: '' }] });
+  const addOtherFeeRow = () => setForm(f => ({ ...f, otherFees: [...f.otherFees, { name: '', amount: '' }] }));
+  const removeOtherFeeRow = (idx) => setForm(f => ({ ...f, otherFees: f.otherFees.filter((_, i) => i !== idx) }));
+  const updateOtherFeeRow = (idx, field, val) => setForm(f => ({ ...f, otherFees: f.otherFees.map((r, i) => (i === idx ? { ...r, [field]: val } : r)) }));
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -774,11 +777,18 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     })();
   }, []);
 
-  const resetForm = () => setForm({ patient_name: '', surgery_date: '', technique: 'DHI', total_price: '', ali_haydar_fee: '', yusuf_fee: '', mete_fee: '', seyit_fee: '', notes: '', kaynak: 'Premium Hair' });
+  const resetForm = () => setForm({ patient_name: '', surgery_date: '', technique: 'DHI', total_price: '', ali_haydar_fee: '', seyit_fee: '', notes: '', kaynak: 'Premium Hair', otherFees: [{ name: '', amount: '' }] });
 
   const savePayment = async () => {
     if (!form.patient_name) return;
-    const row = { region: 'suudi', patient_name: form.patient_name, surgery_date: form.surgery_date || null, technique: form.technique, total_price: Number(form.total_price) || 0, ali_haydar_fee: Number(form.ali_haydar_fee) || 0, yusuf_fee: Number(form.yusuf_fee) || 0, mete_fee: Number(form.mete_fee) || 0, seyit_fee: Number(form.seyit_fee) || 0, notes: form.notes, kaynak: form.kaynak };
+    const validOther = form.otherFees.filter(r => r.name && Number(r.amount) > 0);
+    const findOtherFee = (nm) => validOther.filter(r => r.name.toLowerCase() === nm.toLowerCase()).reduce((s, r) => s + Number(r.amount), 0);
+    const row = {
+      region: 'suudi', patient_name: form.patient_name, surgery_date: form.surgery_date || null, technique: form.technique,
+      total_price: Number(form.total_price) || 0, ali_haydar_fee: Number(form.ali_haydar_fee) || 0, seyit_fee: Number(form.seyit_fee) || 0,
+      yusuf_fee: findOtherFee('Yusuf'), mete_fee: findOtherFee('Mete'),
+      fee_distribution: JSON.stringify(validOther), notes: form.notes, kaynak: form.kaynak,
+    };
     if (editItem) {
       const updated = await updatePatientPayment(editItem.id, row);
       if (updated) setPayments(ps => ps.map(p => p.id === editItem.id ? updated : p));
@@ -798,17 +808,43 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   };
 
   const startEdit = (p) => {
-    setForm({ patient_name: p.patient_name, surgery_date: p.surgery_date || '', technique: p.technique || 'DHI', total_price: p.total_price || '', ali_haydar_fee: p.ali_haydar_fee || '', yusuf_fee: p.yusuf_fee || '', mete_fee: p.mete_fee || '', seyit_fee: p.seyit_fee || '', notes: p.notes || '', kaynak: p.kaynak || 'Premium Hair' });
+    let otherFees = [{ name: '', amount: '' }];
+    if (p.fee_distribution) {
+      try {
+        const parsed = typeof p.fee_distribution === 'string' ? JSON.parse(p.fee_distribution) : p.fee_distribution;
+        if (Array.isArray(parsed) && parsed.length > 0) otherFees = parsed;
+      } catch (e) {}
+    }
+    if (otherFees.length === 1 && !otherFees[0].name) {
+      const legacy = [];
+      if (Number(p.yusuf_fee) > 0) legacy.push({ name: 'Yusuf', amount: p.yusuf_fee });
+      if (Number(p.mete_fee) > 0) legacy.push({ name: 'Mete', amount: p.mete_fee });
+      if (legacy.length > 0) otherFees = legacy;
+    }
+    setForm({ patient_name: p.patient_name, surgery_date: p.surgery_date || '', technique: p.technique || 'DHI', total_price: p.total_price || '', ali_haydar_fee: p.ali_haydar_fee || '', seyit_fee: p.seyit_fee || '', notes: p.notes || '', kaynak: p.kaynak || 'Premium Hair', otherFees });
     setEditItem(p);
     setShowAdd(true);
   };
 
   const totalRevenue = monthlyPayments.reduce((s, p) => s + Number(p.total_price || 0), 0) + monthlyPayments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
   const totalAli = monthlyPayments.reduce((s, p) => s + Number(p.ali_haydar_fee || 0), 0);
-  const totalYusuf = monthlyPayments.reduce((s, p) => s + Number(p.yusuf_fee || 0), 0);
-  const totalMete = monthlyPayments.reduce((s, p) => s + Number(p.mete_fee || 0), 0);
   const totalSeyit = monthlyPayments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
-  const totalTeam = totalAli + totalYusuf + totalMete + totalSeyit;
+
+  const otherFeeByName = {};
+  monthlyPayments.forEach(p => {
+    let arr = [];
+    try { arr = typeof p.fee_distribution === 'string' ? JSON.parse(p.fee_distribution || '[]') : (p.fee_distribution || []); } catch (e) {}
+    if ((!arr || arr.length === 0)) {
+      if (Number(p.yusuf_fee) > 0) arr.push({ name: 'Yusuf', amount: p.yusuf_fee });
+      if (Number(p.mete_fee) > 0) arr.push({ name: 'Mete', amount: p.mete_fee });
+    }
+    arr.forEach(r => {
+      if (!r.name || !Number(r.amount)) return;
+      otherFeeByName[r.name] = (otherFeeByName[r.name] || 0) + Number(r.amount);
+    });
+  });
+  const totalOtherTeam = Object.values(otherFeeByName).reduce((s, v) => s + v, 0);
+  const totalTeam = totalAli + totalSeyit + totalOtherTeam;
   const netProfit = totalRevenue - totalTeam;
 
   const premiumHairPayments = monthlyPayments.filter(p => (p.kaynak || 'Premium Hair') === 'Premium Hair');
@@ -825,16 +861,18 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     return Number(r.amount || 0);
   };
   const pendingAli = pendingRec.filter(r => r.person === 'Ali Haydar').reduce((s, r) => s + toUSD(r), 0);
-  const pendingYusuf = pendingRec.filter(r => r.person === 'Yusuf').reduce((s, r) => s + toUSD(r), 0);
-  const pendingMete = pendingRec.filter(r => r.person === 'Mete').reduce((s, r) => s + toUSD(r), 0);
   const pendingSeyit = pendingRec.filter(r => r.person === 'Seyit').reduce((s, r) => s + toUSD(r), 0);
   const pendingPremiumHair = pendingRec.filter(r => r.person === 'Premium Hair (Market)').reduce((s, r) => s + toUSD(r), 0);
+  const knownFixedNames = ['Ali Haydar', 'Seyit', 'Premium Hair (Market)', 'Genel', ''];
   const pendingGenel = pendingRec.filter(r => !r.person || r.person === 'Genel').reduce((s, r) => s + toUSD(r), 0);
 
   const netAli = totalAli - pendingAli;
-  const netYusuf = totalYusuf - pendingYusuf;
-  const netMete = totalMete - pendingMete;
   const netSeyit = totalSeyit - pendingSeyit;
+  const otherTeamNames = Object.keys(otherFeeByName);
+  const otherTeamRows = otherTeamNames.map(name => {
+    const pending = pendingRec.filter(r => r.person === name).reduce((s, r) => s + toUSD(r), 0);
+    return { name, earned: otherFeeByName[name], pending, net: otherFeeByName[name] - pending };
+  });
 
   const saveReceivable = async () => {
     if (!recForm.description || !recForm.amount) return;
@@ -870,8 +908,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
         {[
           { lbl: 'Toplam Gelir', val: `$${totalRevenue.toLocaleString()}`, clr: '#22c55e' },
           { lbl: 'Ali Haydar', val: `$${totalAli.toLocaleString()}`, clr: '#f97316' },
-          { lbl: 'Yusuf', val: `$${totalYusuf.toLocaleString()}`, clr: '#f97316' },
-          { lbl: 'Mete', val: `$${totalMete.toLocaleString()}`, clr: '#f97316' },
+          { lbl: 'Diğer Ekip', val: `$${totalOtherTeam.toLocaleString()}`, clr: '#f97316' },
           { lbl: 'Seyit', val: `$${totalSeyit.toLocaleString()}`, clr: '#f97316' },
           { lbl: 'Net Kâr', val: `$${netProfit.toLocaleString()}`, clr: netProfit >= 0 ? '#22c55e' : '#f04040' },
         ].map(k => (
@@ -919,13 +956,22 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #1c2035' }}>
-                  {['Hasta', 'Kaynak', 'Tarih', 'Teknik', 'Gelir', 'Ali Haydar', 'Yusuf', 'Mete', 'Seyit', 'İşlem'].map(h => (
+                  {['Hasta', 'Kaynak', 'Tarih', 'Teknik', 'Gelir', 'Ali Haydar', 'Diğer Ekip', 'Seyit', 'İşlem'].map(h => (
                     <th key={h} style={{ color: '#4a5270', fontWeight: 700, padding: '8px 10px', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {monthlyPayments.map(p => (
+                {monthlyPayments.map(p => {
+                  let otherArr = [];
+                  try { otherArr = typeof p.fee_distribution === 'string' ? JSON.parse(p.fee_distribution || '[]') : (p.fee_distribution || []); } catch (e) {}
+                  if ((!otherArr || otherArr.length === 0)) {
+                    if (Number(p.yusuf_fee) > 0) otherArr.push({ name: 'Yusuf', amount: p.yusuf_fee });
+                    if (Number(p.mete_fee) > 0) otherArr.push({ name: 'Mete', amount: p.mete_fee });
+                  }
+                  const otherTotal = otherArr.reduce((s, r) => s + Number(r.amount || 0), 0);
+                  const otherNames = otherArr.map(r => `${r.name}: $${r.amount}`).join(', ');
+                  return (
                   <tr key={p.id} style={{ borderBottom: '1px solid #1c2035' }}>
                     <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px 10px' }}>{p.patient_name}</td>
                     <td style={{ padding: '10px 10px' }}>
@@ -937,8 +983,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                     <td style={{ color: '#4a5270', padding: '10px 10px' }}>{p.technique}</td>
                     <td style={{ color: '#22c55e', fontWeight: 700, padding: '10px 10px' }}>${Number(p.total_price || 0).toLocaleString()}</td>
                     <td style={{ color: '#f97316', padding: '10px 10px' }}>${Number(p.ali_haydar_fee || 0).toLocaleString()}</td>
-                    <td style={{ color: '#f97316', padding: '10px 10px' }}>${Number(p.yusuf_fee || 0).toLocaleString()}</td>
-                    <td style={{ color: '#f97316', padding: '10px 10px' }}>${Number(p.mete_fee || 0).toLocaleString()}</td>
+                    <td style={{ color: '#f97316', padding: '10px 10px' }} title={otherNames}>${otherTotal.toLocaleString()} {otherNames && <div style={{ color: '#4a5270', fontSize: 9 }}>{otherNames}</div>}</td>
                     <td style={{ color: '#f97316', padding: '10px 10px' }}>${Number(p.seyit_fee || 0).toLocaleString()}</td>
                     <td style={{ padding: '10px 10px' }}>
                       <div style={{ display: 'flex', gap: 6 }}>
@@ -947,7 +992,8 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -973,8 +1019,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
             <tbody>
               {[
                 { name: 'Ali Haydar', earned: totalAli, pending: pendingAli, net: netAli },
-                { name: 'Yusuf', earned: totalYusuf, pending: pendingYusuf, net: netYusuf },
-                { name: 'Mete', earned: totalMete, pending: pendingMete, net: netMete },
+                ...otherTeamRows,
                 { name: 'Seyit', earned: totalSeyit, pending: pendingSeyit, net: netSeyit },
               ].map(row => (
                 <tr key={row.name} style={{ borderBottom: '1px solid #1c2035' }}>
@@ -1166,16 +1211,20 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
               <Inp type="number" ph="0" val={form.ali_haydar_fee} set={v => setForm(f => ({ ...f, ali_haydar_fee: v }))} />
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>YUSUF ÜCRETİ ($)</div>
-              <Inp type="number" ph="0" val={form.yusuf_fee} set={v => setForm(f => ({ ...f, yusuf_fee: v }))} />
-            </div>
-            <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>METE ÜCRETİ ($)</div>
-              <Inp type="number" ph="0" val={form.mete_fee} set={v => setForm(f => ({ ...f, mete_fee: v }))} />
-            </div>
-            <div style={{ gridColumn: '1/-1' }}>
               <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>SEYİT ÜCRETİ ($)</div>
               <Inp type="number" ph="0" val={form.seyit_fee} set={v => setForm(f => ({ ...f, seyit_fee: v }))} />
+            </div>
+            <div style={{ gridColumn: '1/-1', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 10, padding: 12 }}>
+              <div style={{ color: '#f0b429', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>👥 DİĞER EKİP ÜYELERİ (her ay değişebilir — isim yazın)</div>
+              {form.otherFees.map((row, idx) => (
+                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: 8, marginBottom: 6 }}>
+                  <input list="diger-ekip-list" value={row.name} onChange={(e) => updateOtherFeeRow(idx, 'name', e.target.value)} placeholder="Kişi adı" style={{ padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }} />
+                  <input type="number" value={row.amount} onChange={(e) => updateOtherFeeRow(idx, 'amount', e.target.value)} placeholder="Tutar ($)" style={{ padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }} />
+                  <button type="button" onClick={() => removeOtherFeeRow(idx)} style={{ padding: '4px 10px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 12, cursor: 'pointer' }}>×</button>
+                </div>
+              ))}
+              <datalist id="diger-ekip-list">{Object.keys(otherFeeByName).map(n => <option key={n} value={n} />)}</datalist>
+              <Btn v="s" sm onClick={addOtherFeeRow}>+ Kişi Ekle</Btn>
             </div>
             <div style={{ gridColumn: '1/-1' }}>
               <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>NOTLAR</div>
@@ -1195,14 +1244,21 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div>
               <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>KİM İÇİN? (kişisel harcama sahibi)</div>
-              <Sel val={recForm.person} set={v => setRecForm(f => ({ ...f, person: v }))} opts={[
-                { v: 'Genel', l: '🏢 Genel / Şirket' },
-                { v: 'Ali Haydar', l: '👤 Ali Haydar' },
-                { v: 'Yusuf', l: '👤 Yusuf' },
-                { v: 'Mete', l: '👤 Mete' },
-                { v: 'Seyit', l: '👤 Seyit' },
-                { v: 'Premium Hair (Market)', l: '🛒 Premium Hair (Market)' },
-              ]} />
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+                {['Genel', 'Ali Haydar', 'Seyit', 'Premium Hair (Market)'].map(p => (
+                  <button key={p} type="button" onClick={() => setRecForm(f => ({ ...f, person: p }))} style={{ padding: '6px 12px', borderRadius: 20, border: `1px solid ${recForm.person === p ? '#4f7cff' : '#1c2035'}`, background: recForm.person === p ? 'rgba(79,124,255,0.15)' : '#121525', color: recForm.person === p ? '#4f7cff' : '#9ba8bc', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{p}</button>
+                ))}
+              </div>
+              <input
+                list="rec-person-list"
+                value={recForm.person}
+                onChange={(e) => setRecForm(f => ({ ...f, person: e.target.value }))}
+                placeholder="Ya da başka bir isim yazın (değişken ekip üyesi)"
+                style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }}
+              />
+              <datalist id="rec-person-list">
+                {Object.keys(otherFeeByName).map(n => <option key={n} value={n} />)}
+              </datalist>
             </div>
             <Inp ph="Açıklama *" val={recForm.description} set={v => setRecForm(f => ({ ...f, description: v }))} />
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8 }}>
@@ -2414,6 +2470,7 @@ function MarketFisleri({ user, region }) {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [editingReceipt, setEditingReceipt] = useState(null);
   const [form, setForm] = useState({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null });
 
   const load = async () => {
@@ -2424,21 +2481,46 @@ function MarketFisleri({ user, region }) {
   };
   useEffect(() => { load(); }, []);
 
+  const resetForm = () => setForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null });
+
   const save = async () => {
     if (!form.description || !form.amount) return;
     setUploading(true);
-    let receiptUrl = null;
+    let receiptUrl = editingReceipt ? editingReceipt.receipt_url : null;
     if (form.receiptFile) receiptUrl = await uploadReceipt(form.receiptFile);
-    const row = {
-      region, description: form.description, amount: Number(form.amount), currency: form.currency,
-      notes: form.notes, receipt_url: receiptUrl, paid: false, person: 'Premium Hair (Market)',
-    };
-    const saved = await insertReceivable(row);
-    if (saved) setReceipts(rs => [saved, ...rs]);
-    await logAction(user, region, 'Market fişi eklendi', 'Market', form.description);
+
+    if (editingReceipt) {
+      const updated = await updateReceivable(editingReceipt.id, {
+        description: form.description, amount: Number(form.amount), currency: form.currency,
+        notes: form.notes, receipt_url: receiptUrl,
+      });
+      if (updated) setReceipts(rs => rs.map(r => r.id === editingReceipt.id ? updated : r));
+      await logAction(user, region, 'Market fişi güncellendi', 'Market', form.description);
+      setEditingReceipt(null);
+    } else {
+      const row = {
+        region, description: form.description, amount: Number(form.amount), currency: form.currency,
+        notes: form.notes, receipt_url: receiptUrl, paid: false, person: 'Premium Hair (Market)',
+      };
+      const saved = await insertReceivable(row);
+      if (saved) setReceipts(rs => [saved, ...rs]);
+      await logAction(user, region, 'Market fişi eklendi', 'Market', form.description);
+    }
     setShowAdd(false);
-    setForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null });
+    resetForm();
     setUploading(false);
+  };
+
+  const startEdit = (r) => {
+    setForm({ description: r.description || '', amount: r.amount || '', currency: r.currency || 'TRY', notes: r.notes || '', receiptFile: null });
+    setEditingReceipt(r);
+    setShowAdd(true);
+  };
+
+  const removeReceipt = async (id) => {
+    if (!window.confirm('Bu fiş silinsin mi?')) return;
+    await deleteReceivable(id);
+    setReceipts(rs => rs.filter(r => r.id !== id));
   };
 
   const pending = receipts.filter(r => !r.paid);
@@ -2457,7 +2539,7 @@ function MarketFisleri({ user, region }) {
         <div style={{ color: '#22c55e', fontSize: 28, fontWeight: 900 }}>₺{totalPending.toLocaleString()}</div>
       </div>
 
-      <Btn onClick={() => setShowAdd(true)} full>+ Yeni Fiş Ekle</Btn>
+      <Btn onClick={() => { resetForm(); setEditingReceipt(null); setShowAdd(true); }} full>+ Yeni Fiş Ekle</Btn>
 
       <div style={{ marginTop: 20, color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Bekleyen Fişler</div>
       {pending.length === 0 ? (
@@ -2470,7 +2552,11 @@ function MarketFisleri({ user, region }) {
               <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(r.date_added || r.created_at)} {r.notes && `· ${r.notes}`}</div>
               {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#4f7cff', fontSize: 11 }}>📷 Fişi Gör</a>}
             </div>
-            <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
+              <button onClick={() => startEdit(r)} style={{ padding: '4px 8px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 11, cursor: 'pointer' }}>✏️</button>
+              <button onClick={() => removeReceipt(r.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+            </div>
           </div>
         </div>
       ))}
@@ -2479,16 +2565,19 @@ function MarketFisleri({ user, region }) {
         <details style={{ marginTop: 16 }}>
           <summary style={{ color: '#22c55e', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>✅ Ödenmiş Fişler ({paid.length})</summary>
           {paid.map(r => (
-            <div key={r.id} style={{ background: '#1a1d30', borderLeft: '3px solid #22c55e', borderRadius: 6, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+            <div key={r.id} style={{ background: '#1a1d30', borderLeft: '3px solid #22c55e', borderRadius: 6, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
               <div style={{ color: '#dde3ef', fontSize: 12 }}>{r.description}</div>
-              <div style={{ color: '#22c55e', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ color: '#22c55e', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
+                <button onClick={() => startEdit(r)} style={{ padding: '3px 7px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 10, cursor: 'pointer' }}>✏️</button>
+              </div>
             </div>
           ))}
         </details>
       )}
 
       {showAdd && (
-        <Modal title="Market Fişi Ekle" onClose={() => setShowAdd(false)}>
+        <Modal title={editingReceipt ? 'Market Fişini Düzenle' : 'Market Fişi Ekle'} onClose={() => { setShowAdd(false); setEditingReceipt(null); resetForm(); }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <Inp ph="Ne alındı? (açıklama) *" val={form.description} set={v => setForm(f => ({ ...f, description: v }))} />
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8 }}>
@@ -2497,12 +2586,13 @@ function MarketFisleri({ user, region }) {
             </div>
             <Inp ph="Not (opsiyonel)" val={form.notes} set={v => setForm(f => ({ ...f, notes: v }))} />
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>FİŞ FOTOĞRAFI</div>
+              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>FİŞ FOTOĞRAFI {editingReceipt?.receipt_url && '(mevcut fotoğraf korunur, yeni seçerseniz değişir)'}</div>
+              {editingReceipt?.receipt_url && <a href={editingReceipt.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#4f7cff', fontSize: 11, display: 'block', marginBottom: 6 }}>📷 Mevcut fotoğrafı gör</a>}
               <input type="file" accept="image/*" onChange={e => setForm(f => ({ ...f, receiptFile: e.target.files[0] }))} style={{ width: '100%', padding: 8, background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12 }} />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <Btn v="s" onClick={() => setShowAdd(false)}>İptal</Btn>
-              <Btn onClick={save} disabled={uploading}>{uploading ? 'Yükleniyor...' : 'Kaydet'}</Btn>
+              <Btn v="s" onClick={() => { setShowAdd(false); setEditingReceipt(null); resetForm(); }}>İptal</Btn>
+              <Btn onClick={save} disabled={uploading}>{uploading ? 'Yükleniyor...' : (editingReceipt ? 'Güncelle' : 'Kaydet')}</Btn>
             </div>
           </div>
         </Modal>
