@@ -400,18 +400,37 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
     if (region === 'suudi') {
       try {
         const graftNum = Number(form.grafts) || 0;
-        const suggestedFee = graftNum > 0 ? (graftNum < 3000 ? 400 : 500) : null;
         const notesParts = [];
-        if (feeSummary) notesParts.push(`Ücret dağılımı: ${feeSummary}`);
-        if (suggestedFee) notesParts.push(`Önerilen ekip ücreti: $${suggestedFee} (${graftNum} greft)`);
+        let finalAliHaydarFee = findFee('Ali Haydar');
+        let finalOtherFees = [...validFees.filter(r => !['ali haydar', 'seyit'].includes(r.name.toLowerCase()))];
+
+        if (graftNum > 0) {
+          const isHighTier = graftNum >= 3000;
+          const autoAli = isHighTier ? 150 : 75;
+          const autoMuhammedAli = isHighTier ? 130 : 100;
+          const autoSergenEmir = isHighTier ? 80 : 50;
+          const autoFurkanCan = isHighTier ? 80 : 50;
+          finalAliHaydarFee = autoAli;
+          // Otomatik 4 kişi dışındaki manuel eklenen kişileri koru
+          const AUTO_NAMES = ['muhammed ali', 'sergen emir', 'furkan can'];
+          finalOtherFees = [
+            { name: 'Muhammed Ali', amount: autoMuhammedAli },
+            { name: 'Sergen Emir', amount: autoSergenEmir },
+            { name: 'Furkan Can', amount: autoFurkanCan },
+            ...finalOtherFees.filter(r => !AUTO_NAMES.includes(r.name.toLowerCase())),
+          ];
+          notesParts.push(`Otomatik ekip ücreti uygulandı: ${graftNum} greft (${isHighTier ? '3000+' : '2999 ve altı'}) — Ali Haydar $${autoAli}, Muhammed Ali $${autoMuhammedAli}, Sergen Emir $${autoSergenEmir}, Furkan Can $${autoFurkanCan}`);
+        }
+        if (feeSummary) notesParts.push(`Manuel ücret dağılımı: ${feeSummary}`);
+
         await insertPatientPayment({
           region: 'suudi',
           patient_name: form.name,
           surgery_date: form.surgeryDate || null,
           technique: form.technique,
           total_price: tp,
-          fee_distribution: JSON.stringify(validFees),
-          ali_haydar_fee: findFee('Ali Haydar'),
+          fee_distribution: JSON.stringify(finalOtherFees),
+          ali_haydar_fee: finalAliHaydarFee,
           yusuf_fee: findFee('Yusuf'),
           mete_fee: findFee('Mete'),
           seyit_fee: findFee('Seyit'),
@@ -613,8 +632,9 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
               <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>GREFT SAYISI</div>
               <Inp type="number" ph="Örn: 3200" val={form.grafts} set={(v) => setForm((f) => ({ ...f, grafts: v }))} />
               {form.grafts && (
-                <div style={{ color: '#6B8F5E', fontSize: 11, marginTop: 5, fontWeight: 700 }}>
-                  💡 Önerilen ekip ücreti: ${Number(form.grafts) < 3000 ? '400' : '500'} (3000 altı: $400, 3000 ve üstü: $500)
+                <div style={{ color: '#6B8F5E', fontSize: 11, marginTop: 5, fontWeight: 700, lineHeight: 1.6 }}>
+                  💡 Otomatik uygulanacak ücretler ({Number(form.grafts) >= 3000 ? '3000 ve üstü' : '2999 ve altı'}):<br />
+                  Ali Haydar: ${Number(form.grafts) >= 3000 ? '150' : '75'} · Muhammed Ali (Kanal): ${Number(form.grafts) >= 3000 ? '130' : '100'} · Sergen Emir (Ekim): ${Number(form.grafts) >= 3000 ? '80' : '50'} · Furkan Can (Ekim): ${Number(form.grafts) >= 3000 ? '80' : '50'}
                 </div>
               )}
             </div>
