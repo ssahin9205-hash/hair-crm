@@ -77,23 +77,23 @@ const REGIONS = {
 
 const ROLES = {
   admin: {
-    lbl: 'Admin', clr: '#9ba8bc', badge: '👑',
+    lbl: 'Admin', clr: '#A79B88', badge: '👑',
     perms: ['view_dashboard','view_leads','view_patients','view_finance','view_settings','edit_finance','edit_leads','edit_patients','manage_users','manage_drive','view_logs','view_market'],
   },
   manager: {
-    lbl: 'Yonetici', clr: '#4f7cff', badge: '🏢',
+    lbl: 'Yonetici', clr: '#7E9A89', badge: '🏢',
     perms: ['view_dashboard','view_leads','view_patients','view_finance','edit_leads','edit_patients'],
   },
   sales: {
-    lbl: 'Temsilci', clr: '#22c55e', badge: '📞',
+    lbl: 'Temsilci', clr: '#6B8F5E', badge: '📞',
     perms: ['view_dashboard','view_leads','edit_leads'],
   },
   operation: {
-    lbl: 'Operasyon', clr: '#f97316', badge: '🏥',
+    lbl: 'Operasyon', clr: '#C68A3D', badge: '🏥',
     perms: ['view_dashboard','view_patients','edit_patients','view_market'],
   },
   finance: {
-    lbl: 'Muhasebe', clr: '#f0b429', badge: '💰',
+    lbl: 'Muhasebe', clr: '#B8952E', badge: '💰',
     perms: ['view_dashboard','view_finance','edit_finance'],
   },
 };
@@ -104,18 +104,18 @@ const can = (u, perm) => {
 };
 
 const LS = [
-  { id: 'yeni', lbl: 'Yeni', clr: '#4f7cff', ico: '🆕' },
-  { id: 'cevaplandi', lbl: 'Cevaplandi', clr: '#2dd4bf', ico: '💬' },
-  { id: 'foto_alindi', lbl: 'Fotograf Alindi', clr: '#60a5fa', ico: '📸' },
-  { id: 'konsultasyon', lbl: 'Konsultasyon', clr: '#a855f7', ico: '🔬' },
-  { id: 'fiyat_verildi', lbl: 'Fiyat Verildi', clr: '#f0b429', ico: '💰' },
-  { id: 'takipte', lbl: 'Takipte', clr: '#f97316', ico: '🔁' },
-  { id: 'kapora_alindi', lbl: 'Kapora Alindi', clr: '#22c55e', ico: '✅' },
-  { id: 'op_planlandi', lbl: 'Op. Planlandi', clr: '#22d3ee', ico: '🗓' },
-  { id: 'iptal', lbl: 'Iptal', clr: '#f04040', ico: '❌' },
-  { id: 'kara_liste', lbl: 'Kara Liste', clr: '#ff1a1a', ico: '🚫' },
+  { id: 'yeni', lbl: 'Yeni', clr: '#7E9A89', ico: '🆕' },
+  { id: 'cevaplandi', lbl: 'Cevaplandi', clr: '#7CA89B', ico: '💬' },
+  { id: 'foto_alindi', lbl: 'Fotograf Alindi', clr: '#A8C0B0', ico: '📸' },
+  { id: 'konsultasyon', lbl: 'Konsultasyon', clr: '#9B7B8C', ico: '🔬' },
+  { id: 'fiyat_verildi', lbl: 'Fiyat Verildi', clr: '#B8952E', ico: '💰' },
+  { id: 'takipte', lbl: 'Takipte', clr: '#C68A3D', ico: '🔁' },
+  { id: 'kapora_alindi', lbl: 'Kapora Alindi', clr: '#6B8F5E', ico: '✅' },
+  { id: 'op_planlandi', lbl: 'Op. Planlandi', clr: '#7BA8A6', ico: '🗓' },
+  { id: 'iptal', lbl: 'Iptal', clr: '#C1554A', ico: '❌' },
+  { id: 'kara_liste', lbl: 'Kara Liste', clr: '#A83A32', ico: '🚫' },
 ];
-const lsCfg = (id) => LS.find((s) => s.id === id) || { lbl: id, clr: '#4a5270', ico: '.' };
+const lsCfg = (id) => LS.find((s) => s.id === id) || { lbl: id, clr: '#7A7062', ico: '.' };
 
 const PHOTO_CATS = [
   { id: 'onGun', lbl: 'Ön Gün' },
@@ -147,14 +147,14 @@ const logAction = async (user, region, action, targetType, targetName, details =
 
 function Logo({ size = 60 }) {
   return (
-    <img src={LOGO_URL} alt="Hair International" style={{ height: size, width: 'auto', maxWidth: '100%', objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(196,205,217,0.15))' }} />
+    <img src={LOGO_URL} alt="Hair International" style={{ height: size, width: 'auto', maxWidth: '100%', objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(139,129,113,0.15))' }} />
   );
 }
 
 function Av({ name, size = 34, clr }) {
   const ini = (name || '?').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, background: `linear-gradient(135deg,${clr || '#4f7cff'},${(clr || '#4f7cff') + '22'})`, border: `1px solid ${(clr || '#4f7cff') + '33'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.32, fontWeight: 800, color: '#dde3ef' }}>
+    <div style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, background: `linear-gradient(135deg,${clr || '#7E9A89'},${(clr || '#7E9A89') + '22'})`, border: `1px solid ${(clr || '#7E9A89') + '33'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.32, fontWeight: 800, color: '#33302A' }}>
       {ini}
     </div>
   );
@@ -162,9 +162,9 @@ function Av({ name, size = 34, clr }) {
 
 function Btn({ onClick, children, v = 'p', sm, full, disabled }) {
   const m = {
-    p: { bg: '#4f7cff', c: '#fff', b: 'none' },
-    s: { bg: 'transparent', c: '#9ba8bc', b: '1px solid #242840' },
-    d: { bg: 'rgba(240,64,64,0.1)', c: '#f04040', b: '1px solid #f0404033' },
+    p: { bg: '#7E9A89', c: '#fff', b: 'none' },
+    s: { bg: 'transparent', c: '#A79B88', b: '1px solid #D4C7AE' },
+    d: { bg: 'rgba(193,85,74,0.1)', c: '#C1554A', b: '1px solid #C1554A33' },
   };
   const s = m[v] || m.p;
   return (
@@ -175,14 +175,14 @@ function Btn({ onClick, children, v = 'p', sm, full, disabled }) {
 }
 
 function Inp({ ph, val, set, type = 'text', style = {}, rows }) {
-  const b = { width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box', outline: 'none', ...style };
+  const b = { width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box', outline: 'none', ...style };
   if (rows) return <textarea placeholder={ph} value={val} onChange={(e) => set(e.target.value)} rows={rows} style={{ ...b, resize: 'vertical' }} />;
   return <input type={type} placeholder={ph} value={val} onChange={(e) => set(e.target.value)} style={b} />;
 }
 
 function Sel({ val, set, opts, style = {} }) {
   return (
-    <select value={val} onChange={(e) => set(e.target.value)} style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, ...style }}>
+    <select value={val} onChange={(e) => set(e.target.value)} style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, ...style }}>
       {opts.map((o) => typeof o === 'string' ? <option key={o} value={o}>{o}</option> : <option key={o.v} value={o.v}>{o.l}</option>)}
     </select>
   );
@@ -201,7 +201,7 @@ function Lightbox({ urls, index, onClose, onIndex }) {
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.96)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, cursor: 'zoom-out' }}>
       <div style={{ position: 'absolute', top: 20, left: 20, color: '#fff', fontSize: 13, fontWeight: 700, background: 'rgba(0,0,0,0.5)', padding: '6px 12px', borderRadius: 6 }}>{index + 1} / {urls.length}</div>
-      <button onClick={(e) => { e.stopPropagation(); onClose(); }} style={{ position: 'absolute', top: 20, right: 20, padding: '10px 16px', background: 'rgba(240,64,64,0.9)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>✕ Kapat</button>
+      <button onClick={(e) => { e.stopPropagation(); onClose(); }} style={{ position: 'absolute', top: 20, right: 20, padding: '10px 16px', background: 'rgba(193,85,74,0.9)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>✕ Kapat</button>
       {index > 0 && <button onClick={(e) => { e.stopPropagation(); onIndex(index - 1); }} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: 24, cursor: 'pointer', fontWeight: 700 }}>‹</button>}
       {index < urls.length - 1 && <button onClick={(e) => { e.stopPropagation(); onIndex(index + 1); }} style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: 24, cursor: 'pointer', fontWeight: 700 }}>›</button>}
       <img src={urls[index]} alt="" style={{ maxWidth: '92vw', maxHeight: '82vh', objectFit: 'contain', borderRadius: 8 }} onClick={(e) => e.stopPropagation()} />
@@ -212,10 +212,10 @@ function Lightbox({ urls, index, onClose, onIndex }) {
 function Modal({ title, onClose, children, wide }) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.88)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: '#0e1020', border: '1px solid #242840', borderRadius: 16, padding: 28, width: wide ? 820 : 440, maxWidth: '96vw', maxHeight: '92vh', overflowY: 'auto' }}>
+      <div style={{ background: '#FFFFFF', border: '1px solid #D4C7AE', borderRadius: 16, padding: 28, width: wide ? 820 : 440, maxWidth: '96vw', maxHeight: '92vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
-          <h3 style={{ color: '#dde3ef', margin: 0, fontSize: 16, fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#4a5270', fontSize: 22, cursor: 'pointer' }}>x</button>
+          <h3 style={{ color: '#33302A', margin: 0, fontSize: 16, fontWeight: 800 }}>{title}</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#7A7062', fontSize: 22, cursor: 'pointer' }}>x</button>
         </div>
         {children}
       </div>
@@ -246,27 +246,27 @@ function Dashboard({ user, region, leads, patients }) {
   return (
     <div>
       <div style={{ marginBottom: 22 }}>
-        <div style={{ color: '#dde3ef', fontSize: 20, fontWeight: 900 }}>Merhaba, {user.name.split(' ')[0]} 👋</div>
+        <div style={{ color: '#33302A', fontSize: 20, fontWeight: 900 }}>Merhaba, {user.name.split(' ')[0]} 👋</div>
         <div style={{ color: reg.clr, fontSize: 13, marginTop: 3, fontWeight: 700 }}>{reg.flag} {reg.lbl} Şubesi</div>
       </div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: medikalAlert ? 16 : 0 }}>
         {[
-          { ico: '📋', lbl: 'Lead', val: leads.length, clr: '#4f7cff' },
-          { ico: '💎', lbl: 'Hasta', val: patients.length, clr: '#a855f7' },
+          { ico: '📋', lbl: 'Lead', val: leads.length, clr: '#7E9A89' },
+          { ico: '💎', lbl: 'Hasta', val: patients.length, clr: '#9B7B8C' },
         ].map((k) => (
-          <div key={k.lbl} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '18px 20px', flex: 1, minWidth: 130 }}>
+          <div key={k.lbl} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: '18px 20px', flex: 1, minWidth: 130 }}>
             <div style={{ fontSize: 18, marginBottom: 6 }}>{k.ico}</div>
-            <div style={{ color: '#4a5270', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 3 }}>{k.lbl}</div>
+            <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 3 }}>{k.lbl}</div>
             <div style={{ color: k.clr, fontSize: 24, fontWeight: 900 }}>{k.val}</div>
           </div>
         ))}
       </div>
       {medikalAlert && (
-        <div style={{ background: 'rgba(240,64,64,0.08)', border: '1px solid #f0404044', borderRadius: 12, padding: 16 }}>
-          <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 8 }}>💊 Medikal Uyarıları</div>
-          {medikalAlert.lowStockCount > 0 && <div style={{ color: '#f04040', fontSize: 12, marginBottom: 4 }}>⚠️ {medikalAlert.lowStockCount} ürün kritik stok seviyesinde</div>}
-          {medikalAlert.acikCount > 0 && <div style={{ color: '#f0b429', fontSize: 12, marginBottom: 4 }}>📒 {medikalAlert.acikCount} bekleyen açık hesap · Toplam ₺{medikalAlert.acikTotal.toLocaleString()}</div>}
-          {medikalAlert.urgentCount > 0 && <div style={{ color: '#f04040', fontSize: 12, fontWeight: 700 }}>⏰ {medikalAlert.urgentCount} ödemenin vadesi bugün/yarın!</div>}
+        <div style={{ background: 'rgba(193,85,74,0.08)', border: '1px solid #C1554A44', borderRadius: 12, padding: 16 }}>
+          <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 8 }}>💊 Medikal Uyarıları</div>
+          {medikalAlert.lowStockCount > 0 && <div style={{ color: '#C1554A', fontSize: 12, marginBottom: 4 }}>⚠️ {medikalAlert.lowStockCount} ürün kritik stok seviyesinde</div>}
+          {medikalAlert.acikCount > 0 && <div style={{ color: '#B8952E', fontSize: 12, marginBottom: 4 }}>📒 {medikalAlert.acikCount} bekleyen açık hesap · Toplam ₺{medikalAlert.acikTotal.toLocaleString()}</div>}
+          {medikalAlert.urgentCount > 0 && <div style={{ color: '#C1554A', fontSize: 12, fontWeight: 700 }}>⏰ {medikalAlert.urgentCount} ödemenin vadesi bugün/yarın!</div>}
         </div>
       )}
     </div>
@@ -294,18 +294,18 @@ function Leads({ user, region, leads, setLeads }) {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900 }}>📋 Leadler</div>
+        <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900 }}>📋 Leadler</div>
         {can(user, 'edit_leads') && <Btn onClick={() => setShowAdd(true)} sm>+ Yeni Lead</Btn>}
       </div>
       <Inp ph="Ara..." val={search} set={setSearch} style={{ marginBottom: 12 }} />
       {filtered.map((l) => {
         const s = lsCfg(l.status);
         return (
-          <div key={l.id} onClick={() => setSel(l)} style={{ background: '#121525', border: `1px solid #1c2035`, borderLeft: `4px solid ${s.clr}`, borderRadius: 11, padding: '11px 15px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', marginBottom: 7 }}>
+          <div key={l.id} onClick={() => setSel(l)} style={{ background: '#FFFFFF', border: `1px solid #E3D9C7`, borderLeft: `4px solid ${s.clr}`, borderRadius: 11, padding: '11px 15px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', marginBottom: 7 }}>
             <Av name={l.name} size={40} clr={s.clr} />
             <div style={{ flex: 1 }}>
-              <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>{l.name}</div>
-              <div style={{ color: '#4a5270', fontSize: 11 }}>📞 {l.phone} · {s.ico} {s.lbl}</div>
+              <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14 }}>{l.name}</div>
+              <div style={{ color: '#7A7062', fontSize: 11 }}>📞 {l.phone} · {s.ico} {s.lbl}</div>
             </div>
           </div>
         );
@@ -326,8 +326,8 @@ function Leads({ user, region, leads, setLeads }) {
       )}
       {sel && (
         <Modal title={sel.name} onClose={() => setSel(null)} wide>
-          <div style={{ color: '#4a5270', fontSize: 12, marginBottom: 10 }}>📞 {sel.phone} · {lsCfg(sel.status).ico} {lsCfg(sel.status).lbl}</div>
-          {sel.notes && <div style={{ background: '#1a1d30', borderRadius: 8, padding: 12, color: '#dde3ef', fontSize: 12 }}>{sel.notes}</div>}
+          <div style={{ color: '#7A7062', fontSize: 12, marginBottom: 10 }}>📞 {sel.phone} · {lsCfg(sel.status).ico} {lsCfg(sel.status).lbl}</div>
+          {sel.notes && <div style={{ background: '#F1EBDE', borderRadius: 8, padding: 12, color: '#33302A', fontSize: 12 }}>{sel.notes}</div>}
         </Modal>
       )}
     </div>
@@ -566,7 +566,7 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-        <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900 }}>💎 Hastalar</div>
+        <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900 }}>💎 Hastalar</div>
         {can(user, 'edit_patients') && <Btn onClick={() => setShowAdd(true)} sm>+ Hasta Ekle</Btn>}
       </div>
       <Inp ph="🔍 İsim veya tarih ile ara (örn: Ahmet veya 2026-07-15)..." val={search} set={setSearch} style={{ marginBottom: 14 }} />
@@ -576,24 +576,24 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
           const q = search.toLowerCase();
           return (p.name || '').toLowerCase().includes(q) || (p.surgeryDate || '').includes(q) || fmt(p.surgeryDate).includes(q);
         }).map((p) => (
-          <div key={p.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, position: 'relative' }}>
+          <div key={p.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 16, position: 'relative' }}>
             {can(user, 'edit_patients') && (
               <>
-                <button onClick={(e) => { e.stopPropagation(); startEditPatient(p); }} style={{ position: 'absolute', top: 8, right: 40, width: 26, height: 26, borderRadius: '50%', background: 'rgba(79,124,255,0.2)', border: '1px solid #4f7cff', color: '#4f7cff', fontSize: 13, cursor: 'pointer', zIndex: 2 }}>✏️</button>
-                <button onClick={(e) => { e.stopPropagation(); handleDeletePatient(p); }} style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: '50%', background: 'rgba(240,64,64,0.2)', border: '1px solid #f04040', color: '#f04040', fontSize: 16, cursor: 'pointer', zIndex: 2 }}>×</button>
+                <button onClick={(e) => { e.stopPropagation(); startEditPatient(p); }} style={{ position: 'absolute', top: 8, right: 40, width: 26, height: 26, borderRadius: '50%', background: 'rgba(126,154,137,0.2)', border: '1px solid #7E9A89', color: '#7E9A89', fontSize: 13, cursor: 'pointer', zIndex: 2 }}>✏️</button>
+                <button onClick={(e) => { e.stopPropagation(); handleDeletePatient(p); }} style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: '50%', background: 'rgba(193,85,74,0.2)', border: '1px solid #C1554A', color: '#C1554A', fontSize: 16, cursor: 'pointer', zIndex: 2 }}>×</button>
               </>
             )}
             <div onClick={() => { setSel(p); setActiveTab('onGun'); setLastUpload(null); }} style={{ cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 11, paddingRight: 30 }}>
-                <Av name={p.name} size={42} clr="#2dd4bf" />
+                <Av name={p.name} size={42} clr="#7CA89B" />
                 <div>
-                  <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 14 }}>{p.name}</div>
-                  <div style={{ color: '#4a5270', fontSize: 11 }}>{p.phone}</div>
+                  <div style={{ color: '#33302A', fontWeight: 700, fontSize: 14 }}>{p.name}</div>
+                  <div style={{ color: '#7A7062', fontSize: 11 }}>{p.phone}</div>
                 </div>
               </div>
-              <div style={{ color: '#4a5270', fontSize: 11 }}>📅 {fmt(p.surgeryDate)} · {p.technique}</div>
+              <div style={{ color: '#7A7062', fontSize: 11 }}>📅 {fmt(p.surgeryDate)} · {p.technique}</div>
               {(p.alim_kisi || p.kanal_kisi || p.ekim_kisi) && (
-                <div style={{ color: '#60a5fa', fontSize: 11, marginTop: 3 }}>
+                <div style={{ color: '#A8C0B0', fontSize: 11, marginTop: 3 }}>
                   {p.alim_kisi && <>🔹 Alım: {p.alim_kisi} </>}
                   {p.kanal_kisi && <>🔹 Kanal: {p.kanal_kisi} </>}
                   {p.ekim_kisi && <>🔹 Ekim: {p.ekim_kisi}</>}
@@ -606,57 +606,57 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
       {showAdd && (
         <Modal title={editingPatient ? `${editingPatient.name} - Düzenle` : 'Yeni Hasta'} onClose={() => { setShowAdd(false); setEditingPatient(null); setForm({ name: '', phone: '', country: '', surgeryDate: '', technique: 'DHI', grafts: '', totalPrice: '', deposit: '', sourceType: 'hair_international', sourceName: '', alim_kisi: '', kanal_kisi: '', ekim_kisi: '', feeRows: [{ name: '', amount: '' }] }); }} wide>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div><div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>AD SOYAD *</div><Inp ph="Ad" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} /></div>
-            <div><div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TELEFON</div><Inp ph="Tel" val={form.phone} set={(v) => setForm((f) => ({ ...f, phone: v }))} /></div>
-            <div><div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>OP. TARIHI</div><Inp type="date" ph="" val={form.surgeryDate} set={(v) => setForm((f) => ({ ...f, surgeryDate: v }))} /></div>
+            <div><div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>AD SOYAD *</div><Inp ph="Ad" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} /></div>
+            <div><div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>TELEFON</div><Inp ph="Tel" val={form.phone} set={(v) => setForm((f) => ({ ...f, phone: v }))} /></div>
+            <div><div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>OP. TARIHI</div><Inp type="date" ph="" val={form.surgeryDate} set={(v) => setForm((f) => ({ ...f, surgeryDate: v }))} /></div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>GREFT SAYISI</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>GREFT SAYISI</div>
               <Inp type="number" ph="Örn: 3200" val={form.grafts} set={(v) => setForm((f) => ({ ...f, grafts: v }))} />
               {form.grafts && (
-                <div style={{ color: '#22c55e', fontSize: 11, marginTop: 5, fontWeight: 700 }}>
+                <div style={{ color: '#6B8F5E', fontSize: 11, marginTop: 5, fontWeight: 700 }}>
                   💡 Önerilen ekip ücreti: ${Number(form.grafts) < 3000 ? '400' : '500'} (3000 altı: $400, 3000 ve üstü: $500)
                 </div>
               )}
             </div>
-            <div><div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TEKNIK</div><Sel val={form.technique} set={(v) => setForm((f) => ({ ...f, technique: v }))} opts={['FUE', 'DHI', 'Safir FUE', 'PRP']} /></div>
+            <div><div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>TEKNIK</div><Sel val={form.technique} set={(v) => setForm((f) => ({ ...f, technique: v }))} opts={['FUE', 'DHI', 'Safir FUE', 'PRP']} /></div>
             {region === 'suudi' && (
               <>
                 <div>
-                  <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ALIM</div>
-                  <input list="alim-list" value={form.alim_kisi} onChange={(e) => setForm((f) => ({ ...f, alim_kisi: e.target.value }))} placeholder="Kim yaptı?" style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+                  <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>ALIM</div>
+                  <input list="alim-list" value={form.alim_kisi} onChange={(e) => setForm((f) => ({ ...f, alim_kisi: e.target.value }))} placeholder="Kim yaptı?" style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }} />
                   <datalist id="alim-list">{[...new Set(patients.filter(p => p.alim_kisi).map(p => p.alim_kisi))].map((v) => <option key={v} value={v} />)}</datalist>
                 </div>
                 <div>
-                  <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>KANAL</div>
-                  <input list="kanal-list" value={form.kanal_kisi} onChange={(e) => setForm((f) => ({ ...f, kanal_kisi: e.target.value }))} placeholder="Kim yaptı?" style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+                  <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>KANAL</div>
+                  <input list="kanal-list" value={form.kanal_kisi} onChange={(e) => setForm((f) => ({ ...f, kanal_kisi: e.target.value }))} placeholder="Kim yaptı?" style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }} />
                   <datalist id="kanal-list">{[...new Set(patients.filter(p => p.kanal_kisi).map(p => p.kanal_kisi))].map((v) => <option key={v} value={v} />)}</datalist>
                 </div>
                 <div>
-                  <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>EKİM</div>
-                  <input list="ekim-list" value={form.ekim_kisi} onChange={(e) => setForm((f) => ({ ...f, ekim_kisi: e.target.value }))} placeholder="Kim yaptı?" style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+                  <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>EKİM</div>
+                  <input list="ekim-list" value={form.ekim_kisi} onChange={(e) => setForm((f) => ({ ...f, ekim_kisi: e.target.value }))} placeholder="Kim yaptı?" style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }} />
                   <datalist id="ekim-list">{[...new Set(patients.filter(p => p.ekim_kisi).map(p => p.ekim_kisi))].map((v) => <option key={v} value={v} />)}</datalist>
                 </div>
               </>
             )}
             {region === 'suudi' && user?.name?.toLowerCase().includes('seyit') && (
-              <div style={{ gridColumn: '1/-1', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 10, padding: 12, marginTop: 6 }}>
-                <div style={{ color: '#f0b429', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>💰 EKİP ÜCRETİ DAĞILIMI ($)</div>
+              <div style={{ gridColumn: '1/-1', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: 12, marginTop: 6 }}>
+                <div style={{ color: '#B8952E', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>💰 EKİP ÜCRETİ DAĞILIMI ($)</div>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                   {['Ali', 'Muhammet', 'Furkan'].map((name) => (
-                    <button key={name} type="button" onClick={() => quickAddFeePerson(name)} style={{ padding: '6px 12px', borderRadius: 20, border: '1px solid #f0b42944', background: 'rgba(240,180,41,0.1)', color: '#f0b429', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>+ {name}</button>
+                    <button key={name} type="button" onClick={() => quickAddFeePerson(name)} style={{ padding: '6px 12px', borderRadius: 20, border: '1px solid #B8952E44', background: 'rgba(184,149,46,0.1)', color: '#B8952E', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>+ {name}</button>
                   ))}
                 </div>
                 {form.feeRows.map((row, idx) => (
                   <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: 8, marginBottom: 6 }}>
-                    <input value={row.name} onChange={(e) => updateFeeRow(idx, 'name', e.target.value)} placeholder="Kişi adı" style={{ padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }} />
-                    <input type="number" value={row.amount} onChange={(e) => updateFeeRow(idx, 'amount', e.target.value)} placeholder="Tutar" style={{ padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }} />
-                    <button type="button" onClick={() => removeFeeRow(idx)} style={{ padding: '4px 10px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 12, cursor: 'pointer' }}>×</button>
+                    <input value={row.name} onChange={(e) => updateFeeRow(idx, 'name', e.target.value)} placeholder="Kişi adı" style={{ padding: '8px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 12, boxSizing: 'border-box' }} />
+                    <input type="number" value={row.amount} onChange={(e) => updateFeeRow(idx, 'amount', e.target.value)} placeholder="Tutar" style={{ padding: '8px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 12, boxSizing: 'border-box' }} />
+                    <button type="button" onClick={() => removeFeeRow(idx)} style={{ padding: '4px 10px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 12, cursor: 'pointer' }}>×</button>
                   </div>
                 ))}
                 <div style={{ marginTop: 6, marginBottom: 10 }}>
                   <Btn v="s" sm onClick={addFeeRow}>+ Kişi Ekle</Btn>
                 </div>
-                <div style={{ borderTop: '1px solid #1c2035', paddingTop: 8, textAlign: 'right', color: '#22c55e', fontWeight: 900, fontSize: 15 }}>
+                <div style={{ borderTop: '1px solid #E3D9C7', paddingTop: 8, textAlign: 'right', color: '#6B8F5E', fontWeight: 900, fontSize: 15 }}>
                   Toplam Ekip Ücreti: ${feeTotal.toLocaleString()}
                 </div>
               </div>
@@ -672,15 +672,15 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
         <Modal title={sel.name} onClose={() => setSel(null)} wide>
           {can(user, 'edit_patients') && (
             <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-              <button onClick={() => startEditPatient(sel)} style={{ flex: 1, padding: '10px 18px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 8, color: '#4f7cff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>✏️ Bilgileri Düzenle</button>
-              <button onClick={() => handleDeletePatient(sel)} style={{ flex: 1, padding: '10px 18px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 8, color: '#f04040', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>🗑 Hastayi Sil</button>
+              <button onClick={() => startEditPatient(sel)} style={{ flex: 1, padding: '10px 18px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 8, color: '#7E9A89', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>✏️ Bilgileri Düzenle</button>
+              <button onClick={() => handleDeletePatient(sel)} style={{ flex: 1, padding: '10px 18px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 8, color: '#C1554A', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>🗑 Hastayi Sil</button>
             </div>
           )}
           <div style={{ marginBottom: 16 }}>
-            <div style={{ color: '#4a5270', fontSize: 11 }}>📞 {sel.phone}</div>
-            <div style={{ color: '#4a5270', fontSize: 11 }}>⚗️ {sel.technique} · {sel.grafts} greft</div>
+            <div style={{ color: '#7A7062', fontSize: 11 }}>📞 {sel.phone}</div>
+            <div style={{ color: '#7A7062', fontSize: 11 }}>⚗️ {sel.technique} · {sel.grafts} greft</div>
             {(sel.alim_kisi || sel.kanal_kisi || sel.ekim_kisi) && (
-              <div style={{ color: '#60a5fa', fontSize: 12, marginTop: 6, fontWeight: 700 }}>
+              <div style={{ color: '#A8C0B0', fontSize: 12, marginTop: 6, fontWeight: 700 }}>
                 {sel.alim_kisi && <div>🔹 Alım: {sel.alim_kisi}</div>}
                 {sel.kanal_kisi && <div>🔹 Kanal: {sel.kanal_kisi}</div>}
                 {sel.ekim_kisi && <div>🔹 Ekim: {sel.ekim_kisi}</div>}
@@ -695,14 +695,14 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
               const photos = getPhotos(sel);
               const cnt = (photos[c.id] || []).length + (photos[`${c.id}_videos`] || []).length;
               return (
-                <button key={c.id} onClick={() => { setActiveTab(c.id); setLastUpload(null); }} style={{ padding: '5px 10px', borderRadius: 20, border: `1px solid ${activeTab === c.id ? '#4f7cff' : '#1c2035'}`, background: activeTab === c.id ? 'rgba(79,124,255,0.15)' : 'transparent', color: activeTab === c.id ? '#4f7cff' : '#4a5270', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-                  {c.lbl}{cnt > 0 && <span style={{ background: '#4f7cff', color: '#fff', borderRadius: 10, padding: '1px 5px', fontSize: 10, marginLeft: 4 }}>{cnt}</span>}
+                <button key={c.id} onClick={() => { setActiveTab(c.id); setLastUpload(null); }} style={{ padding: '5px 10px', borderRadius: 20, border: `1px solid ${activeTab === c.id ? '#7E9A89' : '#E3D9C7'}`, background: activeTab === c.id ? 'rgba(126,154,137,0.15)' : 'transparent', color: activeTab === c.id ? '#7E9A89' : '#7A7062', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                  {c.lbl}{cnt > 0 && <span style={{ background: '#7E9A89', color: '#fff', borderRadius: 10, padding: '1px 5px', fontSize: 10, marginLeft: 4 }}>{cnt}</span>}
                 </button>
               );
             })}
           </div>
           <div style={{ marginBottom: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <label style={{ display: 'inline-block', padding: '8px 16px', background: 'rgba(79,124,255,0.12)', border: '1px solid #4f7cff44', borderRadius: 8, color: '#4f7cff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+            <label style={{ display: 'inline-block', padding: '8px 16px', background: 'rgba(126,154,137,0.12)', border: '1px solid #7E9A8944', borderRadius: 8, color: '#7E9A89', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
               {uploading ? 'Yükleniyor...' : '📤 Foto/Video Ekle'}
               <input type="file" accept="image/*,video/*" multiple onChange={handleUpload} style={{ display: 'none' }} disabled={uploading} />
             </label>
@@ -714,10 +714,10 @@ function Patients({ user, region, patients, setPatients, driveConnected }) {
             {currentPhotos.map((url, i) => (
               <div key={i} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', aspectRatio: '1' }}>
                 <img src={url} alt="" onClick={() => setLightboxIdx(i)} style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'zoom-in' }} />
-                <button onClick={() => handleDeletePhoto(url)} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(240,64,64,0.85)', border: 'none', borderRadius: '50%', width: 22, height: 22, color: '#fff', cursor: 'pointer', fontSize: 14 }}>×</button>
+                <button onClick={() => handleDeletePhoto(url)} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(193,85,74,0.85)', border: 'none', borderRadius: '50%', width: 22, height: 22, color: '#fff', cursor: 'pointer', fontSize: 14 }}>×</button>
               </div>
             ))}
-            {currentPhotos.length === 0 && currentVideos.length === 0 && <div style={{ color: '#4a5270', fontSize: 12, gridColumn: '1/-1', padding: '20px 0' }}>Medya yok.</div>}
+            {currentPhotos.length === 0 && currentVideos.length === 0 && <div style={{ color: '#7A7062', fontSize: 12, gridColumn: '1/-1', padding: '20px 0' }}>Medya yok.</div>}
           </div>
           {lightboxIdx !== null && currentPhotos[lightboxIdx] && (
             <Lightbox urls={currentPhotos} index={lightboxIdx} onClose={() => setLightboxIdx(null)} onIndex={setLightboxIdx} />
@@ -1069,30 +1069,30 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
 
   return (
     <div>
-      <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900, marginBottom: 18 }}>💰 Muhasebe - 🇸🇦 Suudi Arabistan</div>
+      <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900, marginBottom: 18 }}>💰 Muhasebe - 🇸🇦 Suudi Arabistan</div>
 
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <span style={{ color: '#4a5270', fontSize: 12 }}>💱 Güncel Kur: 1$ =</span>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <span style={{ color: '#7A7062', fontSize: 12 }}>💱 Güncel Kur: 1$ =</span>
         <input
           type="number"
           value={usdTryRate ?? ''}
           onChange={(e) => setUsdTryRate(Number(e.target.value) || null)}
-          style={{ width: 80, padding: '5px 8px', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 6, color: '#dde3ef', fontSize: 12 }}
+          style={{ width: 80, padding: '5px 8px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 6, color: '#33302A', fontSize: 12 }}
         />
-        <span style={{ color: '#4a5270', fontSize: 12 }}>₺ ({rateSource}) · 1$ = {SAR_USD_RATE} SAR (sabit)</span>
+        <span style={{ color: '#7A7062', fontSize: 12 }}>₺ ({rateSource}) · 1$ = {SAR_USD_RATE} SAR (sabit)</span>
       </div>
 
       {/* ÖZET KARTLAR */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10, marginBottom: 18 }}>
         {[
-          { lbl: 'Toplam Gelir', val: `$${totalRevenue.toLocaleString()}`, clr: '#22c55e' },
-          { lbl: 'Ali Haydar', val: `$${totalAli.toLocaleString()}`, clr: '#f97316' },
-          { lbl: 'Diğer Ekip', val: `$${totalOtherTeam.toLocaleString()}`, clr: '#f97316' },
-          { lbl: 'Seyit', val: `$${totalSeyit.toLocaleString()}`, clr: '#f97316' },
-          { lbl: 'Net Kâr', val: `$${netProfit.toLocaleString()}`, clr: netProfit >= 0 ? '#22c55e' : '#f04040' },
+          { lbl: 'Toplam Gelir', val: `$${totalRevenue.toLocaleString()}`, clr: '#6B8F5E' },
+          { lbl: 'Ali Haydar', val: `$${totalAli.toLocaleString()}`, clr: '#C68A3D' },
+          { lbl: 'Diğer Ekip', val: `$${totalOtherTeam.toLocaleString()}`, clr: '#C68A3D' },
+          { lbl: 'Seyit', val: `$${totalSeyit.toLocaleString()}`, clr: '#C68A3D' },
+          { lbl: 'Net Kâr', val: `$${netProfit.toLocaleString()}`, clr: netProfit >= 0 ? '#6B8F5E' : '#C1554A' },
         ].map(k => (
-          <div key={k.lbl} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '14px 16px' }}>
-            <div style={{ color: '#4a5270', fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>{k.lbl}</div>
+          <div key={k.lbl} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>{k.lbl}</div>
             <div style={{ color: k.clr, fontSize: 20, fontWeight: 900 }}>{k.val}</div>
           </div>
         ))}
@@ -1100,62 +1100,62 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
 
       {/* KAYNAK DAĞILIMI */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
-        <div style={{ background: 'rgba(79,124,255,0.08)', border: '1px solid #4f7cff44', borderRadius: 12, padding: 16 }}>
-          <div style={{ color: '#4f7cff', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>🏢 Premium Hair</div>
-          <div style={{ color: '#dde3ef', fontSize: 12, marginBottom: 4 }}>{premiumHairPayments.length} hasta</div>
-          <div style={{ color: '#22c55e', fontWeight: 900, fontSize: 18 }}>${premiumHairRevenue.toLocaleString()}</div>
+        <div style={{ background: 'rgba(126,154,137,0.08)', border: '1px solid #7E9A8944', borderRadius: 12, padding: 16 }}>
+          <div style={{ color: '#7E9A89', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>🏢 Premium Hair</div>
+          <div style={{ color: '#33302A', fontSize: 12, marginBottom: 4 }}>{premiumHairPayments.length} hasta</div>
+          <div style={{ color: '#6B8F5E', fontWeight: 900, fontSize: 18 }}>${premiumHairRevenue.toLocaleString()}</div>
         </div>
-        <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid #22c55e44', borderRadius: 12, padding: 16 }}>
-          <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>✈️ Hair International (Kendi Hastalarım)</div>
-          <div style={{ color: '#dde3ef', fontSize: 12, marginBottom: 4 }}>{hairIntlPayments.length} hasta</div>
-          <div style={{ color: '#22c55e', fontWeight: 900, fontSize: 18 }}>${hairIntlRevenue.toLocaleString()}</div>
+        <div style={{ background: 'rgba(107,143,94,0.08)', border: '1px solid #6B8F5E44', borderRadius: 12, padding: 16 }}>
+          <div style={{ color: '#6B8F5E', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>✈️ Hair International (Kendi Hastalarım)</div>
+          <div style={{ color: '#33302A', fontSize: 12, marginBottom: 4 }}>{hairIntlPayments.length} hasta</div>
+          <div style={{ color: '#6B8F5E', fontWeight: 900, fontSize: 18 }}>${hairIntlRevenue.toLocaleString()}</div>
         </div>
       </div>
 
       {/* AY SEÇİMİ */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 18, background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '12px 16px', flexWrap: 'wrap' }}>
-        <button onClick={() => shiftMonth(-1)} style={{ padding: '8px 14px', background: '#1a1d30', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 14, cursor: 'pointer', fontWeight: 700 }}>◀</button>
-        <div style={{ color: '#4f7cff', fontWeight: 900, fontSize: 16, minWidth: 160, textAlign: 'center' }}>📅 {getMonthLabel(selectedMonth)}</div>
-        <button onClick={() => shiftMonth(1)} style={{ padding: '8px 14px', background: '#1a1d30', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 14, cursor: 'pointer', fontWeight: 700 }}>▶</button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 18, background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: '12px 16px', flexWrap: 'wrap' }}>
+        <button onClick={() => shiftMonth(-1)} style={{ padding: '8px 14px', background: '#F1EBDE', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 14, cursor: 'pointer', fontWeight: 700 }}>◀</button>
+        <div style={{ color: '#7E9A89', fontWeight: 900, fontSize: 16, minWidth: 160, textAlign: 'center' }}>📅 {getMonthLabel(selectedMonth)}</div>
+        <button onClick={() => shiftMonth(1)} style={{ padding: '8px 14px', background: '#F1EBDE', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 14, cursor: 'pointer', fontWeight: 700 }}>▶</button>
         <Btn sm v="s" onClick={generateMonthlyReportPDF}>📄 Aylık Rapor PDF</Btn>
       </div>
 
       {/* TREND GRAFİĞİ */}
       {trendData.length > 1 && (
-        <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 18 }}>
-          <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14, marginBottom: 14 }}>📈 Son {trendData.length} Dönem Trend</div>
+        <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 18, marginBottom: 18 }}>
+          <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14, marginBottom: 14 }}>📈 Son {trendData.length} Dönem Trend</div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1c2035" />
-              <XAxis dataKey="period" stroke="#4a5270" fontSize={11} />
-              <YAxis stroke="#4a5270" fontSize={11} />
-              <Tooltip contentStyle={{ background: '#0e1020', border: '1px solid #242840', borderRadius: 8, color: '#dde3ef' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E3D9C7" />
+              <XAxis dataKey="period" stroke="#7A7062" fontSize={11} />
+              <YAxis stroke="#7A7062" fontSize={11} />
+              <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #D4C7AE', borderRadius: 8, color: '#33302A' }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="Gelir" stroke="#22c55e" strokeWidth={2} />
-              <Line type="monotone" dataKey="Kâr" stroke="#4f7cff" strokeWidth={2} />
+              <Line type="monotone" dataKey="Gelir" stroke="#6B8F5E" strokeWidth={2} />
+              <Line type="monotone" dataKey="Kâr" stroke="#7E9A89" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       )}
 
       {/* HASTA LİSTESİ */}
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 18 }}>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 18, marginBottom: 18 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div>
-            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>👥 Hasta Ücret Kayıtları — {getMonthLabel(selectedMonth)}</div>
-            <div style={{ color: '#4a5270', fontSize: 11, marginTop: 2 }}>{monthlyPayments.length} hasta bu ay</div>
+            <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14 }}>👥 Hasta Ücret Kayıtları — {getMonthLabel(selectedMonth)}</div>
+            <div style={{ color: '#7A7062', fontSize: 11, marginTop: 2 }}>{monthlyPayments.length} hasta bu ay</div>
           </div>
           <Btn sm onClick={() => { resetForm(); setEditItem(null); setShowAdd(true); }}>+ Hasta Ekle</Btn>
         </div>
         {monthlyPayments.length === 0 ? (
-          <div style={{ color: '#4a5270', fontSize: 12, textAlign: 'center', padding: 30 }}>{getMonthLabel(selectedMonth)} ayında kayıt yok.</div>
+          <div style={{ color: '#7A7062', fontSize: 12, textAlign: 'center', padding: 30 }}>{getMonthLabel(selectedMonth)} ayında kayıt yok.</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #1c2035' }}>
+                <tr style={{ borderBottom: '1px solid #E3D9C7' }}>
                   {['Hasta', 'Kaynak', 'Tarih', 'Teknik', 'Gelir', 'Ali Haydar', 'Diğer Ekip', 'Seyit', 'İşlem'].map(h => (
-                    <th key={h} style={{ color: '#4a5270', fontWeight: 700, padding: '8px 10px', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
+                    <th key={h} style={{ color: '#7A7062', fontWeight: 700, padding: '8px 10px', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -1170,23 +1170,23 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                   const otherTotal = otherArr.reduce((s, r) => s + Number(r.amount || 0), 0);
                   const otherNames = otherArr.map(r => `${r.name}: $${r.amount}`).join(', ');
                   return (
-                  <tr key={p.id} style={{ borderBottom: '1px solid #1c2035' }}>
-                    <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px 10px' }}>{p.patient_name}</td>
+                  <tr key={p.id} style={{ borderBottom: '1px solid #E3D9C7' }}>
+                    <td style={{ color: '#33302A', fontWeight: 700, padding: '10px 10px' }}>{p.patient_name}</td>
                     <td style={{ padding: '10px 10px' }}>
-                      <span style={{ padding: '3px 8px', borderRadius: 10, fontSize: 10, fontWeight: 700, background: (p.kaynak || 'Premium Hair') === 'Premium Hair' ? 'rgba(79,124,255,0.15)' : 'rgba(34,197,94,0.15)', color: (p.kaynak || 'Premium Hair') === 'Premium Hair' ? '#4f7cff' : '#22c55e' }}>
+                      <span style={{ padding: '3px 8px', borderRadius: 10, fontSize: 10, fontWeight: 700, background: (p.kaynak || 'Premium Hair') === 'Premium Hair' ? 'rgba(126,154,137,0.15)' : 'rgba(107,143,94,0.15)', color: (p.kaynak || 'Premium Hair') === 'Premium Hair' ? '#7E9A89' : '#6B8F5E' }}>
                         {(p.kaynak || 'Premium Hair') === 'Premium Hair' ? '🏢 Premium Hair' : '✈️ Hair Intl'}
                       </span>
                     </td>
-                    <td style={{ color: '#4a5270', padding: '10px 10px', whiteSpace: 'nowrap' }}>{fmt(p.surgery_date)}</td>
-                    <td style={{ color: '#4a5270', padding: '10px 10px' }}>{p.technique}</td>
-                    <td style={{ color: '#22c55e', fontWeight: 700, padding: '10px 10px' }}>${Number(p.total_price || 0).toLocaleString()}</td>
-                    <td style={{ color: '#f97316', padding: '10px 10px' }}>${Number(p.ali_haydar_fee || 0).toLocaleString()}</td>
-                    <td style={{ color: '#f97316', padding: '10px 10px' }} title={otherNames}>${otherTotal.toLocaleString()} {otherNames && <div style={{ color: '#4a5270', fontSize: 9 }}>{otherNames}</div>}</td>
-                    <td style={{ color: '#f97316', padding: '10px 10px' }}>${Number(p.seyit_fee || 0).toLocaleString()}</td>
+                    <td style={{ color: '#7A7062', padding: '10px 10px', whiteSpace: 'nowrap' }}>{fmt(p.surgery_date)}</td>
+                    <td style={{ color: '#7A7062', padding: '10px 10px' }}>{p.technique}</td>
+                    <td style={{ color: '#6B8F5E', fontWeight: 700, padding: '10px 10px' }}>${Number(p.total_price || 0).toLocaleString()}</td>
+                    <td style={{ color: '#C68A3D', padding: '10px 10px' }}>${Number(p.ali_haydar_fee || 0).toLocaleString()}</td>
+                    <td style={{ color: '#C68A3D', padding: '10px 10px' }} title={otherNames}>${otherTotal.toLocaleString()} {otherNames && <div style={{ color: '#7A7062', fontSize: 9 }}>{otherNames}</div>}</td>
+                    <td style={{ color: '#C68A3D', padding: '10px 10px' }}>${Number(p.seyit_fee || 0).toLocaleString()}</td>
                     <td style={{ padding: '10px 10px' }}>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <button onClick={() => startEdit(p)} style={{ padding: '4px 8px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 11, cursor: 'pointer' }}>✏️</button>
-                        <button onClick={() => deletePayment(p.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+                        <button onClick={() => startEdit(p)} style={{ padding: '4px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>✏️</button>
+                        <button onClick={() => deletePayment(p.id)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
                       </div>
                     </td>
                   </tr>
@@ -1197,20 +1197,20 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
           </div>
         )}
         <details style={{ marginTop: 14 }}>
-          <summary style={{ color: '#4a5270', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>📦 Arşiv — Tüm Ayların Toplamı ({payments.length} hasta, tüm zamanlar)</summary>
-          <div style={{ color: '#4a5270', fontSize: 11, marginTop: 8 }}>Diğer ayları görmek için yukarıdaki ◀ ▶ ok butonlarını kullanın.</div>
+          <summary style={{ color: '#7A7062', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>📦 Arşiv — Tüm Ayların Toplamı ({payments.length} hasta, tüm zamanlar)</summary>
+          <div style={{ color: '#7A7062', fontSize: 11, marginTop: 8 }}>Diğer ayları görmek için yukarıdaki ◀ ▶ ok butonlarını kullanın.</div>
         </details>
       </div>
 
       {/* NET ÖDEME ÖZETİ (Kişisel Alacaklar Düşülmüş) */}
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 14 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14, marginBottom: 14 }}>💵 Net Ödenecek (Kişisel Alacaklar Düşülmüş) — {getMonthLabel(selectedMonth)}</div>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 18, marginBottom: 14 }}>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14, marginBottom: 14 }}>💵 Net Ödenecek (Kişisel Alacaklar Düşülmüş) — {getMonthLabel(selectedMonth)}</div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #1c2035' }}>
+              <tr style={{ borderBottom: '1px solid #E3D9C7' }}>
                 {['Kişi', 'Vaka Sayısı', 'Hak Ediş', 'Alacak/Verecek (Avans, Market, Kişisel Gider vs.)', 'Net Ödenecek'].map(h => (
-                  <th key={h} style={{ color: '#4a5270', fontWeight: 700, padding: '8px 10px', textAlign: 'left' }}>{h}</th>
+                  <th key={h} style={{ color: '#7A7062', fontWeight: 700, padding: '8px 10px', textAlign: 'left' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -1220,52 +1220,52 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                 ...otherTeamRows,
                 { name: 'Seyit', earned: totalSeyit, count: caseCountSeyit, pending: pendingSeyit, net: netSeyit },
               ].map(row => (
-                <tr key={row.name} style={{ borderBottom: '1px solid #1c2035' }}>
-                  <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px 10px' }}>{row.name}</td>
-                  <td style={{ color: '#4a5270', padding: '10px 10px', textAlign: 'center' }}>{row.count}</td>
-                  <td style={{ color: '#22c55e', padding: '10px 10px' }}>${row.earned.toLocaleString()}</td>
-                  <td style={{ color: row.pending > 0 ? '#f04040' : '#4a5270', padding: '10px 10px' }}>{row.pending > 0 ? `-$${row.pending.toLocaleString()}` : '-'}</td>
-                  <td style={{ color: row.net >= 0 ? '#22c55e' : '#f04040', fontWeight: 900, padding: '10px 10px' }}>${row.net.toLocaleString()}</td>
+                <tr key={row.name} style={{ borderBottom: '1px solid #E3D9C7' }}>
+                  <td style={{ color: '#33302A', fontWeight: 700, padding: '10px 10px' }}>{row.name}</td>
+                  <td style={{ color: '#7A7062', padding: '10px 10px', textAlign: 'center' }}>{row.count}</td>
+                  <td style={{ color: '#6B8F5E', padding: '10px 10px' }}>${row.earned.toLocaleString()}</td>
+                  <td style={{ color: row.pending > 0 ? '#C1554A' : '#7A7062', padding: '10px 10px' }}>{row.pending > 0 ? `-$${row.pending.toLocaleString()}` : '-'}</td>
+                  <td style={{ color: row.net >= 0 ? '#6B8F5E' : '#C1554A', fontWeight: 900, padding: '10px 10px' }}>${row.net.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         {pendingGenel > 0 && (
-          <div style={{ marginTop: 12, color: '#f97316', fontSize: 11, fontWeight: 700 }}>
+          <div style={{ marginTop: 12, color: '#C68A3D', fontSize: 11, fontWeight: 700 }}>
             🏢 Genel/Şirket bekleyen: ${pendingGenel.toLocaleString()} (kişiye bağlı değil, ayrı takip edilir)
           </div>
         )}
         {pendingPremiumHair > 0 && (
-          <div style={{ marginTop: 8, color: '#22c55e', fontSize: 12, fontWeight: 800, background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e44', borderRadius: 8, padding: '8px 12px' }}>
+          <div style={{ marginTop: 8, color: '#6B8F5E', fontSize: 12, fontWeight: 800, background: 'rgba(107,143,94,0.1)', border: '1px solid #6B8F5E44', borderRadius: 8, padding: '8px 12px' }}>
             🛒 Premium Hair'den Alacağımız: ${pendingPremiumHair.toLocaleString()} (market giderleri, ay sonu hesaplaşmada netleşir)
           </div>
         )}
       </div>
 
       {/* SEYİT'İN AYLIK HESAP ÖZETİ */}
-      <div style={{ background: 'rgba(155,89,247,0.08)', border: '1px solid #9333ea44', borderRadius: 12, padding: 18, marginBottom: 14 }}>
-        <div style={{ color: '#a855f7', fontWeight: 900, fontSize: 15, marginBottom: 14 }}>👑 Seyit'in Aylık Hesap Özeti — {getMonthLabel(selectedMonth)}</div>
+      <div style={{ background: 'rgba(155,123,140,0.08)', border: '1px solid #9B7B8C44', borderRadius: 12, padding: 18, marginBottom: 14 }}>
+        <div style={{ color: '#9B7B8C', fontWeight: 900, fontSize: 15, marginBottom: 14 }}>👑 Seyit'in Aylık Hesap Özeti — {getMonthLabel(selectedMonth)}</div>
         {(() => {
           const seyitGiderTotal = giderFor('Seyit');
           const seyitAlacakTotal = pendingRec.filter(r => normKey(r.person) === 'seyit').reduce((s, r) => s + toUSD(r), 0);
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9333ea22' }}>
-                <span style={{ color: '#dde3ef', fontSize: 13 }}>Hak Ediş ({caseCountSeyit} vaka)</span>
-                <span style={{ color: '#22c55e', fontWeight: 700, fontSize: 13 }}>+${totalSeyit.toLocaleString()}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
+                <span style={{ color: '#33302A', fontSize: 13 }}>Hak Ediş ({caseCountSeyit} vaka)</span>
+                <span style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 13 }}>+${totalSeyit.toLocaleString()}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9333ea22' }}>
-                <span style={{ color: '#dde3ef', fontSize: 13 }}>Kişisel Giderler (uçak bileti vb.)</span>
-                <span style={{ color: seyitGiderTotal > 0 ? '#f04040' : '#4a5270', fontWeight: 700, fontSize: 13 }}>{seyitGiderTotal > 0 ? `-$${seyitGiderTotal.toLocaleString()}` : '-'}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
+                <span style={{ color: '#33302A', fontSize: 13 }}>Kişisel Giderler (uçak bileti vb.)</span>
+                <span style={{ color: seyitGiderTotal > 0 ? '#C1554A' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitGiderTotal > 0 ? `-$${seyitGiderTotal.toLocaleString()}` : '-'}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9333ea22' }}>
-                <span style={{ color: '#dde3ef', fontSize: 13 }}>Diğer Alacaklar (Avans vb.)</span>
-                <span style={{ color: seyitAlacakTotal > 0 ? '#f04040' : '#4a5270', fontWeight: 700, fontSize: 13 }}>{seyitAlacakTotal > 0 ? `-$${seyitAlacakTotal.toLocaleString()}` : '-'}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
+                <span style={{ color: '#33302A', fontSize: 13 }}>Diğer Alacaklar (Avans vb.)</span>
+                <span style={{ color: seyitAlacakTotal > 0 ? '#C1554A' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitAlacakTotal > 0 ? `-$${seyitAlacakTotal.toLocaleString()}` : '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 0 0' }}>
-                <span style={{ color: '#dde3ef', fontWeight: 900, fontSize: 15 }}>NET TOPLAM</span>
-                <span style={{ color: netSeyit >= 0 ? '#22c55e' : '#f04040', fontWeight: 900, fontSize: 20 }}>${netSeyit.toLocaleString()}</span>
+                <span style={{ color: '#33302A', fontWeight: 900, fontSize: 15 }}>NET TOPLAM</span>
+                <span style={{ color: netSeyit >= 0 ? '#6B8F5E' : '#C1554A', fontWeight: 900, fontSize: 20 }}>${netSeyit.toLocaleString()}</span>
               </div>
             </div>
           );
@@ -1273,44 +1273,44 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       </div>
 
       {/* ALACAKLAR */}
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 14 }}>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 18, marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div>
-            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>📋 Alacaklar — {getMonthLabel(selectedMonth)}</div>
-            <div style={{ color: '#f97316', fontSize: 11, marginTop: 2 }}>Bekleyen: ₺{totalPending.toLocaleString()}</div>
+            <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14 }}>📋 Alacaklar — {getMonthLabel(selectedMonth)}</div>
+            <div style={{ color: '#C68A3D', fontSize: 11, marginTop: 2 }}>Bekleyen: ₺{totalPending.toLocaleString()}</div>
           </div>
           <Btn sm onClick={() => setShowAddRec(true)}>+ Alacak</Btn>
         </div>
         {pendingRec.length === 0 ? (
-          <div style={{ color: '#4a5270', fontSize: 12, textAlign: 'center', padding: 20 }}>Bekleyen alacak yok.</div>
+          <div style={{ color: '#7A7062', fontSize: 12, textAlign: 'center', padding: 20 }}>Bekleyen alacak yok.</div>
         ) : pendingRec.map(r => (
-          <div key={r.id} style={{ background: '#1a1d30', border: '1px solid #f9731633', borderRadius: 8, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+          <div key={r.id} style={{ background: '#F1EBDE', border: '1px solid #C68A3D33', borderRadius: 8, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 140 }}>
-              <div style={{ color: '#dde3ef', fontSize: 13, fontWeight: 700 }}>
+              <div style={{ color: '#33302A', fontSize: 13, fontWeight: 700 }}>
                 {r.description}
-                <span style={{ marginLeft: 8, padding: '2px 8px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff44', borderRadius: 10, color: '#4f7cff', fontSize: 10, fontWeight: 700 }}>
+                <span style={{ marginLeft: 8, padding: '2px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A8944', borderRadius: 10, color: '#7E9A89', fontSize: 10, fontWeight: 700 }}>
                   {r.person || 'Genel'}
                 </span>
               </div>
-              <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(r.date_added)} {r.notes && `· ${r.notes}`}</div>
-              {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#4f7cff', fontSize: 11 }}>📷 Fiş</a>}
+              <div style={{ color: '#7A7062', fontSize: 11 }}>{fmt(r.date_added)} {r.notes && `· ${r.notes}`}</div>
+              {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#7E9A89', fontSize: 11 }}>📷 Fiş</a>}
             </div>
-            <div style={{ color: '#f97316', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'EUR' ? '€' : '₺'}{Number(r.amount).toLocaleString()}</div>
-            <button onClick={() => markPaid(r)} style={{ padding: '5px 10px', background: '#22c55e', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Tahsil</button>
-            <button onClick={() => startEditRec(r)} style={{ padding: '5px 8px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 11, cursor: 'pointer' }}>✏️</button>
-            <button onClick={() => removeRec(r)} style={{ padding: '5px 8px', background: 'transparent', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>Sil</button>
+            <div style={{ color: '#C68A3D', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : r.currency === 'EUR' ? '€' : '₺'}{Number(r.amount).toLocaleString()}</div>
+            <button onClick={() => markPaid(r)} style={{ padding: '5px 10px', background: '#6B8F5E', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Tahsil</button>
+            <button onClick={() => startEditRec(r)} style={{ padding: '5px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>✏️</button>
+            <button onClick={() => removeRec(r)} style={{ padding: '5px 8px', background: 'transparent', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>Sil</button>
           </div>
         ))}
         {paidRec.length > 0 && (
           <details style={{ marginTop: 14 }}>
-            <summary style={{ color: '#22c55e', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>✅ Tahsil Edilenler ({paidRec.length})</summary>
+            <summary style={{ color: '#6B8F5E', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>✅ Tahsil Edilenler ({paidRec.length})</summary>
             {paidRec.map(r => (
-              <div key={r.id} style={{ background: '#1a1d30', borderLeft: '3px solid #22c55e', borderRadius: 6, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
+              <div key={r.id} style={{ background: '#F1EBDE', borderLeft: '3px solid #6B8F5E', borderRadius: 6, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ color: '#dde3ef', fontSize: 12 }}>{r.description}</div>
-                  <div style={{ color: '#4a5270', fontSize: 10 }}>Tahsil: {fmt(r.paid_date)}</div>
+                  <div style={{ color: '#33302A', fontSize: 12 }}>{r.description}</div>
+                  <div style={{ color: '#7A7062', fontSize: 10 }}>Tahsil: {fmt(r.paid_date)}</div>
                 </div>
-                <div style={{ color: '#22c55e', fontWeight: 700, fontSize: 13 }}>{r.currency === 'USD' ? '$' : '₺'}{Number(r.amount).toLocaleString()}</div>
+                <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 13 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
               </div>
             ))}
           </details>
@@ -1318,9 +1318,9 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       </div>
 
       {/* AYLIK MASRAF ÖZETİ (Tüm Zamanlar - Analiz için) */}
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 14 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>📅 Aylık Masraf Özeti (Tüm Zamanlar)</div>
-        <div style={{ color: '#4a5270', fontSize: 11, marginBottom: 14 }}>Kişisel harcamalar, avanslar ve tüm alacak kayıtlarının 13'ünden 13'üne dönem dökümü — geriye dönük analiz için</div>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 18, marginBottom: 14 }}>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>📅 Aylık Masraf Özeti (Tüm Zamanlar)</div>
+        <div style={{ color: '#7A7062', fontSize: 11, marginBottom: 14 }}>Kişisel harcamalar, avanslar ve tüm alacak kayıtlarının 13'ünden 13'üne dönem dökümü — geriye dönük analiz için</div>
         {(() => {
           const byMonth = {};
           receivables.forEach(r => {
@@ -1331,21 +1331,21 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
             byMonth[key].items.push(r);
           });
           const months = Object.keys(byMonth).sort().reverse();
-          if (months.length === 0) return <div style={{ color: '#4a5270', fontSize: 12, textAlign: 'center', padding: 10 }}>Henüz kayıt yok.</div>;
+          if (months.length === 0) return <div style={{ color: '#7A7062', fontSize: 12, textAlign: 'center', padding: 10 }}>Henüz kayıt yok.</div>;
           return months.map(mk => {
             const label = getMonthLabel(mk);
             return (
               <details key={mk} style={{ marginBottom: 8 }}>
-                <summary style={{ color: '#dde3ef', fontSize: 12, fontWeight: 700, cursor: 'pointer', padding: '8px 0' }}>
-                  {label} — <span style={{ color: '#f0b429' }}>${byMonth[mk].total.toLocaleString()}</span> ({byMonth[mk].items.length} kayıt)
+                <summary style={{ color: '#33302A', fontSize: 12, fontWeight: 700, cursor: 'pointer', padding: '8px 0' }}>
+                  {label} — <span style={{ color: '#B8952E' }}>${byMonth[mk].total.toLocaleString()}</span> ({byMonth[mk].items.length} kayıt)
                 </summary>
                 {byMonth[mk].items.map(r => (
-                  <div key={r.id} style={{ background: '#1a1d30', borderRadius: 6, padding: '8px 12px', marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
+                  <div key={r.id} style={{ background: '#F1EBDE', borderRadius: 6, padding: '8px 12px', marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
                     <div>
-                      <div style={{ color: '#dde3ef', fontSize: 12 }}>{r.description} <span style={{ color: '#4a5270', fontSize: 10 }}>({r.person || 'Genel'})</span></div>
-                      {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#4f7cff', fontSize: 10 }}>📷 Fiş</a>}
+                      <div style={{ color: '#33302A', fontSize: 12 }}>{r.description} <span style={{ color: '#7A7062', fontSize: 10 }}>({r.person || 'Genel'})</span></div>
+                      {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#7E9A89', fontSize: 10 }}>📷 Fiş</a>}
                     </div>
-                    <div style={{ color: r.paid ? '#22c55e' : '#f0b429', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : '₺'}{Number(r.amount).toLocaleString()} {r.paid ? '✓' : '⏳'}</div>
+                    <div style={{ color: r.paid ? '#6B8F5E' : '#B8952E', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : '₺'}{Number(r.amount).toLocaleString()} {r.paid ? '✓' : '⏳'}</div>
                   </div>
                 ))}
               </details>
@@ -1355,11 +1355,11 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       </div>
 
       {/* KİŞİSEL GİDERLER (KARŞILIKSIZ) - Bu bölüm ameliyat gelir/gider hesaplarını ETKİLEMEZ */}
-      <div style={{ background: '#121525', border: '1px solid #9333ea44', borderRadius: 12, padding: 18, marginBottom: 14 }}>
+      <div style={{ background: '#FFFFFF', border: '1px solid #9B7B8C44', borderRadius: 12, padding: 18, marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <div>
-            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>✈️ Kişisel Giderler (Karşılıksız) — {getMonthLabel(selectedMonth)}</div>
-            <div style={{ color: '#4a5270', fontSize: 11, marginTop: 2 }}>Uçak bileti vb. — geri alınmayan masraflar. Bu tutarlar hasta gelir/kâr hesabına dahil edilmez, sadece kayıt/analiz amaçlıdır. Yukarıdaki ana dönem seçimine (13'ünden 13'üne) göre gruplanır.</div>
+            <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14 }}>✈️ Kişisel Giderler (Karşılıksız) — {getMonthLabel(selectedMonth)}</div>
+            <div style={{ color: '#7A7062', fontSize: 11, marginTop: 2 }}>Uçak bileti vb. — geri alınmayan masraflar. Bu tutarlar hasta gelir/kâr hesabına dahil edilmez, sadece kayıt/analiz amaçlıdır. Yukarıdaki ana dönem seçimine (13'ünden 13'üne) göre gruplanır.</div>
           </div>
           <Btn sm v="s" onClick={() => setShowAddGider(true)}>+ Gider Ekle</Btn>
         </div>
@@ -1370,21 +1370,21 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
           const totalUSD = monthlyGiderler.filter(g => g.currency === 'USD').reduce((s, g) => s + Number(g.amount || 0), 0);
           return (
             <>
-              <div style={{ color: '#a855f7', fontWeight: 900, fontSize: 16, margin: '12px 0' }}>
+              <div style={{ color: '#9B7B8C', fontWeight: 900, fontSize: 16, margin: '12px 0' }}>
                 Bu Dönem Toplam: ₺{totalTRY.toLocaleString()} {' + '} ${totalUSD.toLocaleString()}
               </div>
               {monthlyGiderler.length === 0 ? (
-                <div style={{ color: '#4a5270', fontSize: 12, textAlign: 'center', padding: 16 }}>{getMonthLabel(selectedMonth)} döneminde kayıt yok.</div>
+                <div style={{ color: '#7A7062', fontSize: 12, textAlign: 'center', padding: 16 }}>{getMonthLabel(selectedMonth)} döneminde kayıt yok.</div>
               ) : monthlyGiderler.map(g => (
-                <div key={g.id} style={{ background: '#1a1d30', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <div key={g.id} style={{ background: '#F1EBDE', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <div>
-                    <div style={{ color: '#dde3ef', fontSize: 13, fontWeight: 700 }}>{g.desc} <span style={{ color: '#4a5270', fontSize: 10 }}>({g.cat})</span></div>
-                    <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(g.date)}</div>
-                    {g.receipt_url && <a href={g.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#4f7cff', fontSize: 11 }}>📷 Fiş</a>}
+                    <div style={{ color: '#33302A', fontSize: 13, fontWeight: 700 }}>{g.desc} <span style={{ color: '#7A7062', fontSize: 10 }}>({g.cat})</span></div>
+                    <div style={{ color: '#7A7062', fontSize: 11 }}>{fmt(g.date)}</div>
+                    {g.receipt_url && <a href={g.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#7E9A89', fontSize: 11 }}>📷 Fiş</a>}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ color: '#a855f7', fontWeight: 800 }}>{g.currency === 'USD' ? '$' : '₺'}{Number(g.amount).toLocaleString()}</div>
-                    <button onClick={() => removeKisiselGider(g.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+                    <div style={{ color: '#9B7B8C', fontWeight: 800 }}>{g.currency === 'USD' ? '$' : '₺'}{Number(g.amount).toLocaleString()}</div>
+                    <button onClick={() => removeKisiselGider(g.id)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
                   </div>
                 </div>
               ))}
@@ -1397,17 +1397,17 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
         <Modal title="Kişisel Gider Ekle" onClose={() => setShowAddGider(false)}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>KİME AİT? (hesabından düşülecek kişi)</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>KİME AİT? (hesabından düşülecek kişi)</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
                 {['Seyit', 'Ali Haydar', ...Object.values(otherFeeByName).map(v => v.display)].map(p => (
-                  <button key={p} type="button" onClick={() => setGiderForm(f => ({ ...f, person: p }))} style={{ padding: '6px 12px', borderRadius: 20, border: `1px solid ${giderForm.person === p ? '#a855f7' : '#1c2035'}`, background: giderForm.person === p ? 'rgba(168,85,247,0.15)' : '#121525', color: giderForm.person === p ? '#a855f7' : '#9ba8bc', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{p}</button>
+                  <button key={p} type="button" onClick={() => setGiderForm(f => ({ ...f, person: p }))} style={{ padding: '6px 12px', borderRadius: 20, border: `1px solid ${giderForm.person === p ? '#9B7B8C' : '#E3D9C7'}`, background: giderForm.person === p ? 'rgba(155,123,140,0.15)' : '#FFFFFF', color: giderForm.person === p ? '#9B7B8C' : '#A79B88', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{p}</button>
                 ))}
               </div>
               <input
                 value={giderForm.person}
                 onChange={(e) => setGiderForm(f => ({ ...f, person: e.target.value }))}
                 placeholder="Ya da başka bir isim yazın"
-                style={{ width: '100%', padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '8px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 12, boxSizing: 'border-box' }}
               />
             </div>
             <Sel val={giderForm.cat} set={v => setGiderForm(f => ({ ...f, cat: v }))} opts={['Uçak Bileti', 'Konaklama', 'Ulaşım', 'Yemek', 'Diğer']} />
@@ -1418,8 +1418,8 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
             </div>
             <Inp type="date" ph="" val={giderForm.date} set={v => setGiderForm(f => ({ ...f, date: v }))} />
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>FİŞ FOTOĞRAFI</div>
-              <input type="file" accept="image/*" onChange={e => setGiderForm(f => ({ ...f, receiptFile: e.target.files[0] }))} style={{ width: '100%', padding: 8, background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12 }} />
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>FİŞ FOTOĞRAFI</div>
+              <input type="file" accept="image/*" onChange={e => setGiderForm(f => ({ ...f, receiptFile: e.target.files[0] }))} style={{ width: '100%', padding: 8, background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 12 }} />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <Btn v="s" onClick={() => setShowAddGider(false)}>İptal</Btn>
@@ -1434,51 +1434,51 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
         <Modal title={editItem ? 'Kaydı Düzenle' : 'Hasta Ekle'} onClose={() => { setShowAdd(false); setEditItem(null); resetForm(); }} wide>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div style={{ gridColumn: '1/-1' }}>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>HASTA ADI *</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>HASTA ADI *</div>
               <Inp ph="Ad Soyad" val={form.patient_name} set={v => setForm(f => ({ ...f, patient_name: v }))} />
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>OP. TARİHİ</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>OP. TARİHİ</div>
               <Inp type="date" ph="" val={form.surgery_date} set={v => setForm(f => ({ ...f, surgery_date: v }))} />
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TEKNİK</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>TEKNİK</div>
               <Sel val={form.technique} set={v => setForm(f => ({ ...f, technique: v }))} opts={['FUE', 'DHI', 'Safir FUE', 'PRP']} />
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>KAYNAK</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>KAYNAK</div>
               <Sel val={form.kaynak} set={v => setForm(f => ({ ...f, kaynak: v }))} opts={[{ v: 'Premium Hair', l: '🏢 Premium Hair' }, { v: 'Hair International', l: '✈️ Hair International (Kendi Hastam)' }]} />
             </div>
             <div style={{ gridColumn: '1/-1' }}>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TOPLAM GELİR ($)</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>TOPLAM GELİR ($)</div>
               <Inp type="number" ph="Örn: 2500" val={form.total_price} set={v => setForm(f => ({ ...f, total_price: v }))} />
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ALİ HAYDAR ÜCRETİ ($)</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>ALİ HAYDAR ÜCRETİ ($)</div>
               <Inp type="number" ph="0" val={form.ali_haydar_fee} set={v => setForm(f => ({ ...f, ali_haydar_fee: v }))} />
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>SEYİT ÜCRETİ ($)</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>SEYİT ÜCRETİ ($)</div>
               <Inp type="number" ph="0" val={form.seyit_fee} set={v => setForm(f => ({ ...f, seyit_fee: v }))} />
             </div>
-            <div style={{ gridColumn: '1/-1', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 10, padding: 12 }}>
-              <div style={{ color: '#f0b429', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>👥 DİĞER EKİP ÜYELERİ (her ay değişebilir — isim yazın)</div>
+            <div style={{ gridColumn: '1/-1', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: 12 }}>
+              <div style={{ color: '#B8952E', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>👥 DİĞER EKİP ÜYELERİ (her ay değişebilir — isim yazın)</div>
               {form.otherFees.map((row, idx) => (
                 <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: 8, marginBottom: 6 }}>
-                  <input list="diger-ekip-list" value={row.name} onChange={(e) => updateOtherFeeRow(idx, 'name', e.target.value)} placeholder="Kişi adı" style={{ padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }} />
-                  <input type="number" value={row.amount} onChange={(e) => updateOtherFeeRow(idx, 'amount', e.target.value)} placeholder="Tutar ($)" style={{ padding: '8px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12, boxSizing: 'border-box' }} />
-                  <button type="button" onClick={() => removeOtherFeeRow(idx)} style={{ padding: '4px 10px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 12, cursor: 'pointer' }}>×</button>
+                  <input list="diger-ekip-list" value={row.name} onChange={(e) => updateOtherFeeRow(idx, 'name', e.target.value)} placeholder="Kişi adı" style={{ padding: '8px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 12, boxSizing: 'border-box' }} />
+                  <input type="number" value={row.amount} onChange={(e) => updateOtherFeeRow(idx, 'amount', e.target.value)} placeholder="Tutar ($)" style={{ padding: '8px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 12, boxSizing: 'border-box' }} />
+                  <button type="button" onClick={() => removeOtherFeeRow(idx)} style={{ padding: '4px 10px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 12, cursor: 'pointer' }}>×</button>
                 </div>
               ))}
               <datalist id="diger-ekip-list">{Object.values(otherFeeByName).map(v => <option key={v.display} value={v.display} />)}</datalist>
               <Btn v="s" sm onClick={addOtherFeeRow}>+ Kişi Ekle</Btn>
             </div>
             <div style={{ gridColumn: '1/-1' }}>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>NOTLAR</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>NOTLAR</div>
               <Inp ph="Notlar..." val={form.notes} set={v => setForm(f => ({ ...f, notes: v }))} rows={2} />
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 16, position: 'sticky', bottom: 0, background: '#0e1020', paddingTop: 12, paddingBottom: 4, borderTop: '1px solid #242840' }}>
+          <div style={{ display: 'flex', gap: 8, marginTop: 16, position: 'sticky', bottom: 0, background: '#FFFFFF', paddingTop: 12, paddingBottom: 4, borderTop: '1px solid #D4C7AE' }}>
             <Btn v="s" onClick={() => { setShowAdd(false); setEditItem(null); resetForm(); }}>İptal</Btn>
             <Btn onClick={savePayment}>{editItem ? 'Güncelle' : 'Kaydet'}</Btn>
           </div>
@@ -1490,10 +1490,10 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
         <Modal title={editingRec ? 'Alacağı Düzenle' : 'Alacak Ekle'} onClose={() => { setShowAddRec(false); setEditingRec(null); setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0) }); }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>KİM İÇİN? (kişisel harcama sahibi)</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>KİM İÇİN? (kişisel harcama sahibi)</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
                 {['Genel', 'Ali Haydar', 'Seyit', 'Premium Hair (Market)'].map(p => (
-                  <button key={p} type="button" onClick={() => setRecForm(f => ({ ...f, person: p }))} style={{ padding: '6px 12px', borderRadius: 20, border: `1px solid ${recForm.person === p ? '#4f7cff' : '#1c2035'}`, background: recForm.person === p ? 'rgba(79,124,255,0.15)' : '#121525', color: recForm.person === p ? '#4f7cff' : '#9ba8bc', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{p}</button>
+                  <button key={p} type="button" onClick={() => setRecForm(f => ({ ...f, person: p }))} style={{ padding: '6px 12px', borderRadius: 20, border: `1px solid ${recForm.person === p ? '#7E9A89' : '#E3D9C7'}`, background: recForm.person === p ? 'rgba(126,154,137,0.15)' : '#FFFFFF', color: recForm.person === p ? '#7E9A89' : '#A79B88', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{p}</button>
                 ))}
               </div>
               <input
@@ -1501,7 +1501,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                 value={recForm.person}
                 onChange={(e) => setRecForm(f => ({ ...f, person: e.target.value }))}
                 placeholder="Ya da başka bir isim yazın (değişken ekip üyesi)"
-                style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }}
               />
               <datalist id="rec-person-list">
                 {Object.values(otherFeeByName).map(v => <option key={v.display} value={v.display} />)}
@@ -1513,13 +1513,13 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
               <Sel val={recForm.currency} set={v => setRecForm(f => ({ ...f, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }, { v: 'SAR', l: 'SAR' }]} />
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TARİH (hangi döneme ait olacağını belirler)</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>TARİH (hangi döneme ait olacağını belirler)</div>
               <Inp type="date" ph="" val={recForm.date} set={v => setRecForm(f => ({ ...f, date: v }))} />
             </div>
             <Inp ph="Notlar" val={recForm.notes} set={v => setRecForm(f => ({ ...f, notes: v }))} />
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>FİŞ FOTOĞRAFI (opsiyonel)</div>
-              <input type="file" accept="image/*" onChange={e => setRecForm(f => ({ ...f, receiptFile: e.target.files[0] }))} style={{ width: '100%', padding: 8, background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12 }} />
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>FİŞ FOTOĞRAFI (opsiyonel)</div>
+              <input type="file" accept="image/*" onChange={e => setRecForm(f => ({ ...f, receiptFile: e.target.files[0] }))} style={{ width: '100%', padding: 8, background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 12 }} />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <Btn v="s" onClick={() => { setShowAddRec(false); setEditingRec(null); setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0) }); }}>İptal</Btn>
@@ -1548,31 +1548,31 @@ function Finance({ patients, expenses, setExpenses, user, region }) {
   };
   return (
     <div>
-      <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900, marginBottom: 18 }}>💰 Muhasebe</div>
+      <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900, marginBottom: 18 }}>💰 Muhasebe</div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
         {[
-          { ico: '📈', lbl: 'Gelir', val: fmtM(totalRev), clr: '#22c55e' },
-          { ico: '💸', lbl: 'Gider', val: fmtM(totalExp), clr: '#f04040' },
-          { ico: '✨', lbl: 'Net', val: fmtM(net), clr: net >= 0 ? '#22c55e' : '#f04040' },
+          { ico: '📈', lbl: 'Gelir', val: fmtM(totalRev), clr: '#6B8F5E' },
+          { ico: '💸', lbl: 'Gider', val: fmtM(totalExp), clr: '#C1554A' },
+          { ico: '✨', lbl: 'Net', val: fmtM(net), clr: net >= 0 ? '#6B8F5E' : '#C1554A' },
         ].map((k) => (
-          <div key={k.lbl} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '18px 20px', flex: 1, minWidth: 130 }}>
+          <div key={k.lbl} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: '18px 20px', flex: 1, minWidth: 130 }}>
             <div style={{ fontSize: 18, marginBottom: 6 }}>{k.ico}</div>
-            <div style={{ color: '#4a5270', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 3 }}>{k.lbl}</div>
+            <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 3 }}>{k.lbl}</div>
             <div style={{ color: k.clr, fontSize: 24, fontWeight: 900 }}>{k.val}</div>
           </div>
         ))}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800 }}>Giderler</div>
+        <div style={{ color: '#33302A', fontWeight: 800 }}>Giderler</div>
         <Btn sm onClick={() => setShowAdd(true)}>+ Gider</Btn>
       </div>
       {expenses.map((e) => (
-        <div key={e.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+        <div key={e.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
           <div>
-            <div style={{ color: '#dde3ef', fontSize: 13 }}>{e.desc}</div>
-            <div style={{ color: '#4a5270', fontSize: 10 }}>{e.cat} · {fmt(e.date)}</div>
+            <div style={{ color: '#33302A', fontSize: 13 }}>{e.desc}</div>
+            <div style={{ color: '#7A7062', fontSize: 10 }}>{e.cat} · {fmt(e.date)}</div>
           </div>
-          <div style={{ color: '#f04040', fontWeight: 800 }}>-₺{e.amount.toLocaleString()}</div>
+          <div style={{ color: '#C1554A', fontWeight: 800 }}>-₺{e.amount.toLocaleString()}</div>
         </div>
       ))}
       {showAdd && (
@@ -1614,33 +1614,33 @@ function ActivityLog({ region }) {
     return true;
   });
   const actionColor = (action) => {
-    if (action?.includes('silindi')) return '#f04040';
-    if (action?.includes('eklendi')) return '#22c55e';
-    if (action?.includes('yuklendi')) return '#4f7cff';
-    if (action?.includes('tahsil')) return '#f0b429';
-    return '#9ba8bc';
+    if (action?.includes('silindi')) return '#C1554A';
+    if (action?.includes('eklendi')) return '#6B8F5E';
+    if (action?.includes('yuklendi')) return '#7E9A89';
+    if (action?.includes('tahsil')) return '#B8952E';
+    return '#A79B88';
   };
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
-        <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900 }}>📜 Aktivite Geçmişi</div>
+        <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900 }}>📜 Aktivite Geçmişi</div>
         <Btn sm v="s" onClick={refresh}>🔄 Yenile</Btn>
       </div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
         <div style={{ flex: 2, minWidth: 200 }}><Inp ph="Ara..." val={search} set={setSearch} /></div>
         <div style={{ flex: 1, minWidth: 160 }}><Sel val={filterUser} set={setFilterUser} opts={[{ v: '', l: '👥 Tümü' }, ...userNames.map((n) => ({ v: n, l: n }))]} /></div>
       </div>
-      {loading ? <div style={{ color: '#4a5270', textAlign: 'center', padding: 30 }}>Yukleniyor...</div> : filtered.length === 0 ? <div style={{ color: '#4a5270', textAlign: 'center', padding: 30 }}>Kayit yok.</div> : filtered.map((l) => (
-        <div key={l.id} style={{ background: '#121525', border: '1px solid #1c2035', borderLeft: `3px solid ${actionColor(l.action)}`, borderRadius: 10, padding: '12px 16px', marginBottom: 8 }}>
+      {loading ? <div style={{ color: '#7A7062', textAlign: 'center', padding: 30 }}>Yukleniyor...</div> : filtered.length === 0 ? <div style={{ color: '#7A7062', textAlign: 'center', padding: 30 }}>Kayit yok.</div> : filtered.map((l) => (
+        <div key={l.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderLeft: `3px solid ${actionColor(l.action)}`, borderRadius: 10, padding: '12px 16px', marginBottom: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 5, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Av name={l.user_name} size={26} clr={actionColor(l.action)} />
-              <span style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{l.user_name}</span>
+              <span style={{ color: '#33302A', fontWeight: 700, fontSize: 13 }}>{l.user_name}</span>
               <span style={{ color: actionColor(l.action), fontSize: 12, fontWeight: 700 }}>{l.action}</span>
             </div>
-            <span style={{ color: '#4a5270', fontSize: 10 }}>{fmtDateTime(l.created_at)}</span>
+            <span style={{ color: '#7A7062', fontSize: 10 }}>{fmtDateTime(l.created_at)}</span>
           </div>
-          <div style={{ color: '#9ba8bc', fontSize: 12, marginLeft: 34 }}>{l.target_type}: <span style={{ color: '#dde3ef', fontWeight: 600 }}>{l.target_name}</span>{l.details && ` · ${l.details}`}</div>
+          <div style={{ color: '#A79B88', fontSize: 12, marginLeft: 34 }}>{l.target_type}: <span style={{ color: '#33302A', fontWeight: 600 }}>{l.target_name}</span>{l.details && ` · ${l.details}`}</div>
         </div>
       ))}
     </div>
@@ -1713,12 +1713,12 @@ function Settings({ users, setUsers, user, region }) {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-        <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900 }}>⚙️ Kullanici Yonetimi</div>
+        <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900 }}>⚙️ Kullanici Yonetimi</div>
         <Btn sm onClick={() => setShowAdd(true)}>+ Kullanici Ekle</Btn>
       </div>
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 18, marginBottom: 20 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>💾 Yedekleme</div>
-        <div style={{ color: '#4a5270', fontSize: 11, marginBottom: 12 }}>Her veri setini Excel'de açılabilir CSV dosyası olarak indirin — düzenli olarak yedek almanız önerilir.</div>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 18, marginBottom: 20 }}>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>💾 Yedekleme</div>
+        <div style={{ color: '#7A7062', fontSize: 11, marginBottom: 12 }}>Her veri setini Excel'de açılabilir CSV dosyası olarak indirin — düzenli olarak yedek almanız önerilir.</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {BACKUP_ITEMS.map(item => (
             <Btn key={item.label} sm v="s" disabled={backingUp === item.label} onClick={() => backupDataset(item.label, item.fn, item.file)}>
@@ -1730,11 +1730,11 @@ function Settings({ users, setUsers, user, region }) {
       {users.map((u) => {
         const role = ROLES[u.role];
         return (
-          <div key={u.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+          <div key={u.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
             <Av name={u.name} size={36} clr={role?.clr} />
             <div style={{ flex: 1 }}>
-              <div style={{ color: '#dde3ef', fontSize: 13, fontWeight: 700 }}>{u.name} {role?.badge}</div>
-              <div style={{ color: '#4a5270', fontSize: 11 }}>{role?.lbl}</div>
+              <div style={{ color: '#33302A', fontSize: 13, fontWeight: 700 }}>{u.name} {role?.badge}</div>
+              <div style={{ color: '#7A7062', fontSize: 11 }}>{role?.lbl}</div>
             </div>
             <Btn sm v="s" onClick={() => { setEditUser(u); setNewPass(''); }}>🔑</Btn>
             {u.role !== 'admin' && <Btn sm v="d" onClick={() => removeUser(u)}>Sil</Btn>}
@@ -1831,14 +1831,14 @@ function MedikalSatis({ user }) {
 
   useEffect(() => { refreshAll(); }, []);
 
-  if (loading) return <div style={{ color: '#4a5270', padding: 30 }}>Yükleniyor...</div>;
+  if (loading) return <div style={{ color: '#7A7062', padding: 30 }}>Yükleniyor...</div>;
 
   return (
     <div>
-      <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900, marginBottom: 16 }}>💊 Medikal Satış</div>
+      <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900, marginBottom: 16 }}>💊 Medikal Satış</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 20 }}>
         {MEDIKAL_TABS.map((t) => (
-          <button key={t.id} onClick={() => setSub(t.id)} style={{ padding: '8px 14px', borderRadius: 20, border: `1px solid ${sub === t.id ? '#4f7cff' : '#1c2035'}`, background: sub === t.id ? 'rgba(79,124,255,0.15)' : '#121525', color: sub === t.id ? '#4f7cff' : '#9ba8bc', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+          <button key={t.id} onClick={() => setSub(t.id)} style={{ padding: '8px 14px', borderRadius: 20, border: `1px solid ${sub === t.id ? '#7E9A89' : '#E3D9C7'}`, background: sub === t.id ? 'rgba(126,154,137,0.15)' : '#FFFFFF', color: sub === t.id ? '#7E9A89' : '#A79B88', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
             {t.ico} {t.lbl}
           </button>
         ))}
@@ -1872,8 +1872,8 @@ function MedikalUrunler({ urunler, setUrunler }) {
   };
   return (
     <div>
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>+ Yeni Ürün</div>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>+ Yeni Ürün</div>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8 }}>
           <Inp ph="Ürün adı" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} />
           <Inp ph="Alış fiyatı" type="number" val={form.alis_fiyati} set={(v) => setForm((f) => ({ ...f, alis_fiyati: v }))} />
@@ -1884,25 +1884,25 @@ function MedikalUrunler({ urunler, setUrunler }) {
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-          <thead><tr style={{ borderBottom: '1px solid #1c2035' }}>
-            {['Ürün', 'Stok', 'Kritik Stok', 'Alış Fiyatı', ''].map((h) => <th key={h} style={{ color: '#4a5270', padding: '8px 10px', textAlign: 'left' }}>{h}</th>)}
+          <thead><tr style={{ borderBottom: '1px solid #E3D9C7' }}>
+            {['Ürün', 'Stok', 'Kritik Stok', 'Alış Fiyatı', ''].map((h) => <th key={h} style={{ color: '#7A7062', padding: '8px 10px', textAlign: 'left' }}>{h}</th>)}
           </tr></thead>
           <tbody>
             {urunler.map((u) => {
               const low = Number(u.stok_miktari) <= Number(u.kritik_stok);
               return (
-                <tr key={u.id} style={{ borderBottom: '1px solid #1c2035' }}>
-                  <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px' }}>{u.name}</td>
-                  <td style={{ color: low ? '#f04040' : '#22c55e', fontWeight: 800, padding: '10px' }}>{u.stok_miktari} {low && '⚠️'}</td>
-                  <td style={{ color: '#4a5270', padding: '10px' }}>{u.kritik_stok}</td>
-                  <td style={{ color: '#4a5270', padding: '10px' }}>{u.currency === 'USD' ? '$' : '₺'}{Number(u.alis_fiyati).toLocaleString()}</td>
-                  <td style={{ padding: '10px' }}><button onClick={() => remove(u.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button></td>
+                <tr key={u.id} style={{ borderBottom: '1px solid #E3D9C7' }}>
+                  <td style={{ color: '#33302A', fontWeight: 700, padding: '10px' }}>{u.name}</td>
+                  <td style={{ color: low ? '#C1554A' : '#6B8F5E', fontWeight: 800, padding: '10px' }}>{u.stok_miktari} {low && '⚠️'}</td>
+                  <td style={{ color: '#7A7062', padding: '10px' }}>{u.kritik_stok}</td>
+                  <td style={{ color: '#7A7062', padding: '10px' }}>{u.currency === 'USD' ? '$' : '₺'}{Number(u.alis_fiyati).toLocaleString()}</td>
+                  <td style={{ padding: '10px' }}><button onClick={() => remove(u.id)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button></td>
                 </tr>
               );
             })}
           </tbody>
         </table>
-        {urunler.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Henüz ürün yok.</div>}
+        {urunler.length === 0 && <div style={{ color: '#7A7062', textAlign: 'center', padding: 20 }}>Henüz ürün yok.</div>}
       </div>
     </div>
   );
@@ -1927,8 +1927,8 @@ function MedikalMusteriler({ musteriler, setMusteriler, satislar }) {
   const filtered = musteriler.filter((m) => !search || m.name.toLowerCase().includes(search.toLowerCase()) || (m.phone || '').includes(search));
   return (
     <div>
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>+ Yeni Müşteri</div>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>+ Yeni Müşteri</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8 }}>
           <Inp ph="İsim" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} />
           <Inp ph="Telefon" val={form.phone} set={(v) => setForm((f) => ({ ...f, phone: v }))} />
@@ -1943,20 +1943,20 @@ function MedikalMusteriler({ musteriler, setMusteriler, satislar }) {
         const totalSpentUSD = hist.filter((x) => x.currency === 'USD').reduce((s, x) => s + Number(x.sale_price) * Number(x.quantity), 0);
         const unpaidCount = hist.filter((x) => x.payment_type === 'Açık Hesap' && !x.paid).length;
         return (
-          <div key={m.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer' }} onClick={() => setSelCustomer(m)}>
+          <div key={m.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer' }} onClick={() => setSelCustomer(m)}>
             <div style={{ flex: 1 }}>
-              <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{m.name} {unpaidCount > 0 && <span style={{ color: '#f0b429', fontSize: 10 }}>📒 {unpaidCount} açık hesap</span>}</div>
-              <div style={{ color: '#4a5270', fontSize: 11 }}>{m.phone} {m.notes && `· ${m.notes}`} · {hist.length} işlem</div>
+              <div style={{ color: '#33302A', fontWeight: 700, fontSize: 13 }}>{m.name} {unpaidCount > 0 && <span style={{ color: '#B8952E', fontSize: 10 }}>📒 {unpaidCount} açık hesap</span>}</div>
+              <div style={{ color: '#7A7062', fontSize: 11 }}>{m.phone} {m.notes && `· ${m.notes}`} · {hist.length} işlem</div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              {totalSpentTRY > 0 && <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 12 }}>₺{totalSpentTRY.toLocaleString()}</div>}
-              {totalSpentUSD > 0 && <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 12 }}>${totalSpentUSD.toLocaleString()}</div>}
+              {totalSpentTRY > 0 && <div style={{ color: '#6B8F5E', fontWeight: 800, fontSize: 12 }}>₺{totalSpentTRY.toLocaleString()}</div>}
+              {totalSpentUSD > 0 && <div style={{ color: '#6B8F5E', fontWeight: 800, fontSize: 12 }}>${totalSpentUSD.toLocaleString()}</div>}
             </div>
-            <button onClick={(e) => { e.stopPropagation(); remove(m.id); }} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+            <button onClick={(e) => { e.stopPropagation(); remove(m.id); }} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
           </div>
         );
       })}
-      {filtered.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>{search ? 'Eşleşen müşteri yok.' : 'Henüz müşteri yok.'}</div>}
+      {filtered.length === 0 && <div style={{ color: '#7A7062', textAlign: 'center', padding: 20 }}>{search ? 'Eşleşen müşteri yok.' : 'Henüz müşteri yok.'}</div>}
 
       {selCustomer && (
         <Modal title={`${selCustomer.name} - Geçmiş`} onClose={() => setSelCustomer(null)} wide>
@@ -1969,29 +1969,29 @@ function MedikalMusteriler({ musteriler, setMusteriler, satislar }) {
             return (
               <div>
                 <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1, minWidth: 140, background: '#1a1d30', borderRadius: 8, padding: 12 }}>
-                    <div style={{ color: '#4a5270', fontSize: 10 }}>TOPLAM HARCAMA (TL)</div>
-                    <div style={{ color: '#22c55e', fontWeight: 900, fontSize: 18 }}>₺{totalSpentTRY.toLocaleString()}</div>
+                  <div style={{ flex: 1, minWidth: 140, background: '#F1EBDE', borderRadius: 8, padding: 12 }}>
+                    <div style={{ color: '#7A7062', fontSize: 10 }}>TOPLAM HARCAMA (TL)</div>
+                    <div style={{ color: '#6B8F5E', fontWeight: 900, fontSize: 18 }}>₺{totalSpentTRY.toLocaleString()}</div>
                   </div>
-                  <div style={{ flex: 1, minWidth: 140, background: '#1a1d30', borderRadius: 8, padding: 12 }}>
-                    <div style={{ color: '#4a5270', fontSize: 10 }}>TOPLAM HARCAMA ($)</div>
-                    <div style={{ color: '#22c55e', fontWeight: 900, fontSize: 18 }}>${totalSpentUSD.toLocaleString()}</div>
+                  <div style={{ flex: 1, minWidth: 140, background: '#F1EBDE', borderRadius: 8, padding: 12 }}>
+                    <div style={{ color: '#7A7062', fontSize: 10 }}>TOPLAM HARCAMA ($)</div>
+                    <div style={{ color: '#6B8F5E', fontWeight: 900, fontSize: 18 }}>${totalSpentUSD.toLocaleString()}</div>
                   </div>
-                  <div style={{ flex: 1, minWidth: 140, background: '#1a1d30', borderRadius: 8, padding: 12 }}>
-                    <div style={{ color: '#4a5270', fontSize: 10 }}>BEKLEYEN AÇIK HESAP</div>
-                    <div style={{ color: '#f0b429', fontWeight: 900, fontSize: 16 }}>₺{totalUnpaidTRY.toLocaleString()} + ${totalUnpaidUSD.toLocaleString()}</div>
+                  <div style={{ flex: 1, minWidth: 140, background: '#F1EBDE', borderRadius: 8, padding: 12 }}>
+                    <div style={{ color: '#7A7062', fontSize: 10 }}>BEKLEYEN AÇIK HESAP</div>
+                    <div style={{ color: '#B8952E', fontWeight: 900, fontSize: 16 }}>₺{totalUnpaidTRY.toLocaleString()} + ${totalUnpaidUSD.toLocaleString()}</div>
                   </div>
                 </div>
                 {hist.map((s) => (
-                  <div key={s.id} style={{ background: '#1a1d30', borderRadius: 8, padding: '10px 12px', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div key={s.id} style={{ background: '#F1EBDE', borderRadius: 8, padding: '10px 12px', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <div style={{ color: '#dde3ef', fontSize: 12, fontWeight: 700 }}>{s.product_name} × {s.quantity}</div>
-                      <div style={{ color: '#4a5270', fontSize: 10 }}>{fmt(s.sale_date)} · {s.payment_type} {s.payment_type === 'Açık Hesap' && (s.paid ? '✓ Tahsil edildi' : '⏳ Bekliyor')}</div>
+                      <div style={{ color: '#33302A', fontSize: 12, fontWeight: 700 }}>{s.product_name} × {s.quantity}</div>
+                      <div style={{ color: '#7A7062', fontSize: 10 }}>{fmt(s.sale_date)} · {s.payment_type} {s.payment_type === 'Açık Hesap' && (s.paid ? '✓ Tahsil edildi' : '⏳ Bekliyor')}</div>
                     </div>
-                    <div style={{ color: '#dde3ef', fontWeight: 700 }}>{s.currency === 'USD' ? '$' : '₺'}{(Number(s.sale_price) * Number(s.quantity)).toLocaleString()}</div>
+                    <div style={{ color: '#33302A', fontWeight: 700 }}>{s.currency === 'USD' ? '$' : '₺'}{(Number(s.sale_price) * Number(s.quantity)).toLocaleString()}</div>
                   </div>
                 ))}
-                {hist.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Bu müşterinin satış geçmişi yok.</div>}
+                {hist.length === 0 && <div style={{ color: '#7A7062', textAlign: 'center', padding: 20 }}>Bu müşterinin satış geçmişi yok.</div>}
               </div>
             );
           })()}
@@ -2025,8 +2025,8 @@ function MedikalTedarikciler({ tedarikciler, setTedarikciler, alimlar, setAlimla
   const filtered = tedarikciler.filter((t) => !search || t.name.toLowerCase().includes(search.toLowerCase()) || (t.phone || '').includes(search));
   return (
     <div>
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>+ Yeni Tedarikçi</div>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>+ Yeni Tedarikçi</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8 }}>
           <Inp ph="Firma adı" val={form.name} set={(v) => setForm((f) => ({ ...f, name: v }))} />
           <Inp ph="Telefon" val={form.phone} set={(v) => setForm((f) => ({ ...f, phone: v }))} />
@@ -2040,17 +2040,17 @@ function MedikalTedarikciler({ tedarikciler, setTedarikciler, alimlar, setAlimla
         const totalBought = hist.reduce((s, x) => s + Number(x.quantity) * Number(x.alis_fiyati), 0);
         const unpaidCount = hist.filter((x) => !x.paid).length;
         return (
-          <div key={t.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer' }} onClick={() => setSelTedarikci(t)}>
+          <div key={t.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer' }} onClick={() => setSelTedarikci(t)}>
             <div style={{ flex: 1 }}>
-              <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{t.name} {unpaidCount > 0 && <span style={{ color: '#f04040', fontSize: 10 }}>💳 {unpaidCount} borç</span>}</div>
-              <div style={{ color: '#4a5270', fontSize: 11 }}>{t.phone} {t.notes && `· ${t.notes}`} · {hist.length} alım</div>
+              <div style={{ color: '#33302A', fontWeight: 700, fontSize: 13 }}>{t.name} {unpaidCount > 0 && <span style={{ color: '#C1554A', fontSize: 10 }}>💳 {unpaidCount} borç</span>}</div>
+              <div style={{ color: '#7A7062', fontSize: 11 }}>{t.phone} {t.notes && `· ${t.notes}`} · {hist.length} alım</div>
             </div>
-            <div style={{ color: '#f97316', fontWeight: 800, fontSize: 12 }}>₺{totalBought.toLocaleString()}</div>
-            <button onClick={(e) => { e.stopPropagation(); remove(t.id); }} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+            <div style={{ color: '#C68A3D', fontWeight: 800, fontSize: 12 }}>₺{totalBought.toLocaleString()}</div>
+            <button onClick={(e) => { e.stopPropagation(); remove(t.id); }} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
           </div>
         );
       })}
-      {filtered.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>{search ? 'Eşleşen tedarikçi yok.' : 'Henüz tedarikçi yok.'}</div>}
+      {filtered.length === 0 && <div style={{ color: '#7A7062', textAlign: 'center', padding: 20 }}>{search ? 'Eşleşen tedarikçi yok.' : 'Henüz tedarikçi yok.'}</div>}
 
       {selTedarikci && (
         <Modal title={`${selTedarikci.name} - Geçmiş`} onClose={() => setSelTedarikci(null)} wide>
@@ -2061,28 +2061,28 @@ function MedikalTedarikciler({ tedarikciler, setTedarikciler, alimlar, setAlimla
             return (
               <div>
                 <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-                  <div style={{ flex: 1, background: '#1a1d30', borderRadius: 8, padding: 12 }}>
-                    <div style={{ color: '#4a5270', fontSize: 10 }}>TOPLAM ALINAN</div>
-                    <div style={{ color: '#f97316', fontWeight: 900, fontSize: 18 }}>₺{totalBought.toLocaleString()}</div>
+                  <div style={{ flex: 1, background: '#F1EBDE', borderRadius: 8, padding: 12 }}>
+                    <div style={{ color: '#7A7062', fontSize: 10 }}>TOPLAM ALINAN</div>
+                    <div style={{ color: '#C68A3D', fontWeight: 900, fontSize: 18 }}>₺{totalBought.toLocaleString()}</div>
                   </div>
-                  <div style={{ flex: 1, background: '#1a1d30', borderRadius: 8, padding: 12 }}>
-                    <div style={{ color: '#4a5270', fontSize: 10 }}>ÖDENMEMİŞ BORÇ</div>
-                    <div style={{ color: '#f04040', fontWeight: 900, fontSize: 18 }}>₺{totalDebt.toLocaleString()}</div>
+                  <div style={{ flex: 1, background: '#F1EBDE', borderRadius: 8, padding: 12 }}>
+                    <div style={{ color: '#7A7062', fontSize: 10 }}>ÖDENMEMİŞ BORÇ</div>
+                    <div style={{ color: '#C1554A', fontWeight: 900, fontSize: 18 }}>₺{totalDebt.toLocaleString()}</div>
                   </div>
                 </div>
                 {hist.map((a) => (
-                  <div key={a.id} style={{ background: '#1a1d30', borderRadius: 8, padding: '10px 12px', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div key={a.id} style={{ background: '#F1EBDE', borderRadius: 8, padding: '10px 12px', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <div style={{ color: '#dde3ef', fontSize: 12, fontWeight: 700 }}>{a.product_name} × {a.quantity}</div>
-                      <div style={{ color: '#4a5270', fontSize: 10 }}>{fmt(a.alim_tarihi)} · {a.paid ? '✓ Ödendi' : '⏳ Ödenmedi'}</div>
+                      <div style={{ color: '#33302A', fontSize: 12, fontWeight: 700 }}>{a.product_name} × {a.quantity}</div>
+                      <div style={{ color: '#7A7062', fontSize: 10 }}>{fmt(a.alim_tarihi)} · {a.paid ? '✓ Ödendi' : '⏳ Ödenmedi'}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ color: '#dde3ef', fontWeight: 700 }}>{a.currency === 'USD' ? '$' : '₺'}{(Number(a.quantity) * Number(a.alis_fiyati)).toLocaleString()}</div>
-                      {!a.paid && <button onClick={() => markPaid(a)} style={{ padding: '5px 10px', background: '#22c55e', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Öde</button>}
+                      <div style={{ color: '#33302A', fontWeight: 700 }}>{a.currency === 'USD' ? '$' : '₺'}{(Number(a.quantity) * Number(a.alis_fiyati)).toLocaleString()}</div>
+                      {!a.paid && <button onClick={() => markPaid(a)} style={{ padding: '5px 10px', background: '#6B8F5E', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Öde</button>}
                     </div>
                   </div>
                 ))}
-                {hist.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Bu tedarikçiden alım yok.</div>}
+                {hist.length === 0 && <div style={{ color: '#7A7062', textAlign: 'center', padding: 20 }}>Bu tedarikçiden alım yok.</div>}
               </div>
             );
           })()}
@@ -2147,17 +2147,17 @@ function MedikalAlim({ urunler, setUrunler, tedarikciler, alimlar, setAlimlar })
   };
   return (
     <div>
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>{editingAlim ? '✏️ Alımı Düzenle' : '📥 Stok Girişi (Alım)'}</div>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>{editingAlim ? '✏️ Alımı Düzenle' : '📥 Stok Girişi (Alım)'}</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
           <div>
-            <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>TEDARİKÇİ</div>
-            <input list="tedarikci-list" value={form.tedarikci_name} onChange={(e) => setForm((f) => ({ ...f, tedarikci_name: e.target.value }))} placeholder="Tedarikçi adı" style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+            <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>TEDARİKÇİ</div>
+            <input list="tedarikci-list" value={form.tedarikci_name} onChange={(e) => setForm((f) => ({ ...f, tedarikci_name: e.target.value }))} placeholder="Tedarikçi adı" style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }} />
             <datalist id="tedarikci-list">{tedarikciler.map((t) => <option key={t.id} value={t.name} />)}</datalist>
           </div>
           <div>
-            <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ÜRÜN</div>
-            <input list="urun-list" value={form.product_name} onChange={(e) => setForm((f) => ({ ...f, product_name: e.target.value }))} placeholder="Ürün adı (yoksa otomatik oluşur)" style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+            <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>ÜRÜN</div>
+            <input list="urun-list" value={form.product_name} onChange={(e) => setForm((f) => ({ ...f, product_name: e.target.value }))} placeholder="Ürün adı (yoksa otomatik oluşur)" style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }} />
             <datalist id="urun-list">{urunler.map((u) => <option key={u.id} value={u.name} />)}</datalist>
           </div>
         </div>
@@ -2170,19 +2170,19 @@ function MedikalAlim({ urunler, setUrunler, tedarikciler, alimlar, setAlimlar })
         </div>
         {editingAlim && <div style={{ marginTop: 8 }}><Btn v="s" sm onClick={() => { setEditingAlim(null); setForm({ tedarikci_name: '', product_name: '', quantity: '', alis_fiyati: '', currency: 'TRY', alim_tarihi: dd(0) }); }}>İptal</Btn></div>}
       </div>
-      <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Son Alımlar</div>
+      <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Son Alımlar</div>
       {alimlar.slice(0, 30).map((a) => (
-        <div key={a.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <div key={a.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{a.product_name} × {a.quantity}</div>
-            <div style={{ color: '#4a5270', fontSize: 11 }}>{a.tedarikci_name || 'Tedarikçi belirtilmedi'} · {fmt(a.alim_tarihi)} · Birim: {a.currency === 'USD' ? '$' : '₺'}{Number(a.alis_fiyati).toLocaleString()}</div>
+            <div style={{ color: '#33302A', fontWeight: 700, fontSize: 13 }}>{a.product_name} × {a.quantity}</div>
+            <div style={{ color: '#7A7062', fontSize: 11 }}>{a.tedarikci_name || 'Tedarikçi belirtilmedi'} · {fmt(a.alim_tarihi)} · Birim: {a.currency === 'USD' ? '$' : '₺'}{Number(a.alis_fiyati).toLocaleString()}</div>
           </div>
-          <div style={{ color: '#f97316', fontWeight: 800 }}>{a.currency === 'USD' ? '$' : '₺'}{(Number(a.quantity) * Number(a.alis_fiyati)).toLocaleString()}</div>
-          <button onClick={() => startEdit(a)} style={{ padding: '4px 8px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 11, cursor: 'pointer' }}>✏️</button>
-          <button onClick={() => remove(a.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+          <div style={{ color: '#C68A3D', fontWeight: 800 }}>{a.currency === 'USD' ? '$' : '₺'}{(Number(a.quantity) * Number(a.alis_fiyati)).toLocaleString()}</div>
+          <button onClick={() => startEdit(a)} style={{ padding: '4px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>✏️</button>
+          <button onClick={() => remove(a.id)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
         </div>
       ))}
-      {alimlar.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Henüz alım yok.</div>}
+      {alimlar.length === 0 && <div style={{ color: '#7A7062', textAlign: 'center', padding: 20 }}>Henüz alım yok.</div>}
     </div>
   );
 }
@@ -2274,8 +2274,8 @@ function MedikalSatisGirisi({ urunler, setUrunler, musteriler, satislar, setSati
 
   return (
     <div>
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>🛒 Hızlı Satış Girişi</div>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>🛒 Hızlı Satış Girişi</div>
         <Inp ph="Örn: Ahmet'e 5 tane Minoxidil 100 dolardan verdim" val={rawText} set={setRawText} rows={2} />
         <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
           <Btn onClick={analyze}>🔍 Analiz Et</Btn>
@@ -2284,17 +2284,17 @@ function MedikalSatisGirisi({ urunler, setUrunler, musteriler, satislar, setSati
       </div>
 
       {preview && (
-        <div style={{ background: '#121525', border: '1px solid #4f7cff44', borderRadius: 12, padding: 16, marginBottom: 18 }}>
-          <div style={{ color: '#4f7cff', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>{editingSale ? '✏️ Satışı Düzenle' : '✓ Önizleme — Kontrol Edip Onaylayın'}</div>
+        <div style={{ background: '#FFFFFF', border: '1px solid #7E9A8944', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+          <div style={{ color: '#7E9A89', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>{editingSale ? '✏️ Satışı Düzenle' : '✓ Önizleme — Kontrol Edip Onaylayın'}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>MÜŞTERİ</div>
-              <input list="sale-cust-list" value={preview.customer_name} onChange={(e) => setPreview((p) => ({ ...p, customer_name: e.target.value }))} placeholder="🔍 Müşteri ara veya yaz" style={{ width: '100%', padding: '9px 12px', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>MÜŞTERİ</div>
+              <input list="sale-cust-list" value={preview.customer_name} onChange={(e) => setPreview((p) => ({ ...p, customer_name: e.target.value }))} placeholder="🔍 Müşteri ara veya yaz" style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }} />
               <datalist id="sale-cust-list">{musteriler.map((m) => <option key={m.id} value={m.name} />)}</datalist>
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ÜRÜN</div>
-              <input list="sale-prod-list" value={preview.product_name} onChange={(e) => setPreview((p) => ({ ...p, product_name: e.target.value }))} placeholder="🔍 Ürün ara veya yaz" style={{ width: '100%', padding: '9px 12px', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>ÜRÜN</div>
+              <input list="sale-prod-list" value={preview.product_name} onChange={(e) => setPreview((p) => ({ ...p, product_name: e.target.value }))} placeholder="🔍 Ürün ara veya yaz" style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }} />
               <datalist id="sale-prod-list">{urunler.map((u) => <option key={u.id} value={u.name} />)}</datalist>
             </div>
           </div>
@@ -2303,34 +2303,34 @@ function MedikalSatisGirisi({ urunler, setUrunler, musteriler, satislar, setSati
             if (!matched) return null;
             const margin = preview.sale_price ? (Number(preview.sale_price) - Number(matched.alis_fiyati)) : null;
             return (
-              <div style={{ background: '#1a1d30', borderRadius: 8, padding: '8px 12px', marginBottom: 8, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                <span style={{ color: '#f97316', fontSize: 12, fontWeight: 700 }}>💰 Alış Fiyatı: {matched.currency === 'USD' ? '$' : '₺'}{Number(matched.alis_fiyati).toLocaleString()}</span>
-                <span style={{ color: '#4a5270', fontSize: 12 }}>Stok: {matched.stok_miktari}</span>
-                {margin !== null && <span style={{ color: margin >= 0 ? '#22c55e' : '#f04040', fontSize: 12, fontWeight: 700 }}>Birim Kâr: {matched.currency === 'USD' ? '$' : '₺'}{margin.toLocaleString()}</span>}
+              <div style={{ background: '#F1EBDE', borderRadius: 8, padding: '8px 12px', marginBottom: 8, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <span style={{ color: '#C68A3D', fontSize: 12, fontWeight: 700 }}>💰 Alış Fiyatı: {matched.currency === 'USD' ? '$' : '₺'}{Number(matched.alis_fiyati).toLocaleString()}</span>
+                <span style={{ color: '#7A7062', fontSize: 12 }}>Stok: {matched.stok_miktari}</span>
+                {margin !== null && <span style={{ color: margin >= 0 ? '#6B8F5E' : '#C1554A', fontSize: 12, fontWeight: 700 }}>Birim Kâr: {matched.currency === 'USD' ? '$' : '₺'}{margin.toLocaleString()}</span>}
               </div>
             );
           })()}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ADET</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>ADET</div>
               <Inp type="number" ph="" val={preview.quantity} set={(v) => setPreview((p) => ({ ...p, quantity: v }))} />
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>BİRİM FİYAT</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>BİRİM FİYAT</div>
               <Inp type="number" ph="" val={preview.sale_price} set={(v) => setPreview((p) => ({ ...p, sale_price: v }))} />
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>PARA BİRİMİ</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>PARA BİRİMİ</div>
               <Sel val={preview.currency} set={(v) => setPreview((p) => ({ ...p, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }]} />
             </div>
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>ÖDEME TİPİ</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>ÖDEME TİPİ</div>
               <Sel val={preview.payment_type} set={(v) => setPreview((p) => ({ ...p, payment_type: v }))} opts={[{ v: 'Nakit', l: '💵 Nakit' }, { v: 'Havale', l: '🏦 Havale' }, { v: 'Açık Hesap', l: '📒 Açık Hesap' }]} />
             </div>
           </div>
           {preview.payment_type === 'Açık Hesap' && (
             <div style={{ marginBottom: 8 }}>
-              <div style={{ color: '#f0b429', fontSize: 10, marginBottom: 4 }}>ÖDEME GÜNÜ (vade tarihi)</div>
+              <div style={{ color: '#B8952E', fontSize: 10, marginBottom: 4 }}>ÖDEME GÜNÜ (vade tarihi)</div>
               <Inp type="date" ph="" val={preview.due_date} set={(v) => setPreview((p) => ({ ...p, due_date: v }))} />
             </div>
           )}
@@ -2341,22 +2341,22 @@ function MedikalSatisGirisi({ urunler, setUrunler, musteriler, satislar, setSati
         </div>
       )}
 
-      <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Son Satışlar</div>
+      <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Son Satışlar</div>
       {satislar.slice(0, 30).map((s) => {
         const kar = (Number(s.sale_price) - Number(s.cost_price)) * Number(s.quantity);
         return (
-          <div key={s.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+          <div key={s.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 160 }}>
-              <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{s.customer_name} — {s.product_name} × {s.quantity}</div>
-              <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(s.sale_date)} · {s.payment_type} {s.payment_type === 'Açık Hesap' && (s.paid ? '✓' : '⏳')} · Birim: {s.currency === 'USD' ? '$' : '₺'}{Number(s.sale_price).toLocaleString()}</div>
+              <div style={{ color: '#33302A', fontWeight: 700, fontSize: 13 }}>{s.customer_name} — {s.product_name} × {s.quantity}</div>
+              <div style={{ color: '#7A7062', fontSize: 11 }}>{fmt(s.sale_date)} · {s.payment_type} {s.payment_type === 'Açık Hesap' && (s.paid ? '✓' : '⏳')} · Birim: {s.currency === 'USD' ? '$' : '₺'}{Number(s.sale_price).toLocaleString()}</div>
             </div>
-            <div style={{ color: '#22c55e', fontWeight: 800 }}>Kâr: {s.currency === 'USD' ? '$' : '₺'}{kar.toLocaleString()}</div>
-            <button onClick={() => startEdit(s)} style={{ padding: '4px 8px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 11, cursor: 'pointer' }}>✏️</button>
-            <button onClick={() => remove(s.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+            <div style={{ color: '#6B8F5E', fontWeight: 800 }}>Kâr: {s.currency === 'USD' ? '$' : '₺'}{kar.toLocaleString()}</div>
+            <button onClick={() => startEdit(s)} style={{ padding: '4px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>✏️</button>
+            <button onClick={() => remove(s.id)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
           </div>
         );
       })}
-      {satislar.length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Henüz satış yok.</div>}
+      {satislar.length === 0 && <div style={{ color: '#7A7062', textAlign: 'center', padding: 20 }}>Henüz satış yok.</div>}
     </div>
   );
 }
@@ -2388,31 +2388,31 @@ function MedikalAcikHesap({ satislar, setSatislar }) {
 
   return (
     <div>
-      <div style={{ color: '#f0b429', fontWeight: 900, fontSize: 18, marginBottom: 10 }}>📒 Toplam Bekleyen Açık Hesap: ₺{totalUnpaid.toLocaleString()}</div>
+      <div style={{ color: '#B8952E', fontWeight: 900, fontSize: 18, marginBottom: 10 }}>📒 Toplam Bekleyen Açık Hesap: ₺{totalUnpaid.toLocaleString()}</div>
       {urgentCount > 0 && (
-        <div style={{ background: 'rgba(240,64,64,0.12)', border: '1px solid #f04040', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#f04040', fontWeight: 700, fontSize: 13 }}>
+        <div style={{ background: 'rgba(193,85,74,0.12)', border: '1px solid #C1554A', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#C1554A', fontWeight: 700, fontSize: 13 }}>
           ⚠️ {urgentCount} ödemenin vadesi bugün/yarın veya geçmiş!
         </div>
       )}
-      {Object.entries(byCustomer).length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Bekleyen açık hesap yok.</div>}
+      {Object.entries(byCustomer).length === 0 && <div style={{ color: '#7A7062', textAlign: 'center', padding: 20 }}>Bekleyen açık hesap yok.</div>}
       {Object.entries(byCustomer).map(([customer, data]) => (
-        <div key={customer} style={{ background: '#121525', border: '1px solid #f0b42944', borderRadius: 12, padding: 16, marginBottom: 14 }}>
+        <div key={customer} style={{ background: '#FFFFFF', border: '1px solid #B8952E44', borderRadius: 12, padding: 16, marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 14 }}>{customer}</div>
-            <div style={{ color: '#f0b429', fontWeight: 900, fontSize: 14 }}>₺{data.total.toLocaleString()}</div>
+            <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14 }}>{customer}</div>
+            <div style={{ color: '#B8952E', fontWeight: 900, fontSize: 14 }}>₺{data.total.toLocaleString()}</div>
           </div>
           {data.items.map((s) => {
             const urgent = isUrgent(s.due_date);
             const overdue = isOverdue(s.due_date);
             return (
-              <div key={s.id} style={{ background: '#1a1d30', borderRadius: 8, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, border: urgent ? '1px solid #f04040' : 'none' }}>
+              <div key={s.id} style={{ background: '#F1EBDE', borderRadius: 8, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, border: urgent ? '1px solid #C1554A' : 'none' }}>
                 <div>
-                  <div style={{ color: '#dde3ef', fontSize: 12 }}>{s.product_name} × {s.quantity}</div>
-                  <div style={{ color: '#4a5270', fontSize: 10 }}>{fmt(s.sale_date)} {s.due_date && `· Vade: ${fmt(s.due_date)}`} {overdue && <span style={{ color: '#f04040', fontWeight: 700 }}>⚠️ GECİKTİ</span>} {!overdue && urgent && <span style={{ color: '#f97316', fontWeight: 700 }}>⏰ YAKLAŞIYOR</span>}</div>
+                  <div style={{ color: '#33302A', fontSize: 12 }}>{s.product_name} × {s.quantity}</div>
+                  <div style={{ color: '#7A7062', fontSize: 10 }}>{fmt(s.sale_date)} {s.due_date && `· Vade: ${fmt(s.due_date)}`} {overdue && <span style={{ color: '#C1554A', fontWeight: 700 }}>⚠️ GECİKTİ</span>} {!overdue && urgent && <span style={{ color: '#C68A3D', fontWeight: 700 }}>⏰ YAKLAŞIYOR</span>}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ color: '#dde3ef', fontWeight: 700 }}>₺{(Number(s.sale_price) * Number(s.quantity)).toLocaleString()}</div>
-                  <button onClick={() => markPaid(s)} style={{ padding: '5px 10px', background: '#22c55e', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Tahsil</button>
+                  <div style={{ color: '#33302A', fontWeight: 700 }}>₺{(Number(s.sale_price) * Number(s.quantity)).toLocaleString()}</div>
+                  <button onClick={() => markPaid(s)} style={{ padding: '5px 10px', background: '#6B8F5E', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Tahsil</button>
                 </div>
               </div>
             );
@@ -2421,11 +2421,11 @@ function MedikalAcikHesap({ satislar, setSatislar }) {
       ))}
       {paid.length > 0 && (
         <details style={{ marginTop: 14 }}>
-          <summary style={{ color: '#22c55e', fontSize: 12, cursor: 'pointer', fontWeight: 700 }}>✅ Tahsil Edilenler ({paid.length})</summary>
+          <summary style={{ color: '#6B8F5E', fontSize: 12, cursor: 'pointer', fontWeight: 700 }}>✅ Tahsil Edilenler ({paid.length})</summary>
           {paid.map((s) => (
-            <div key={s.id} style={{ background: '#1a1d30', borderLeft: '3px solid #22c55e', borderRadius: 6, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-              <div style={{ color: '#dde3ef', fontSize: 12 }}>{s.customer_name} — {s.product_name} × {s.quantity}</div>
-              <div style={{ color: '#22c55e', fontWeight: 700, fontSize: 12 }}>₺{(Number(s.sale_price) * Number(s.quantity)).toLocaleString()} · {fmt(s.paid_date)}</div>
+            <div key={s.id} style={{ background: '#F1EBDE', borderLeft: '3px solid #6B8F5E', borderRadius: 6, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+              <div style={{ color: '#33302A', fontSize: 12 }}>{s.customer_name} — {s.product_name} × {s.quantity}</div>
+              <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 12 }}>₺{(Number(s.sale_price) * Number(s.quantity)).toLocaleString()} · {fmt(s.paid_date)}</div>
             </div>
           ))}
         </details>
@@ -2451,8 +2451,8 @@ function MedikalGiderler({ giderler, setGiderler }) {
   const total = giderler.reduce((s, g) => s + Number(g.amount || 0), 0);
   return (
     <div>
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>💸 Gider Ekle</div>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>💸 Gider Ekle</div>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8 }}>
           <Inp ph="Açıklama" val={form.description} set={(v) => setForm((f) => ({ ...f, description: v }))} />
           <Inp ph="Tutar" type="number" val={form.amount} set={(v) => setForm((f) => ({ ...f, amount: v }))} />
@@ -2461,15 +2461,15 @@ function MedikalGiderler({ giderler, setGiderler }) {
           <Btn onClick={add}>Ekle</Btn>
         </div>
       </div>
-      <div style={{ color: '#f04040', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Toplam Gider: ₺{total.toLocaleString()}</div>
+      <div style={{ color: '#C1554A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Toplam Gider: ₺{total.toLocaleString()}</div>
       {giderler.map((g) => (
-        <div key={g.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <div key={g.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ color: '#dde3ef', fontSize: 13 }}>{g.description}</div>
-            <div style={{ color: '#4a5270', fontSize: 11 }}>{g.category} · {fmt(g.date)}</div>
+            <div style={{ color: '#33302A', fontSize: 13 }}>{g.description}</div>
+            <div style={{ color: '#7A7062', fontSize: 11 }}>{g.category} · {fmt(g.date)}</div>
           </div>
-          <div style={{ color: '#f04040', fontWeight: 800 }}>-₺{Number(g.amount).toLocaleString()}</div>
-          <button onClick={() => remove(g.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+          <div style={{ color: '#C1554A', fontWeight: 800 }}>-₺{Number(g.amount).toLocaleString()}</div>
+          <button onClick={() => remove(g.id)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
         </div>
       ))}
     </div>
@@ -2546,7 +2546,7 @@ function MedikalRaporlar({ urunler, satislar, alimlar, giderler, musteriler }) {
     <div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
         {[{ v: 'bugun', l: 'Bugün' }, { v: 'hafta', l: 'Bu Hafta' }, { v: 'ay', l: 'Bu Ay' }, { v: 'tum', l: 'Tüm Zamanlar' }, { v: 'ozel', l: 'Özel Tarih' }].map((r) => (
-          <button key={r.v} onClick={() => setRange(r.v)} style={{ padding: '7px 14px', borderRadius: 20, border: `1px solid ${range === r.v ? '#4f7cff' : '#1c2035'}`, background: range === r.v ? 'rgba(79,124,255,0.15)' : '#121525', color: range === r.v ? '#4f7cff' : '#9ba8bc', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{r.l}</button>
+          <button key={r.v} onClick={() => setRange(r.v)} style={{ padding: '7px 14px', borderRadius: 20, border: `1px solid ${range === r.v ? '#7E9A89' : '#E3D9C7'}`, background: range === r.v ? 'rgba(126,154,137,0.15)' : '#FFFFFF', color: range === r.v ? '#7E9A89' : '#A79B88', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{r.l}</button>
         ))}
       </div>
       {range === 'ozel' && (
@@ -2557,81 +2557,81 @@ function MedikalRaporlar({ urunler, satislar, alimlar, giderler, musteriler }) {
       )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10, marginBottom: 10 }}>
         {[
-          { lbl: '₺ Gelir (TL)', val: `₺${tryStats.revenue.toLocaleString()}`, clr: '#22c55e' },
-          { lbl: '₺ Maliyet (TL)', val: `₺${tryStats.cogs.toLocaleString()}`, clr: '#f97316' },
-          { lbl: '₺ Giderler', val: `₺${totalExpenses.toLocaleString()}`, clr: '#f04040' },
-          { lbl: '₺ Net Kâr (TL)', val: `₺${netProfitTRY.toLocaleString()}`, clr: netProfitTRY >= 0 ? '#22c55e' : '#f04040' },
-          { lbl: '₺ Açık Hesap', val: `₺${tryStats.acikHesap.toLocaleString()}`, clr: '#f0b429' },
+          { lbl: '₺ Gelir (TL)', val: `₺${tryStats.revenue.toLocaleString()}`, clr: '#6B8F5E' },
+          { lbl: '₺ Maliyet (TL)', val: `₺${tryStats.cogs.toLocaleString()}`, clr: '#C68A3D' },
+          { lbl: '₺ Giderler', val: `₺${totalExpenses.toLocaleString()}`, clr: '#C1554A' },
+          { lbl: '₺ Net Kâr (TL)', val: `₺${netProfitTRY.toLocaleString()}`, clr: netProfitTRY >= 0 ? '#6B8F5E' : '#C1554A' },
+          { lbl: '₺ Açık Hesap', val: `₺${tryStats.acikHesap.toLocaleString()}`, clr: '#B8952E' },
         ].map((k) => (
-          <div key={k.lbl} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '14px 16px' }}>
-            <div style={{ color: '#4a5270', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>{k.lbl}</div>
+          <div key={k.lbl} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>{k.lbl}</div>
             <div style={{ color: k.clr, fontSize: 18, fontWeight: 900 }}>{k.val}</div>
           </div>
         ))}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10, marginBottom: 20 }}>
         {[
-          { lbl: '$ Gelir (USD)', val: `$${usdStats.revenue.toLocaleString()}`, clr: '#22c55e' },
-          { lbl: '$ Maliyet (USD)', val: `$${usdStats.cogs.toLocaleString()}`, clr: '#f97316' },
-          { lbl: '$ Net Kâr (USD)', val: `$${netProfitUSD.toLocaleString()}`, clr: netProfitUSD >= 0 ? '#22c55e' : '#f04040' },
-          { lbl: '$ Açık Hesap', val: `$${usdStats.acikHesap.toLocaleString()}`, clr: '#f0b429' },
+          { lbl: '$ Gelir (USD)', val: `$${usdStats.revenue.toLocaleString()}`, clr: '#6B8F5E' },
+          { lbl: '$ Maliyet (USD)', val: `$${usdStats.cogs.toLocaleString()}`, clr: '#C68A3D' },
+          { lbl: '$ Net Kâr (USD)', val: `$${netProfitUSD.toLocaleString()}`, clr: netProfitUSD >= 0 ? '#6B8F5E' : '#C1554A' },
+          { lbl: '$ Açık Hesap', val: `$${usdStats.acikHesap.toLocaleString()}`, clr: '#B8952E' },
         ].map((k) => (
-          <div key={k.lbl} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: '14px 16px' }}>
-            <div style={{ color: '#4a5270', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>{k.lbl}</div>
+          <div key={k.lbl} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>{k.lbl}</div>
             <div style={{ color: k.clr, fontSize: 18, fontWeight: 900 }}>{k.val}</div>
           </div>
         ))}
       </div>
-      <div style={{ color: '#4a5270', fontSize: 11, marginBottom: 14 }}>💡 TL ve Dolar tutarları karışmasın diye ayrı hesaplanır, otomatik kur çevrimi yapılmaz.</div>
+      <div style={{ color: '#7A7062', fontSize: 11, marginBottom: 14 }}>💡 TL ve Dolar tutarları karışmasın diye ayrı hesaplanır, otomatik kur çevrimi yapılmaz.</div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13 }}>📦 Ürün Bazlı Rapor</div>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13 }}>📦 Ürün Bazlı Rapor</div>
         <Btn sm v="s" onClick={exportCSV}>📥 CSV İndir (Excel)</Btn>
       </div>
       <div style={{ overflowX: 'auto', marginBottom: 20 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-          <thead><tr style={{ borderBottom: '1px solid #1c2035' }}>
-            {['Ürün', 'Satılan Adet', 'Gelir', 'Maliyet', 'Kâr', 'Güncel Stok'].map((h) => <th key={h} style={{ color: '#4a5270', padding: '8px 10px', textAlign: 'left' }}>{h}</th>)}
+          <thead><tr style={{ borderBottom: '1px solid #E3D9C7' }}>
+            {['Ürün', 'Satılan Adet', 'Gelir', 'Maliyet', 'Kâr', 'Güncel Stok'].map((h) => <th key={h} style={{ color: '#7A7062', padding: '8px 10px', textAlign: 'left' }}>{h}</th>)}
           </tr></thead>
           <tbody>
             {Object.values(productStats).map((st) => {
               const prod = urunler.find((u) => u.name === st.name);
               const sym = st.currency === 'USD' ? '$' : '₺';
               return (
-                <tr key={st.name + st.currency} style={{ borderBottom: '1px solid #1c2035' }}>
-                  <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px' }}>{st.name} <span style={{ color: '#4a5270', fontSize: 10 }}>({st.currency})</span></td>
-                  <td style={{ color: '#4a5270', padding: '10px' }}>{st.qty}</td>
-                  <td style={{ color: '#22c55e', padding: '10px' }}>{sym}{st.revenue.toLocaleString()}</td>
-                  <td style={{ color: '#f97316', padding: '10px' }}>{sym}{st.cost.toLocaleString()}</td>
-                  <td style={{ color: '#22c55e', fontWeight: 800, padding: '10px' }}>{sym}{(st.revenue - st.cost).toLocaleString()}</td>
-                  <td style={{ color: prod && prod.stok_miktari <= prod.kritik_stok ? '#f04040' : '#4a5270', padding: '10px' }}>{prod ? prod.stok_miktari : '-'}</td>
+                <tr key={st.name + st.currency} style={{ borderBottom: '1px solid #E3D9C7' }}>
+                  <td style={{ color: '#33302A', fontWeight: 700, padding: '10px' }}>{st.name} <span style={{ color: '#7A7062', fontSize: 10 }}>({st.currency})</span></td>
+                  <td style={{ color: '#7A7062', padding: '10px' }}>{st.qty}</td>
+                  <td style={{ color: '#6B8F5E', padding: '10px' }}>{sym}{st.revenue.toLocaleString()}</td>
+                  <td style={{ color: '#C68A3D', padding: '10px' }}>{sym}{st.cost.toLocaleString()}</td>
+                  <td style={{ color: '#6B8F5E', fontWeight: 800, padding: '10px' }}>{sym}{(st.revenue - st.cost).toLocaleString()}</td>
+                  <td style={{ color: prod && prod.stok_miktari <= prod.kritik_stok ? '#C1554A' : '#7A7062', padding: '10px' }}>{prod ? prod.stok_miktari : '-'}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
-        {Object.keys(productStats).length === 0 && <div style={{ color: '#4a5270', textAlign: 'center', padding: 20 }}>Bu tarih aralığında satış yok.</div>}
+        {Object.keys(productStats).length === 0 && <div style={{ color: '#7A7062', textAlign: 'center', padding: 20 }}>Bu tarih aralığında satış yok.</div>}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-        <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16 }}>
-          <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>🏆 En Çok Satan Ürünler</div>
+        <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 16 }}>
+          <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>🏆 En Çok Satan Ürünler</div>
           {topProducts.map((p, i) => (
-            <div key={p.name + p.currency} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < topProducts.length - 1 ? '1px solid #1c2035' : 'none' }}>
-              <span style={{ color: '#dde3ef', fontSize: 12 }}>{i + 1}. {p.name}</span>
-              <span style={{ color: '#22c55e', fontWeight: 700, fontSize: 12 }}>{p.qty} adet</span>
+            <div key={p.name + p.currency} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < topProducts.length - 1 ? '1px solid #E3D9C7' : 'none' }}>
+              <span style={{ color: '#33302A', fontSize: 12 }}>{i + 1}. {p.name}</span>
+              <span style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 12 }}>{p.qty} adet</span>
             </div>
           ))}
-          {topProducts.length === 0 && <div style={{ color: '#4a5270', fontSize: 12 }}>Veri yok.</div>}
+          {topProducts.length === 0 && <div style={{ color: '#7A7062', fontSize: 12 }}>Veri yok.</div>}
         </div>
-        <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16 }}>
-          <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>👑 En Çok Alışveriş Yapan Müşteriler</div>
+        <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 16 }}>
+          <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>👑 En Çok Alışveriş Yapan Müşteriler</div>
           {topCustomers.map(([name, st], i) => (
-            <div key={name} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < topCustomers.length - 1 ? '1px solid #1c2035' : 'none' }}>
-              <span style={{ color: '#dde3ef', fontSize: 12 }}>{i + 1}. {name}</span>
-              <span style={{ color: '#22c55e', fontWeight: 700, fontSize: 12 }}>₺{st.revenue.toLocaleString()}</span>
+            <div key={name} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < topCustomers.length - 1 ? '1px solid #E3D9C7' : 'none' }}>
+              <span style={{ color: '#33302A', fontSize: 12 }}>{i + 1}. {name}</span>
+              <span style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 12 }}>₺{st.revenue.toLocaleString()}</span>
             </div>
           ))}
-          {topCustomers.length === 0 && <div style={{ color: '#4a5270', fontSize: 12 }}>Veri yok.</div>}
+          {topCustomers.length === 0 && <div style={{ color: '#7A7062', fontSize: 12 }}>Veri yok.</div>}
         </div>
       </div>
     </div>
@@ -2722,44 +2722,44 @@ function MedikalTeklif({ urunler, musteriler, teklifler, setTeklifler }) {
 
   return (
     <div>
-      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 12, padding: 16, marginBottom: 18 }}>
-        <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>📄 Yeni Fiyat Teklifi</div>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+        <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>📄 Yeni Fiyat Teklifi</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
           <div>
-            <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>MÜŞTERİ</div>
-            <input list="teklif-cust-list" value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={{ width: '100%', padding: '9px 12px', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }} />
+            <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>MÜŞTERİ</div>
+            <input list="teklif-cust-list" value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }} />
             <datalist id="teklif-cust-list">{musteriler.map((m) => <option key={m.id} value={m.name} />)}</datalist>
           </div>
           <div>
-            <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>GEÇERLİLİK TARİHİ</div>
+            <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>GEÇERLİLİK TARİHİ</div>
             <Inp type="date" ph="" val={validUntil} set={setValidUntil} />
           </div>
         </div>
         {items.map((it, idx) => (
           <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 8, marginBottom: 6 }}>
-            <input list="teklif-urun-list" value={it.product_name} onChange={(e) => updateItem(idx, 'product_name', e.target.value)} placeholder="Ürün" style={{ padding: '9px 12px', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13 }} />
+            <input list="teklif-urun-list" value={it.product_name} onChange={(e) => updateItem(idx, 'product_name', e.target.value)} placeholder="Ürün" style={{ padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13 }} />
             <Inp ph="Adet" type="number" val={it.quantity} set={(v) => updateItem(idx, 'quantity', v)} />
             <Inp ph="Birim Fiyat" type="number" val={it.unit_price} set={(v) => updateItem(idx, 'unit_price', v)} />
-            <button onClick={() => removeItem(idx)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>×</button>
+            <button onClick={() => removeItem(idx)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>×</button>
           </div>
         ))}
         <datalist id="teklif-urun-list">{urunler.map((u) => <option key={u.id} value={u.name} />)}</datalist>
         <div style={{ marginBottom: 10 }}><Btn v="s" sm onClick={addItem}>+ Satır Ekle</Btn></div>
         <Inp ph="Notlar" val={notes} set={setNotes} rows={2} />
-        <div style={{ color: '#22c55e', fontWeight: 900, fontSize: 16, margin: '10px 0' }}>Toplam: ₺{total.toLocaleString()}</div>
+        <div style={{ color: '#6B8F5E', fontWeight: 900, fontSize: 16, margin: '10px 0' }}>Toplam: ₺{total.toLocaleString()}</div>
         <Btn onClick={saveAndDownload}>📄 PDF Oluştur ve Kaydet</Btn>
       </div>
 
-      <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Geçmiş Teklifler</div>
+      <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Geçmiş Teklifler</div>
       {teklifler.map((t) => (
-        <div key={t.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <div key={t.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{t.customer_name}</div>
-            <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(t.created_at)} · Geçerlilik: {fmt(t.valid_until)}</div>
+            <div style={{ color: '#33302A', fontWeight: 700, fontSize: 13 }}>{t.customer_name}</div>
+            <div style={{ color: '#7A7062', fontSize: 11 }}>{fmt(t.created_at)} · Geçerlilik: {fmt(t.valid_until)}</div>
           </div>
-          <div style={{ color: '#22c55e', fontWeight: 800 }}>₺{Number(t.total_amount).toLocaleString()}</div>
-          <button onClick={() => generatePDF(t)} style={{ padding: '4px 10px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 11, cursor: 'pointer' }}>📄 İndir</button>
-          <button onClick={() => remove(t.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+          <div style={{ color: '#6B8F5E', fontWeight: 800 }}>₺{Number(t.total_amount).toLocaleString()}</div>
+          <button onClick={() => generatePDF(t)} style={{ padding: '4px 10px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>📄 İndir</button>
+          <button onClick={() => remove(t.id)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
         </div>
       ))}
     </div>
@@ -2830,16 +2830,16 @@ function MarketFisleri({ user, region }) {
   const totalPendingUSD = pending.filter(r => r.currency === 'USD').reduce((s, r) => s + Number(r.amount || 0), 0);
   const totalPendingSAR = pending.filter(r => r.currency === 'SAR').reduce((s, r) => s + Number(r.amount || 0), 0);
 
-  if (loading) return <div style={{ color: '#4a5270', padding: 30 }}>Yükleniyor...</div>;
+  if (loading) return <div style={{ color: '#7A7062', padding: 30 }}>Yükleniyor...</div>;
 
   return (
     <div>
-      <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900, marginBottom: 6 }}>🛒 Market Fişleri</div>
-      <div style={{ color: '#4a5270', fontSize: 12, marginBottom: 18 }}>Premium Hair adına yapılan market alışverişlerinin fişleri</div>
+      <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900, marginBottom: 6 }}>🛒 Market Fişleri</div>
+      <div style={{ color: '#7A7062', fontSize: 12, marginBottom: 18 }}>Premium Hair adına yapılan market alışverişlerinin fişleri</div>
 
-      <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e44', borderRadius: 12, padding: 18, marginBottom: 18, textAlign: 'center' }}>
-        <div style={{ color: '#4a5270', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>BEKLEYEN ALACAK (Premium Hair'den)</div>
-        <div style={{ color: '#22c55e', fontSize: 22, fontWeight: 900, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+      <div style={{ background: 'rgba(107,143,94,0.1)', border: '1px solid #6B8F5E44', borderRadius: 12, padding: 18, marginBottom: 18, textAlign: 'center' }}>
+        <div style={{ color: '#7A7062', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>BEKLEYEN ALACAK (Premium Hair'den)</div>
+        <div style={{ color: '#6B8F5E', fontSize: 22, fontWeight: 900, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
           {totalPendingTRY > 0 && <span>₺{totalPendingTRY.toLocaleString()}</span>}
           {totalPendingUSD > 0 && <span>${totalPendingUSD.toLocaleString()}</span>}
           {totalPendingSAR > 0 && <span>SAR {totalPendingSAR.toLocaleString()}</span>}
@@ -2849,21 +2849,21 @@ function MarketFisleri({ user, region }) {
 
       <Btn onClick={() => { resetForm(); setEditingReceipt(null); setShowAdd(true); }} full>+ Yeni Fiş Ekle</Btn>
 
-      <div style={{ marginTop: 20, color: '#dde3ef', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Bekleyen Fişler</div>
+      <div style={{ marginTop: 20, color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Bekleyen Fişler</div>
       {pending.length === 0 ? (
-        <div style={{ color: '#4a5270', fontSize: 12, textAlign: 'center', padding: 20 }}>Bekleyen fiş yok.</div>
+        <div style={{ color: '#7A7062', fontSize: 12, textAlign: 'center', padding: 20 }}>Bekleyen fiş yok.</div>
       ) : pending.map(r => (
-        <div key={r.id} style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '12px 14px', marginBottom: 8 }}>
+        <div key={r.id} style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '12px 14px', marginBottom: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <div style={{ color: '#dde3ef', fontWeight: 700, fontSize: 13 }}>{r.description}</div>
-              <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(r.date_added || r.created_at)} {r.notes && `· ${r.notes}`}</div>
-              {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#4f7cff', fontSize: 11 }}>📷 Fişi Gör</a>}
+              <div style={{ color: '#33302A', fontWeight: 700, fontSize: 13 }}>{r.description}</div>
+              <div style={{ color: '#7A7062', fontSize: 11 }}>{fmt(r.date_added || r.created_at)} {r.notes && `· ${r.notes}`}</div>
+              {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#7E9A89', fontSize: 11 }}>📷 Fişi Gör</a>}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
-              <button onClick={() => startEdit(r)} style={{ padding: '4px 8px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 11, cursor: 'pointer' }}>✏️</button>
-              <button onClick={() => removeReceipt(r.id)} style={{ padding: '4px 8px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+              <div style={{ color: '#6B8F5E', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
+              <button onClick={() => startEdit(r)} style={{ padding: '4px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>✏️</button>
+              <button onClick={() => removeReceipt(r.id)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
             </div>
           </div>
         </div>
@@ -2871,13 +2871,13 @@ function MarketFisleri({ user, region }) {
 
       {paid.length > 0 && (
         <details style={{ marginTop: 16 }}>
-          <summary style={{ color: '#22c55e', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>✅ Ödenmiş Fişler ({paid.length})</summary>
+          <summary style={{ color: '#6B8F5E', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>✅ Ödenmiş Fişler ({paid.length})</summary>
           {paid.map(r => (
-            <div key={r.id} style={{ background: '#1a1d30', borderLeft: '3px solid #22c55e', borderRadius: 6, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
-              <div style={{ color: '#dde3ef', fontSize: 12 }}>{r.description}</div>
+            <div key={r.id} style={{ background: '#F1EBDE', borderLeft: '3px solid #6B8F5E', borderRadius: 6, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+              <div style={{ color: '#33302A', fontSize: 12 }}>{r.description}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ color: '#22c55e', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
-                <button onClick={() => startEdit(r)} style={{ padding: '3px 7px', background: 'rgba(79,124,255,0.15)', border: '1px solid #4f7cff', borderRadius: 6, color: '#4f7cff', fontSize: 10, cursor: 'pointer' }}>✏️</button>
+                <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
+                <button onClick={() => startEdit(r)} style={{ padding: '3px 7px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 10, cursor: 'pointer' }}>✏️</button>
               </div>
             </div>
           ))}
@@ -2894,9 +2894,9 @@ function MarketFisleri({ user, region }) {
             </div>
             <Inp ph="Not (opsiyonel)" val={form.notes} set={v => setForm(f => ({ ...f, notes: v }))} />
             <div>
-              <div style={{ color: '#4a5270', fontSize: 10, marginBottom: 4 }}>FİŞ FOTOĞRAFI {editingReceipt?.receipt_url && '(mevcut fotoğraf korunur, yeni seçerseniz değişir)'}</div>
-              {editingReceipt?.receipt_url && <a href={editingReceipt.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#4f7cff', fontSize: 11, display: 'block', marginBottom: 6 }}>📷 Mevcut fotoğrafı gör</a>}
-              <input type="file" accept="image/*" onChange={e => setForm(f => ({ ...f, receiptFile: e.target.files[0] }))} style={{ width: '100%', padding: 8, background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 12 }} />
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>FİŞ FOTOĞRAFI {editingReceipt?.receipt_url && '(mevcut fotoğraf korunur, yeni seçerseniz değişir)'}</div>
+              {editingReceipt?.receipt_url && <a href={editingReceipt.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#7E9A89', fontSize: 11, display: 'block', marginBottom: 6 }}>📷 Mevcut fotoğrafı gör</a>}
+              <input type="file" accept="image/*" onChange={e => setForm(f => ({ ...f, receiptFile: e.target.files[0] }))} style={{ width: '100%', padding: 8, background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 12 }} />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <Btn v="s" onClick={() => { setShowAdd(false); setEditingReceipt(null); resetForm(); }}>İptal</Btn>
@@ -2967,19 +2967,19 @@ function CurrencyConverterWidget() {
         title="Kur Çevirici"
         style={{
           position: 'fixed', bottom: 20, right: 20, width: 54, height: 54, borderRadius: '50%',
-          background: '#4f7cff', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(79,124,255,0.5)', zIndex: 300,
+          background: '#7E9A89', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer',
+          boxShadow: '0 4px 16px rgba(126,154,137,0.5)', zIndex: 300,
         }}
       >💱</button>
       {open && (
         <div style={{
-          position: 'fixed', bottom: 84, right: 20, width: 280, background: '#0e1020',
-          border: '1px solid #242840', borderRadius: 16, padding: 18, zIndex: 300,
+          position: 'fixed', bottom: 84, right: 20, width: 280, background: '#FFFFFF',
+          border: '1px solid #D4C7AE', borderRadius: 16, padding: 18, zIndex: 300,
           boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <div style={{ color: '#dde3ef', fontWeight: 800, fontSize: 13 }}>💱 Kur Çevirici</div>
-            <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: '#4a5270', fontSize: 18, cursor: 'pointer' }}>×</button>
+            <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13 }}>💱 Kur Çevirici</div>
+            <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: '#7A7062', fontSize: 18, cursor: 'pointer' }}>×</button>
           </div>
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
             <input
@@ -2987,12 +2987,12 @@ function CurrencyConverterWidget() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Tutar"
-              style={{ flex: 1, padding: '8px 10px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }}
+              style={{ flex: 1, padding: '8px 10px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }}
             />
             <select
               value={from}
               onChange={(e) => setFrom(e.target.value)}
-              style={{ padding: '8px 10px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13 }}
+              style={{ padding: '8px 10px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13 }}
             >
               <option value="TRY">₺ TL</option>
               <option value="USD">$ USD</option>
@@ -3000,14 +3000,14 @@ function CurrencyConverterWidget() {
             </select>
           </div>
           {['TRY', 'USD', 'SAR'].filter(c => c !== from).map(c => (
-            <div key={c} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', background: '#121525', borderRadius: 8, marginBottom: 6 }}>
-              <span style={{ color: '#4a5270', fontSize: 12 }}>{c === 'TRY' ? '₺ TL' : c === 'USD' ? '$ USD' : 'SAR'}</span>
-              <span style={{ color: '#22c55e', fontWeight: 700, fontSize: 13 }}>
+            <div key={c} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', background: '#FFFFFF', borderRadius: 8, marginBottom: 6 }}>
+              <span style={{ color: '#7A7062', fontSize: 12 }}>{c === 'TRY' ? '₺ TL' : c === 'USD' ? '$ USD' : 'SAR'}</span>
+              <span style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 13 }}>
                 {results[c] !== null ? results[c].toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}
               </span>
             </div>
           ))}
-          <div style={{ color: '#4a5270', fontSize: 10, marginTop: 8 }}>1$ = {rate ?? '...'} ₺ ({rateSource}) · 1$ = {SAR_RATE} SAR (sabit)</div>
+          <div style={{ color: '#7A7062', fontSize: 10, marginTop: 8 }}>1$ = {rate ?? '...'} ₺ ({rateSource}) · 1$ = {SAR_RATE} SAR (sabit)</div>
         </div>
       )}
     </>
@@ -3059,15 +3059,15 @@ export default function App() {
 
   if (!appUnlocked)
     return (
-      <div style={{ minHeight: '100vh', background: '#080910', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-        <div style={{ width: 380, background: '#0e1020', border: '1px solid #242840', borderRadius: 20, padding: 36 }}>
+      <div style={{ minHeight: '100vh', background: '#F7F3EC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ width: 380, background: '#FFFFFF', border: '1px solid #D4C7AE', borderRadius: 20, padding: 36 }}>
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <Logo size={130} />
-            <div style={{ color: '#4a5270', fontSize: 12, marginTop: 14 }}>Program Şifresi</div>
+            <div style={{ color: '#7A7062', fontSize: 12, marginTop: 14 }}>Program Şifresi</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <Inp ph="Program Sifresi" type="password" val={appPass} set={(v) => { setAppPass(v); setAppPassErr(false); }} />
-            {appPassErr && <div style={{ color: '#f04040', fontSize: 12, textAlign: 'center' }}>Sifre yanlis!</div>}
+            {appPassErr && <div style={{ color: '#C1554A', fontSize: 12, textAlign: 'center' }}>Sifre yanlis!</div>}
             <Btn full onClick={() => { if (appPass === APP_PASSWORD) { setAppUnlocked(true); } else { setAppPassErr(true); } }}>Giris</Btn>
           </div>
         </div>
@@ -3076,17 +3076,17 @@ export default function App() {
 
   if (!region && !pendingRegion)
     return (
-      <div style={{ minHeight: '100vh', background: '#080910', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-        <div style={{ width: 480, background: '#0e1020', border: '1px solid #242840', borderRadius: 20, padding: 36 }}>
+      <div style={{ minHeight: '100vh', background: '#F7F3EC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ width: 480, background: '#FFFFFF', border: '1px solid #D4C7AE', borderRadius: 20, padding: 36 }}>
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <Logo size={100} />
-            <div style={{ color: '#4a5270', fontSize: 13, marginTop: 14 }}>🌍 Şube Seçin</div>
+            <div style={{ color: '#7A7062', fontSize: 13, marginTop: 14 }}>🌍 Şube Seçin</div>
           </div>
           {Object.entries(REGIONS).map(([key, r]) => (
             <button key={key} onClick={() => { setPendingRegion(key); setRegionPass(''); setRegionPassErr(false); }} style={{ padding: '20px', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16, border: `2px solid ${r.clr}33`, background: `${r.clr}11`, textAlign: 'left', width: '100%', marginBottom: 12 }}>
               <div style={{ fontSize: 38 }}>{r.flag}</div>
               <div style={{ flex: 1 }}>
-                <div style={{ color: '#dde3ef', fontSize: 16, fontWeight: 800 }}>{r.lbl}</div>
+                <div style={{ color: '#33302A', fontSize: 16, fontWeight: 800 }}>{r.lbl}</div>
                 <div style={{ color: r.clr, fontSize: 11, marginTop: 2 }}>Giriş →</div>
               </div>
             </button>
@@ -3097,17 +3097,17 @@ export default function App() {
 
   if (pendingRegion && !region)
     return (
-      <div style={{ minHeight: '100vh', background: '#080910', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-        <div style={{ width: 400, background: '#0e1020', border: '1px solid #242840', borderRadius: 20, padding: 36 }}>
+      <div style={{ minHeight: '100vh', background: '#F7F3EC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ width: 400, background: '#FFFFFF', border: '1px solid #D4C7AE', borderRadius: 20, padding: 36 }}>
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <Logo size={80} />
             <div style={{ fontSize: 48, marginTop: 14, marginBottom: 6 }}>{REGIONS[pendingRegion]?.flag}</div>
-            <div style={{ color: '#c4cdd9', fontSize: 16, fontWeight: 900 }}>{REGIONS[pendingRegion]?.lbl}</div>
-            <div style={{ color: '#4a5270', fontSize: 12, marginTop: 4 }}>Şube Şifresi</div>
+            <div style={{ color: '#7A7062', fontSize: 16, fontWeight: 900 }}>{REGIONS[pendingRegion]?.lbl}</div>
+            <div style={{ color: '#7A7062', fontSize: 12, marginTop: 4 }}>Şube Şifresi</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <Inp ph="Şube Şifresi" type="password" val={regionPass} set={(v) => { setRegionPass(v); setRegionPassErr(false); }} />
-            {regionPassErr && <div style={{ color: '#f04040', fontSize: 12, textAlign: 'center' }}>Sifre yanlis!</div>}
+            {regionPassErr && <div style={{ color: '#C1554A', fontSize: 12, textAlign: 'center' }}>Sifre yanlis!</div>}
             <Btn full onClick={() => { if (regionPass === REGION_PASSWORDS[pendingRegion]) { setRegion(pendingRegion); setPendingRegion(null); setRegionPass(''); } else { setRegionPassErr(true); } }}>Giris</Btn>
             <Btn full v="s" onClick={() => { setPendingRegion(null); setRegionPass(''); }}>Geri</Btn>
           </div>
@@ -3117,16 +3117,16 @@ export default function App() {
 
   if (!dbReady)
     return (
-      <div style={{ minHeight: '100vh', background: '#080910', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+      <div style={{ minHeight: '100vh', background: '#F7F3EC', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
         <Logo size={120} />
-        <div style={{ color: '#4a5270', fontSize: 12, marginTop: 10 }}>{REGIONS[region]?.flag} {REGIONS[region]?.lbl} yükleniyor...</div>
+        <div style={{ color: '#7A7062', fontSize: 12, marginTop: 10 }}>{REGIONS[region]?.flag} {REGIONS[region]?.lbl} yükleniyor...</div>
       </div>
     );
 
   if (!selectedUser)
     return (
-      <div style={{ minHeight: '100vh', background: '#080910', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-        <div style={{ width: 420, background: '#0e1020', border: '1px solid #242840', borderRadius: 20, padding: 32 }}>
+      <div style={{ minHeight: '100vh', background: '#F7F3EC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ width: 420, background: '#FFFFFF', border: '1px solid #D4C7AE', borderRadius: 20, padding: 32 }}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <Logo size={90} />
             <div style={{ color: REGIONS[region]?.clr, fontSize: 13, marginTop: 12, fontWeight: 700 }}>{REGIONS[region]?.flag} {REGIONS[region]?.lbl}</div>
@@ -3134,32 +3134,32 @@ export default function App() {
           {users.map((u) => {
             const role = ROLES[u.role];
             return (
-              <div key={u.id} onClick={() => { setSelectedUser(u); setUserPass(''); setUserPassErr(false); }} style={{ padding: '10px 14px', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #1c2035', background: '#121525', marginBottom: 8 }}>
+              <div key={u.id} onClick={() => { setSelectedUser(u); setUserPass(''); setUserPassErr(false); }} style={{ padding: '10px 14px', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #E3D9C7', background: '#FFFFFF', marginBottom: 8 }}>
                 <Av name={u.name} size={34} clr={role?.clr} />
                 <div>
-                  <div style={{ color: '#dde3ef', fontSize: 13, fontWeight: 700 }}>{u.name} {role?.badge}</div>
-                  <div style={{ color: '#4a5270', fontSize: 11 }}>{role?.lbl}</div>
+                  <div style={{ color: '#33302A', fontSize: 13, fontWeight: 700 }}>{u.name} {role?.badge}</div>
+                  <div style={{ color: '#7A7062', fontSize: 11 }}>{role?.lbl}</div>
                 </div>
               </div>
             );
           })}
-          <button onClick={() => { setRegion(null); setUsers([]); }} style={{ marginTop: 14, padding: '8px', width: '100%', background: 'transparent', border: '1px solid #242840', borderRadius: 8, color: '#4a5270', fontSize: 11, cursor: 'pointer' }}>← Şube Değiştir</button>
+          <button onClick={() => { setRegion(null); setUsers([]); }} style={{ marginTop: 14, padding: '8px', width: '100%', background: 'transparent', border: '1px solid #D4C7AE', borderRadius: 8, color: '#7A7062', fontSize: 11, cursor: 'pointer' }}>← Şube Değiştir</button>
         </div>
       </div>
     );
 
   if (!user)
     return (
-      <div style={{ minHeight: '100vh', background: '#080910', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-        <div style={{ width: 380, background: '#0e1020', border: '1px solid #242840', borderRadius: 20, padding: 36 }}>
+      <div style={{ minHeight: '100vh', background: '#F7F3EC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ width: 380, background: '#FFFFFF', border: '1px solid #D4C7AE', borderRadius: 20, padding: 36 }}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <Logo size={70} />
             <div style={{ marginTop: 14 }}><Av name={selectedUser.name} size={52} clr={ROLES[selectedUser.role]?.clr} /></div>
-            <div style={{ color: '#c4cdd9', fontSize: 14, fontWeight: 900, marginTop: 12 }}>{selectedUser.name}</div>
+            <div style={{ color: '#7A7062', fontSize: 14, fontWeight: 900, marginTop: 12 }}>{selectedUser.name}</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <Inp ph="Sifre" type="password" val={userPass} set={(v) => { setUserPass(v); setUserPassErr(false); }} />
-            {userPassErr && <div style={{ color: '#f04040', fontSize: 12, textAlign: 'center' }}>Sifre yanlis!</div>}
+            {userPassErr && <div style={{ color: '#C1554A', fontSize: 12, textAlign: 'center' }}>Sifre yanlis!</div>}
             <Btn full onClick={async () => { if (userPass === selectedUser.password) { setUser(selectedUser); setPage('dashboard'); await logAction(selectedUser, region, 'Giris yapildi', 'Sistem', selectedUser.name); } else { setUserPassErr(true); } }}>Giris</Btn>
             <Btn full v="s" onClick={() => setSelectedUser(null)}>Geri</Btn>
           </div>
@@ -3176,9 +3176,9 @@ export default function App() {
   const reg = REGIONS[region];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080910', display: 'flex', fontFamily: "'Segoe UI',system-ui,sans-serif", color: '#dde3ef' }}>
-      <div style={{ width: side ? 230 : 70, background: '#0e1020', borderRight: '1px solid #1c2035', display: 'flex', flexDirection: 'column', flexShrink: 0, position: 'relative' }}>
-        <div style={{ padding: side ? '20px 18px 16px' : '16px 8px', borderBottom: '1px solid #1c2035', textAlign: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#F7F3EC', display: 'flex', fontFamily: "'Segoe UI',system-ui,sans-serif", color: '#33302A' }}>
+      <div style={{ width: side ? 230 : 70, background: '#FFFFFF', borderRight: '1px solid #E3D9C7', display: 'flex', flexDirection: 'column', flexShrink: 0, position: 'relative' }}>
+        <div style={{ padding: side ? '20px 18px 16px' : '16px 8px', borderBottom: '1px solid #E3D9C7', textAlign: 'center' }}>
           <Logo size={side ? 60 : 40} />
           {side && <div style={{ color: reg.clr, fontSize: 10, marginTop: 8, fontWeight: 700 }}>{reg.flag} {reg.lbl}</div>}
         </div>
@@ -3186,34 +3186,34 @@ export default function App() {
           {visNav.map((n) => {
             const active = page === n.id;
             return (
-              <button key={n.id} onClick={() => setPage(n.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: side ? '10px 18px' : '10px 0', justifyContent: side ? 'flex-start' : 'center', background: active ? 'rgba(79,124,255,0.12)' : 'transparent', border: 'none', borderLeft: `3px solid ${active ? '#4f7cff' : 'transparent'}`, color: active ? '#4f7cff' : '#4a5270', cursor: 'pointer', fontSize: 13, fontWeight: active ? 700 : 500 }}>
+              <button key={n.id} onClick={() => setPage(n.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: side ? '10px 18px' : '10px 0', justifyContent: side ? 'flex-start' : 'center', background: active ? 'rgba(126,154,137,0.12)' : 'transparent', border: 'none', borderLeft: `3px solid ${active ? '#7E9A89' : 'transparent'}`, color: active ? '#7E9A89' : '#7A7062', cursor: 'pointer', fontSize: 13, fontWeight: active ? 700 : 500 }}>
                 <span style={{ fontSize: 16 }}>{n.ico}</span>
                 {side && <span>{n.lbl}</span>}
               </button>
             );
           })}
         </div>
-        <div style={{ padding: side ? '14px 18px' : '14px 10px', borderTop: '1px solid #1c2035', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ padding: side ? '14px 18px' : '14px 10px', borderTop: '1px solid #E3D9C7', display: 'flex', alignItems: 'center', gap: 10 }}>
           <Av name={user.name} size={30} clr={ROLES[user.role]?.clr} />
           {side && (
             <div style={{ flex: 1 }}>
-              <div style={{ color: '#dde3ef', fontSize: 12, fontWeight: 600 }}>{user.name}</div>
-              <div style={{ color: '#4a5270', fontSize: 10 }}>{ROLES[user.role]?.lbl}</div>
+              <div style={{ color: '#33302A', fontSize: 12, fontWeight: 600 }}>{user.name}</div>
+              <div style={{ color: '#7A7062', fontSize: 10 }}>{ROLES[user.role]?.lbl}</div>
             </div>
           )}
-          {side && <button onClick={() => { setUser(null); setSelectedUser(null); setRegion(null); setUsers([]); }} style={{ background: 'none', border: 'none', color: '#4a5270', cursor: 'pointer', fontSize: 14 }}>⏏</button>}
+          {side && <button onClick={() => { setUser(null); setSelectedUser(null); setRegion(null); setUsers([]); }} style={{ background: 'none', border: 'none', color: '#7A7062', cursor: 'pointer', fontSize: 14 }}>⏏</button>}
         </div>
-        <button onClick={() => setSide((o) => !o)} style={{ position: 'absolute', top: '50%', right: -12, transform: 'translateY(-50%)', width: 22, height: 22, borderRadius: '50%', background: '#242840', border: '1px solid #1c2035', color: '#4a5270', cursor: 'pointer', fontSize: 11 }}>{side ? '<' : '>'}</button>
+        <button onClick={() => setSide((o) => !o)} style={{ position: 'absolute', top: '50%', right: -12, transform: 'translateY(-50%)', width: 22, height: 22, borderRadius: '50%', background: '#D4C7AE', border: '1px solid #E3D9C7', color: '#7A7062', cursor: 'pointer', fontSize: 11 }}>{side ? '<' : '>'}</button>
       </div>
       <div style={{ flex: 1, padding: '24px 28px', overflowY: 'auto' }}>
         <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           <button onClick={() => { setRegion(null); setSelectedUser(null); setUser(null); setUsers([]); }} style={{ padding: '5px 12px', background: `${reg.clr}22`, border: `1px solid ${reg.clr}`, borderRadius: 6, color: reg.clr, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{reg.flag} {reg.lbl} · Şube Değiştir</button>
-          {!dbError && <span style={{ color: '#22c55e', fontSize: 11 }}>● Supabase</span>}
+          {!dbError && <span style={{ color: '#6B8F5E', fontSize: 11 }}>● Supabase</span>}
           {isAdmin && (
             <>
-              <span style={{ color: driveConnected ? '#22c55e' : '#f97316', fontSize: 11 }}>● Drive {driveConnected ? 'bagli' : 'bagli degil'}</span>
+              <span style={{ color: driveConnected ? '#6B8F5E' : '#C68A3D', fontSize: 11 }}>● Drive {driveConnected ? 'bagli' : 'bagli degil'}</span>
               {!driveConnected && <button onClick={async () => { try { await connectDrive(); setDriveConnected(true); } catch (e) { alert('Hata'); } }} style={{ padding: '4px 10px', background: '#4285f4', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Drive Baglan</button>}
-              {driveConnected && <button onClick={() => { disconnectDrive(); setDriveConnected(false); }} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Drive Cikis</button>}
+              {driveConnected && <button onClick={() => { disconnectDrive(); setDriveConnected(false); }} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Drive Cikis</button>}
             </>
           )}
         </div>
