@@ -870,9 +870,11 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const totalRevenue = monthlyPayments.reduce((s, p) => s + Number(p.total_price || 0), 0) + monthlyPayments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
   const totalAli = monthlyPayments.reduce((s, p) => s + Number(p.ali_haydar_fee || 0), 0);
   const totalSeyit = monthlyPayments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
+  const caseCountAli = monthlyPayments.filter(p => Number(p.ali_haydar_fee) > 0).length;
+  const caseCountSeyit = monthlyPayments.filter(p => Number(p.seyit_fee) > 0).length;
 
   const normKey = (s) => (s || '').trim().toLowerCase();
-  const otherFeeByName = {}; // normalized-key -> { display, total }
+  const otherFeeByName = {}; // normalized-key -> { display, total, count }
   monthlyPayments.forEach(p => {
     let arr = [];
     try { arr = typeof p.fee_distribution === 'string' ? JSON.parse(p.fee_distribution || '[]') : (p.fee_distribution || []); } catch (e) {}
@@ -884,8 +886,9 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       const nm = normKey(r.name);
       if (!nm || !Number(r.amount)) return;
       if (nm === 'ali haydar' || nm === 'seyit') return; // bunlar kendi sabit alanlarından girilmeli
-      if (!otherFeeByName[nm]) otherFeeByName[nm] = { display: r.name.trim(), total: 0 };
+      if (!otherFeeByName[nm]) otherFeeByName[nm] = { display: r.name.trim(), total: 0, count: 0 };
       otherFeeByName[nm].total += Number(r.amount);
+      otherFeeByName[nm].count += 1;
     });
   });
   const totalOtherTeam = Object.values(otherFeeByName).reduce((s, v) => s + v.total, 0);
@@ -916,9 +919,9 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
 
   const netAli = totalAli - pendingAli;
   const netSeyit = totalSeyit - pendingSeyit;
-  const otherTeamRows = Object.values(otherFeeByName).map(({ display, total }) => {
+  const otherTeamRows = Object.values(otherFeeByName).map(({ display, total, count }) => {
     const pending = pendingRec.filter(r => normKey(r.person) === normKey(display)).reduce((s, r) => s + toUSD(r), 0);
-    return { name: display, earned: total, pending, net: total - pending };
+    return { name: display, earned: total, count, pending, net: total - pending };
   });
 
   const saveReceivable = async () => {
@@ -1069,19 +1072,20 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #1c2035' }}>
-                {['Kişi', 'Hak Ediş', 'Bekleyen Alacak', 'Net Ödenecek'].map(h => (
+                {['Kişi', 'Vaka Sayısı', 'Hak Ediş', 'Alacak/Verecek (Avans, Market vs.)', 'Net Ödenecek'].map(h => (
                   <th key={h} style={{ color: '#4a5270', fontWeight: 700, padding: '8px 10px', textAlign: 'left' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {[
-                { name: 'Ali Haydar', earned: totalAli, pending: pendingAli, net: netAli },
+                { name: 'Ali Haydar', earned: totalAli, count: caseCountAli, pending: pendingAli, net: netAli },
                 ...otherTeamRows,
-                { name: 'Seyit', earned: totalSeyit, pending: pendingSeyit, net: netSeyit },
+                { name: 'Seyit', earned: totalSeyit, count: caseCountSeyit, pending: pendingSeyit, net: netSeyit },
               ].map(row => (
                 <tr key={row.name} style={{ borderBottom: '1px solid #1c2035' }}>
                   <td style={{ color: '#dde3ef', fontWeight: 700, padding: '10px 10px' }}>{row.name}</td>
+                  <td style={{ color: '#4a5270', padding: '10px 10px', textAlign: 'center' }}>{row.count}</td>
                   <td style={{ color: '#22c55e', padding: '10px 10px' }}>${row.earned.toLocaleString()}</td>
                   <td style={{ color: row.pending > 0 ? '#f04040' : '#4a5270', padding: '10px 10px' }}>{row.pending > 0 ? `-$${row.pending.toLocaleString()}` : '-'}</td>
                   <td style={{ color: row.net >= 0 ? '#22c55e' : '#f04040', fontWeight: 900, padding: '10px 10px' }}>${row.net.toLocaleString()}</td>
@@ -2583,7 +2587,9 @@ function MarketFisleri({ user, region }) {
 
   const pending = receipts.filter(r => !r.paid);
   const paid = receipts.filter(r => r.paid);
-  const totalPending = pending.reduce((s, r) => s + Number(r.amount || 0), 0);
+  const totalPendingTRY = pending.filter(r => (r.currency || 'TRY') === 'TRY').reduce((s, r) => s + Number(r.amount || 0), 0);
+  const totalPendingUSD = pending.filter(r => r.currency === 'USD').reduce((s, r) => s + Number(r.amount || 0), 0);
+  const totalPendingSAR = pending.filter(r => r.currency === 'SAR').reduce((s, r) => s + Number(r.amount || 0), 0);
 
   if (loading) return <div style={{ color: '#4a5270', padding: 30 }}>Yükleniyor...</div>;
 
@@ -2594,7 +2600,12 @@ function MarketFisleri({ user, region }) {
 
       <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e44', borderRadius: 12, padding: 18, marginBottom: 18, textAlign: 'center' }}>
         <div style={{ color: '#4a5270', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>BEKLEYEN ALACAK (Premium Hair'den)</div>
-        <div style={{ color: '#22c55e', fontSize: 28, fontWeight: 900 }}>₺{totalPending.toLocaleString()}</div>
+        <div style={{ color: '#22c55e', fontSize: 22, fontWeight: 900, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {totalPendingTRY > 0 && <span>₺{totalPendingTRY.toLocaleString()}</span>}
+          {totalPendingUSD > 0 && <span>${totalPendingUSD.toLocaleString()}</span>}
+          {totalPendingSAR > 0 && <span>SAR {totalPendingSAR.toLocaleString()}</span>}
+          {totalPendingTRY === 0 && totalPendingUSD === 0 && totalPendingSAR === 0 && <span>0</span>}
+        </div>
       </div>
 
       <Btn onClick={() => { resetForm(); setEditingReceipt(null); setShowAdd(true); }} full>+ Yeni Fiş Ekle</Btn>
