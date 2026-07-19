@@ -1345,7 +1345,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                       <div style={{ color: '#33302A', fontSize: 12 }}>{r.description} <span style={{ color: '#7A7062', fontSize: 10 }}>({r.person || 'Genel'})</span></div>
                       {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#7E9A89', fontSize: 10 }}>📷 Fiş</a>}
                     </div>
-                    <div style={{ color: r.paid ? '#6B8F5E' : '#B8952E', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : '₺'}{Number(r.amount).toLocaleString()} {r.paid ? '✓' : '⏳'}</div>
+                    <div style={{ color: r.paid ? '#6B8F5E' : '#B8952E', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()} {r.paid ? '✓' : '⏳'}</div>
                   </div>
                 ))}
               </details>
@@ -1368,10 +1368,11 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
           const monthlyGiderler = kisiselGiderler.filter(g => getPeriodKeyFromDateStr(g.date) === selectedMonth);
           const totalTRY = monthlyGiderler.filter(g => (g.currency || 'TRY') === 'TRY').reduce((s, g) => s + Number(g.amount || 0), 0);
           const totalUSD = monthlyGiderler.filter(g => g.currency === 'USD').reduce((s, g) => s + Number(g.amount || 0), 0);
+          const totalSAR = monthlyGiderler.filter(g => g.currency === 'SAR').reduce((s, g) => s + Number(g.amount || 0), 0);
           return (
             <>
               <div style={{ color: '#9B7B8C', fontWeight: 900, fontSize: 16, margin: '12px 0' }}>
-                Bu Dönem Toplam: ₺{totalTRY.toLocaleString()} {' + '} ${totalUSD.toLocaleString()}
+                Bu Dönem Toplam: ₺{totalTRY.toLocaleString()} {' + '} ${totalUSD.toLocaleString()} {' + '} SAR {totalSAR.toLocaleString()}
               </div>
               {monthlyGiderler.length === 0 ? (
                 <div style={{ color: '#7A7062', fontSize: 12, textAlign: 'center', padding: 16 }}>{getMonthLabel(selectedMonth)} döneminde kayıt yok.</div>
@@ -1383,7 +1384,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                     {g.receipt_url && <a href={g.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#7E9A89', fontSize: 11 }}>📷 Fiş</a>}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ color: '#9B7B8C', fontWeight: 800 }}>{g.currency === 'USD' ? '$' : '₺'}{Number(g.amount).toLocaleString()}</div>
+                    <div style={{ color: '#9B7B8C', fontWeight: 800 }}>{g.currency === 'USD' ? '$' : g.currency === 'SAR' ? 'SAR ' : '₺'}{Number(g.amount).toLocaleString()}</div>
                     <button onClick={() => removeKisiselGider(g.id)} style={{ padding: '4px 8px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>🗑</button>
                   </div>
                 </div>
