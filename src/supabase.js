@@ -1071,10 +1071,10 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const toUSD = (r) => {
     const amt = Number(r.amount || 0);
     const cur = r.currency || 'TRY';
-    if (cur === 'USD') return amt;
-    if (cur === 'SAR') return amt / SAR_USD_RATE;
-    if (cur === 'TRY') return usdTryRate ? amt / usdTryRate : amt;
-    return amt;
+    let usd = amt;
+    if (cur === 'SAR') usd = amt / SAR_USD_RATE;
+    else if (cur === 'TRY') usd = usdTryRate ? amt / usdTryRate : amt;
+    return Math.round(usd);
   };
   const giderFor = (name) => kisiselGiderler
     .filter(g => getPeriodKeyFromDateStr(g.date) === selectedMonth && normKey(g.person) === normKey(name))
