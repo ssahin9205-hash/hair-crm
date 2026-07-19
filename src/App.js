@@ -995,15 +995,30 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     .filter(g => getPeriodKeyFromDateStr(g.date) === selectedMonth && normKey(g.person) === normKey(name))
     .reduce((s, g) => s + toUSD(g), 0);
 
-  const pendingAli = pendingRec.filter(r => normKey(r.person) === 'ali haydar').reduce((s, r) => s + toUSD(r), 0) + giderFor('Ali Haydar');
-  const pendingSeyit = pendingRec.filter(r => normKey(r.person) === 'seyit').reduce((s, r) => s + toUSD(r), 0) + giderFor('Seyit');
+  // Bir kişiye verilen avans/harcama, tahsil edilse de edilmese de o kişinin hesabından
+  // kalıcı olarak düşülür (eksi bakiye gibi işler).
+  const teamDeductionFor = (name) => periodReceivables
+    .filter(r => normKey(r.person) === normKey(name))
+    .reduce((s, r) => s + toUSD(r), 0) + giderFor(name);
+
+  const pendingAli = teamDeductionFor('Ali Haydar');
+  const pendingSeyitDirect = teamDeductionFor('Seyit');
   const pendingPremiumHair = pendingRec.filter(r => r.person === 'Premium Hair (Market)').reduce((s, r) => s + toUSD(r), 0);
   const pendingGenel = pendingRec.filter(r => !r.person || r.person === 'Genel').reduce((s, r) => s + toUSD(r), 0);
 
+  // Ekip üyelerine verilen avanslar tahsil edildiğinde (✓ Tahsil), o tutar Seyit'e geri
+  // yansır — çünkü avansı cepten Seyit vermiştir.
+  const seyitReimbursement = paidRec
+    .filter(r => {
+      const p = normKey(r.person);
+      return p && p !== 'genel' && p !== 'premium hair (market)' && p !== 'seyit';
+    })
+    .reduce((s, r) => s + toUSD(r), 0);
+
   const netAli = totalAli - pendingAli;
-  const netSeyit = totalSeyit - pendingSeyit;
+  const netSeyit = totalSeyit - pendingSeyitDirect + seyitReimbursement;
   const otherTeamRows = Object.values(otherFeeByName).map(({ display, total, count }) => {
-    const pending = pendingRec.filter(r => normKey(r.person) === normKey(display)).reduce((s, r) => s + toUSD(r), 0) + giderFor(display);
+    const pending = teamDeductionFor(display);
     return { name: display, earned: total, count, pending, net: total - pending };
   });
 
@@ -1243,7 +1258,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
               {[
                 { name: 'Ali Haydar', earned: totalAli, count: caseCountAli, pending: pendingAli, net: netAli },
                 ...otherTeamRows,
-                { name: 'Seyit', earned: totalSeyit, count: caseCountSeyit, pending: pendingSeyit, net: netSeyit },
+                { name: 'Seyit', earned: totalSeyit, count: caseCountSeyit, pending: pendingSeyitDirect, net: netSeyit },
               ].map(row => (
                 <tr key={row.name} style={{ borderBottom: '1px solid #E3D9C7' }}>
                   <td style={{ color: '#33302A', fontWeight: 700, padding: '10px 10px' }}>{row.name}</td>
@@ -1273,7 +1288,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
         <div style={{ color: '#9B7B8C', fontWeight: 900, fontSize: 15, marginBottom: 14 }}>👑 Seyit'in Aylık Hesap Özeti — {getMonthLabel(selectedMonth)}</div>
         {(() => {
           const seyitGiderTotal = giderFor('Seyit');
-          const seyitAlacakTotal = pendingRec.filter(r => normKey(r.person) === 'seyit').reduce((s, r) => s + toUSD(r), 0);
+          const seyitAlacakTotal = pendingSeyitDirect;
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
@@ -1285,8 +1300,12 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                 <span style={{ color: seyitGiderTotal > 0 ? '#C1554A' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitGiderTotal > 0 ? `-$${seyitGiderTotal.toLocaleString()}` : '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
-                <span style={{ color: '#33302A', fontSize: 13 }}>Diğer Alacaklar (Avans vb.)</span>
+                <span style={{ color: '#33302A', fontSize: 13 }}>Diğer Alacaklar (Kendi avansı vb.)</span>
                 <span style={{ color: seyitAlacakTotal > 0 ? '#C1554A' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitAlacakTotal > 0 ? `-$${seyitAlacakTotal.toLocaleString()}` : '-'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
+                <span style={{ color: '#33302A', fontSize: 13 }}>Ekip Avans Tahsilatı (Ali/Muhammed Ali/Sergen/Furkan'a verilip ✓ Tahsil edilenler)</span>
+                <span style={{ color: seyitReimbursement > 0 ? '#6B8F5E' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitReimbursement > 0 ? `+$${seyitReimbursement.toLocaleString()}` : '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 0 0' }}>
                 <span style={{ color: '#33302A', fontWeight: 900, fontSize: 15 }}>NET TOPLAM</span>
