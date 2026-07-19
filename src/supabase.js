@@ -120,3 +120,9 @@ export const deleteMedikalGider = (id) => guard(supabase.from('medikal_giderler'
 export const fetchMedikalTeklifler = () => guard(supabase.from('medikal_teklifler').select('*').order('created_at', { ascending: false }), 'fetchMedikalTeklifler');
 export const insertMedikalTeklif = (row) => guard(supabase.from('medikal_teklifler').insert([row]).select().single(), 'insertMedikalTeklif');
 export const deleteMedikalTeklif = (id) => guard(supabase.from('medikal_teklifler').delete().eq('id', id), 'deleteMedikalTeklif');
+
+// Premium Hair Genel Hesabı (kümülatif borç/alacak defteri)
+export const fetchPremiumHairLedger = () => guard(supabase.from('premium_hair_ledger').select('*').order('date', { ascending: true }), 'fetchPremiumHairLedger');
+export const insertPremiumHairLedger = (row) => guard(supabase.from('premium_hair_ledger').insert([row]).select().single(), 'insertPremiumHairLedger');
+export const updatePremiumHairLedger = (id, updates) => guard(supabase.from('premium_hair_ledger').update(updates).eq('id', id).select().single(), 'updatePremiumHairLedger');
+export const deletePremiumHairLedger = (id) => guard(supabase.from('premium_hair_ledger').delete().eq('id', id), 'deletePremiumHairLedger');
