@@ -1082,9 +1082,10 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
 
   // Bir kişiye verilen avans/harcama, tahsil edilse de edilmese de o kişinin hesabından
   // kalıcı olarak düşülür (eksi bakiye gibi işler).
-  const teamDeductionFor = (name) => periodReceivables
+  const receivablesOnlyFor = (name) => periodReceivables
     .filter(r => normKey(r.person) === normKey(name))
-    .reduce((s, r) => s + toUSD(r), 0) + giderFor(name);
+    .reduce((s, r) => s + toUSD(r), 0);
+  const teamDeductionFor = (name) => receivablesOnlyFor(name) + giderFor(name);
 
   const pendingAli = teamDeductionFor('Ali Haydar');
   const pendingSeyitDirect = teamDeductionFor('Seyit');
@@ -1467,7 +1468,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
         <div style={{ color: '#9B7B8C', fontWeight: 900, fontSize: 15, marginBottom: 14 }}>👑 Seyit'in Aylık Hesap Özeti — {getMonthLabel(selectedMonth)}</div>
         {(() => {
           const seyitGiderTotal = giderFor('Seyit');
-          const seyitAlacakTotal = pendingSeyitDirect;
+          const seyitAlacakTotal = receivablesOnlyFor('Seyit');
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
