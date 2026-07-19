@@ -2470,7 +2470,7 @@ function MarketFisleri({ user, region }) {
               <div style={{ color: '#4a5270', fontSize: 11 }}>{fmt(r.date_added || r.created_at)} {r.notes && `· ${r.notes}`}</div>
               {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#4f7cff', fontSize: 11 }}>📷 Fişi Gör</a>}
             </div>
-            <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : '₺'}{Number(r.amount).toLocaleString()}</div>
+            <div style={{ color: '#22c55e', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
           </div>
         </div>
       ))}
@@ -2481,7 +2481,7 @@ function MarketFisleri({ user, region }) {
           {paid.map(r => (
             <div key={r.id} style={{ background: '#1a1d30', borderLeft: '3px solid #22c55e', borderRadius: 6, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
               <div style={{ color: '#dde3ef', fontSize: 12 }}>{r.description}</div>
-              <div style={{ color: '#22c55e', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : '₺'}{Number(r.amount).toLocaleString()}</div>
+              <div style={{ color: '#22c55e', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
             </div>
           ))}
         </details>
@@ -2493,7 +2493,7 @@ function MarketFisleri({ user, region }) {
             <Inp ph="Ne alındı? (açıklama) *" val={form.description} set={v => setForm(f => ({ ...f, description: v }))} />
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8 }}>
               <Inp ph="Tutar *" type="number" val={form.amount} set={v => setForm(f => ({ ...f, amount: v }))} />
-              <Sel val={form.currency} set={v => setForm(f => ({ ...f, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }]} />
+              <Sel val={form.currency} set={v => setForm(f => ({ ...f, currency: v }))} opts={[{ v: 'TRY', l: '₺ TL' }, { v: 'USD', l: '$ USD' }, { v: 'SAR', l: 'SAR ﷼' }]} />
             </div>
             <Inp ph="Not (opsiyonel)" val={form.notes} set={v => setForm(f => ({ ...f, notes: v }))} />
             <div>
