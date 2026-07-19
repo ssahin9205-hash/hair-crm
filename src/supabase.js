@@ -1101,11 +1101,13 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     })
     .reduce((s, r) => s + toUSD(r), 0);
 
-  const netAli = totalAli - pendingAli;
-  const netSeyit = totalSeyit - pendingSeyitDirect + seyitReimbursement;
+  // Not: Net Ödenecek artık sadece Hak Ediş'i gösterir. Alacaklar ve Kişisel Giderler
+  // ayrı bölümlerde takip edilir, otomatik düşülmez — kullanıcı hesabı en sonda kendisi netleştirir.
+  const netAli = totalAli;
+  const netSeyit = totalSeyit;
   const otherTeamRows = Object.values(otherFeeByName).map(({ display, total, count }) => {
     const pending = teamDeductionFor(display);
-    return { name: display, earned: total, count, pending, net: total - pending };
+    return { name: display, earned: total, count, pending, net: total };
   });
 
   const generateMonthlyReportPDF = () => {
@@ -1429,7 +1431,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #E3D9C7' }}>
-                {['Kişi', 'Vaka Sayısı', 'Hak Ediş', 'Alacak/Verecek (Avans, Market, Kişisel Gider vs.)', 'Net Ödenecek'].map(h => (
+                {['Kişi', 'Vaka Sayısı', 'Hak Ediş', 'Alacak/Verecek (bilgi amaçlı, dahil değil)', 'Net Ödenecek (Hak Ediş)'].map(h => (
                   <th key={h} style={{ color: '#7A7062', fontWeight: 700, padding: '8px 10px', textAlign: 'left' }}>{h}</th>
                 ))}
               </tr>
@@ -1465,7 +1467,8 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
 
       {/* SEYİT'İN AYLIK HESAP ÖZETİ */}
       <div style={{ background: 'rgba(155,123,140,0.08)', border: '1px solid #9B7B8C44', borderRadius: 12, padding: 18, marginBottom: 14 }}>
-        <div style={{ color: '#9B7B8C', fontWeight: 900, fontSize: 15, marginBottom: 14 }}>👑 Seyit'in Aylık Hesap Özeti — {getMonthLabel(selectedMonth)}</div>
+        <div style={{ color: '#9B7B8C', fontWeight: 900, fontSize: 15, marginBottom: 4 }}>👑 Seyit'in Aylık Hesap Özeti — {getMonthLabel(selectedMonth)}</div>
+        <div style={{ color: '#7A7062', fontSize: 11, marginBottom: 14 }}>Alacaklar ve kişisel giderler bilgi amaçlıdır, aşağıdaki NET TOPLAM'a otomatik dahil edilmez — hesap yaparken siz elle düşersiniz.</div>
         {(() => {
           const seyitGiderTotal = giderFor('Seyit');
           const seyitAlacakTotal = receivablesOnlyFor('Seyit');
@@ -1476,19 +1479,19 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                 <span style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 13 }}>+${totalSeyit.toLocaleString()}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
-                <span style={{ color: '#33302A', fontSize: 13 }}>Kişisel Giderler (uçak bileti vb.)</span>
-                <span style={{ color: seyitGiderTotal > 0 ? '#C1554A' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitGiderTotal > 0 ? `-$${seyitGiderTotal.toLocaleString()}` : '-'}</span>
+                <span style={{ color: '#7A7062', fontSize: 12 }}>ℹ️ Kişisel Giderler (uçak bileti vb.) — bilgi amaçlı</span>
+                <span style={{ color: '#7A7062', fontWeight: 700, fontSize: 12 }}>{seyitGiderTotal > 0 ? `$${seyitGiderTotal.toLocaleString()}` : '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
-                <span style={{ color: '#33302A', fontSize: 13 }}>Diğer Alacaklar (Kendi avansı vb.)</span>
-                <span style={{ color: seyitAlacakTotal > 0 ? '#C1554A' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitAlacakTotal > 0 ? `-$${seyitAlacakTotal.toLocaleString()}` : '-'}</span>
+                <span style={{ color: '#7A7062', fontSize: 12 }}>ℹ️ Diğer Alacaklar (Kendi avansı vb.) — bilgi amaçlı</span>
+                <span style={{ color: '#7A7062', fontWeight: 700, fontSize: 12 }}>{seyitAlacakTotal > 0 ? `$${seyitAlacakTotal.toLocaleString()}` : '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
-                <span style={{ color: '#33302A', fontSize: 13 }}>Ekip Avans Tahsilatı (Ali/Muhammed Ali/Sergen/Furkan'a verilip ✓ Tahsil edilenler)</span>
-                <span style={{ color: seyitReimbursement > 0 ? '#6B8F5E' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitReimbursement > 0 ? `+$${seyitReimbursement.toLocaleString()}` : '-'}</span>
+                <span style={{ color: '#7A7062', fontSize: 12 }}>ℹ️ Ekip Avans Tahsilatı (✓ Tahsil edilenler) — bilgi amaçlı</span>
+                <span style={{ color: '#7A7062', fontWeight: 700, fontSize: 12 }}>{seyitReimbursement > 0 ? `$${seyitReimbursement.toLocaleString()}` : '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 0 0' }}>
-                <span style={{ color: '#33302A', fontWeight: 900, fontSize: 15 }}>NET TOPLAM</span>
+                <span style={{ color: '#33302A', fontWeight: 900, fontSize: 15 }}>NET TOPLAM (Hak Ediş)</span>
                 <span style={{ color: netSeyit >= 0 ? '#6B8F5E' : '#C1554A', fontWeight: 900, fontSize: 20 }}>${netSeyit.toLocaleString()}</span>
               </div>
             </div>
