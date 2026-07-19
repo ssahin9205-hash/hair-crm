@@ -1258,13 +1258,13 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
               {[
                 { name: 'Ali Haydar', earned: totalAli, count: caseCountAli, pending: pendingAli, net: netAli },
                 ...otherTeamRows,
-                { name: 'Seyit', earned: totalSeyit, count: caseCountSeyit, pending: pendingSeyitDirect, net: netSeyit },
+                { name: 'Seyit', earned: totalSeyit, count: caseCountSeyit, pending: pendingSeyitDirect - seyitReimbursement, net: netSeyit },
               ].map(row => (
                 <tr key={row.name} style={{ borderBottom: '1px solid #E3D9C7' }}>
                   <td style={{ color: '#33302A', fontWeight: 700, padding: '10px 10px' }}>{row.name}</td>
                   <td style={{ color: '#7A7062', padding: '10px 10px', textAlign: 'center' }}>{row.count}</td>
                   <td style={{ color: '#6B8F5E', padding: '10px 10px' }}>${row.earned.toLocaleString()}</td>
-                  <td style={{ color: row.pending > 0 ? '#C1554A' : '#7A7062', padding: '10px 10px' }}>{row.pending > 0 ? `-$${row.pending.toLocaleString()}` : '-'}</td>
+                  <td style={{ color: row.pending > 0 ? '#C1554A' : row.pending < 0 ? '#6B8F5E' : '#7A7062', padding: '10px 10px', fontWeight: row.pending !== 0 ? 700 : 400 }}>{row.pending > 0 ? `-$${row.pending.toLocaleString()}` : row.pending < 0 ? `+$${Math.abs(row.pending).toLocaleString()}` : '-'}</td>
                   <td style={{ color: row.net >= 0 ? '#6B8F5E' : '#C1554A', fontWeight: 900, padding: '10px 10px' }}>${row.net.toLocaleString()}</td>
                 </tr>
               ))}
