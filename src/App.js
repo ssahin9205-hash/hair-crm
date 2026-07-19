@@ -725,8 +725,33 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const updateOtherFeeRow = (idx, field, val) => setForm(f => ({ ...f, otherFees: f.otherFees.map((r, i) => (i === idx ? { ...r, [field]: val } : r)) }));
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    let year = d.getFullYear();
+    let month = d.getMonth();
+    if (d.getDate() < 13) {
+      month -= 1;
+      if (month < 0) { month = 11; year -= 1; }
+    }
+    return `${year}-${String(month + 1).padStart(2, '0')}`;
   });
+  const [usdTryRate, setUsdTryRate] = useState(null);
+  const [rateSource, setRateSource] = useState('yükleniyor');
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if (data && data.rates && data.rates.TRY) {
+          setUsdTryRate(Math.round(data.rates.TRY * 100) / 100);
+          setRateSource('otomatik');
+        } else {
+          setRateSource('bulunamadı — elle girin');
+        }
+      } catch (e) {
+        setRateSource('bulunamadı — elle girin');
+      }
+    })();
+  }, []);
+  const SAR_USD_RATE = 3.75;
   const [kisiselGiderler, setKisiselGiderler] = useState([]);
   const [showAddGider, setShowAddGider] = useState(false);
   const [uploadingGider, setUploadingGider] = useState(false);
@@ -758,15 +783,31 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
 
   const AY_ISIMLERI = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
   const getMonthLabel = (monthKey) => {
-    const [y, m] = monthKey.split('-');
-    return `${AY_ISIMLERI[Number(m) - 1]} ${y}`;
+    const [y, m] = monthKey.split('-').map(Number);
+    const startMonth = AY_ISIMLERI[m - 1];
+    const endMonth = AY_ISIMLERI[m % 12];
+    const endYear = m === 12 ? y + 1 : y;
+    return `13 ${startMonth} — 12 ${endMonth} ${endYear}`;
   };
   const shiftMonth = (delta) => {
     const [y, m] = selectedMonth.split('-').map(Number);
     const d = new Date(y, m - 1 + delta, 1);
     setSelectedMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
   };
-  const getRecordMonth = (p) => (p.surgery_date || p.created_at || '').slice(0, 7);
+  // Hesap dönemi her ayın 13'ünden bir sonraki ayın 12'sine kadardır (takvim ayı değil)
+  const getRecordMonth = (p) => {
+    const dateStr = p.surgery_date || p.created_at || '';
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    let year = d.getFullYear();
+    let month = d.getMonth(); // 0-indexed
+    if (d.getDate() < 13) {
+      month -= 1;
+      if (month < 0) { month = 11; year -= 1; }
+    }
+    return `${year}-${String(month + 1).padStart(2, '0')}`;
+  };
   const monthlyPayments = payments.filter((p) => getRecordMonth(p) === selectedMonth);
 
   useEffect(() => {
@@ -830,7 +871,8 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const totalAli = monthlyPayments.reduce((s, p) => s + Number(p.ali_haydar_fee || 0), 0);
   const totalSeyit = monthlyPayments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
 
-  const otherFeeByName = {};
+  const normKey = (s) => (s || '').trim().toLowerCase();
+  const otherFeeByName = {}; // normalized-key -> { display, total }
   monthlyPayments.forEach(p => {
     let arr = [];
     try { arr = typeof p.fee_distribution === 'string' ? JSON.parse(p.fee_distribution || '[]') : (p.fee_distribution || []); } catch (e) {}
@@ -839,11 +881,14 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       if (Number(p.mete_fee) > 0) arr.push({ name: 'Mete', amount: p.mete_fee });
     }
     arr.forEach(r => {
-      if (!r.name || !Number(r.amount)) return;
-      otherFeeByName[r.name] = (otherFeeByName[r.name] || 0) + Number(r.amount);
+      const nm = normKey(r.name);
+      if (!nm || !Number(r.amount)) return;
+      if (nm === 'ali haydar' || nm === 'seyit') return; // bunlar kendi sabit alanlarından girilmeli
+      if (!otherFeeByName[nm]) otherFeeByName[nm] = { display: r.name.trim(), total: 0 };
+      otherFeeByName[nm].total += Number(r.amount);
     });
   });
-  const totalOtherTeam = Object.values(otherFeeByName).reduce((s, v) => s + v, 0);
+  const totalOtherTeam = Object.values(otherFeeByName).reduce((s, v) => s + v.total, 0);
   const totalTeam = totalAli + totalSeyit + totalOtherTeam;
   const netProfit = totalRevenue - totalTeam;
 
@@ -857,21 +902,23 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const totalPending = pendingRec.reduce((s, r) => s + Number(r.amount || 0), 0);
 
   const toUSD = (r) => {
-    // basit yaklaşım: TRY/SAR farklı para birimlerini olduğu gibi kişi borcundan düşer (aynı birim varsayımı: kayıt sırasında USD girilmesi önerilir)
-    return Number(r.amount || 0);
+    const amt = Number(r.amount || 0);
+    const cur = r.currency || 'TRY';
+    if (cur === 'USD') return amt;
+    if (cur === 'SAR') return amt / SAR_USD_RATE;
+    if (cur === 'TRY') return usdTryRate ? amt / usdTryRate : amt;
+    return amt;
   };
-  const pendingAli = pendingRec.filter(r => r.person === 'Ali Haydar').reduce((s, r) => s + toUSD(r), 0);
-  const pendingSeyit = pendingRec.filter(r => r.person === 'Seyit').reduce((s, r) => s + toUSD(r), 0);
+  const pendingAli = pendingRec.filter(r => normKey(r.person) === 'ali haydar').reduce((s, r) => s + toUSD(r), 0);
+  const pendingSeyit = pendingRec.filter(r => normKey(r.person) === 'seyit').reduce((s, r) => s + toUSD(r), 0);
   const pendingPremiumHair = pendingRec.filter(r => r.person === 'Premium Hair (Market)').reduce((s, r) => s + toUSD(r), 0);
-  const knownFixedNames = ['Ali Haydar', 'Seyit', 'Premium Hair (Market)', 'Genel', ''];
   const pendingGenel = pendingRec.filter(r => !r.person || r.person === 'Genel').reduce((s, r) => s + toUSD(r), 0);
 
   const netAli = totalAli - pendingAli;
   const netSeyit = totalSeyit - pendingSeyit;
-  const otherTeamNames = Object.keys(otherFeeByName);
-  const otherTeamRows = otherTeamNames.map(name => {
-    const pending = pendingRec.filter(r => r.person === name).reduce((s, r) => s + toUSD(r), 0);
-    return { name, earned: otherFeeByName[name], pending, net: otherFeeByName[name] - pending };
+  const otherTeamRows = Object.values(otherFeeByName).map(({ display, total }) => {
+    const pending = pendingRec.filter(r => normKey(r.person) === normKey(display)).reduce((s, r) => s + toUSD(r), 0);
+    return { name: display, earned: total, pending, net: total - pending };
   });
 
   const saveReceivable = async () => {
@@ -902,6 +949,17 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   return (
     <div>
       <div style={{ color: '#dde3ef', fontSize: 18, fontWeight: 900, marginBottom: 18 }}>💰 Muhasebe - 🇸🇦 Suudi Arabistan</div>
+
+      <div style={{ background: '#121525', border: '1px solid #1c2035', borderRadius: 10, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <span style={{ color: '#4a5270', fontSize: 12 }}>💱 Güncel Kur: 1$ =</span>
+        <input
+          type="number"
+          value={usdTryRate ?? ''}
+          onChange={(e) => setUsdTryRate(Number(e.target.value) || null)}
+          style={{ width: 80, padding: '5px 8px', background: '#0e1020', border: '1px solid #1c2035', borderRadius: 6, color: '#dde3ef', fontSize: 12 }}
+        />
+        <span style={{ color: '#4a5270', fontSize: 12 }}>₺ ({rateSource}) · 1$ = {SAR_USD_RATE} SAR (sabit)</span>
+      </div>
 
       {/* ÖZET KARTLAR */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10, marginBottom: 18 }}>
@@ -1223,7 +1281,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                   <button type="button" onClick={() => removeOtherFeeRow(idx)} style={{ padding: '4px 10px', background: 'rgba(240,64,64,0.15)', border: '1px solid #f04040', borderRadius: 6, color: '#f04040', fontSize: 12, cursor: 'pointer' }}>×</button>
                 </div>
               ))}
-              <datalist id="diger-ekip-list">{Object.keys(otherFeeByName).map(n => <option key={n} value={n} />)}</datalist>
+              <datalist id="diger-ekip-list">{Object.values(otherFeeByName).map(v => <option key={v.display} value={v.display} />)}</datalist>
               <Btn v="s" sm onClick={addOtherFeeRow}>+ Kişi Ekle</Btn>
             </div>
             <div style={{ gridColumn: '1/-1' }}>
@@ -1231,7 +1289,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
               <Inp ph="Notlar..." val={form.notes} set={v => setForm(f => ({ ...f, notes: v }))} rows={2} />
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+          <div style={{ display: 'flex', gap: 8, marginTop: 16, position: 'sticky', bottom: 0, background: '#0e1020', paddingTop: 12, paddingBottom: 4, borderTop: '1px solid #242840' }}>
             <Btn v="s" onClick={() => { setShowAdd(false); setEditItem(null); resetForm(); }}>İptal</Btn>
             <Btn onClick={savePayment}>{editItem ? 'Güncelle' : 'Kaydet'}</Btn>
           </div>
@@ -1257,7 +1315,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                 style={{ width: '100%', padding: '9px 12px', background: '#121525', border: '1px solid #1c2035', borderRadius: 8, color: '#dde3ef', fontSize: 13, boxSizing: 'border-box' }}
               />
               <datalist id="rec-person-list">
-                {Object.keys(otherFeeByName).map(n => <option key={n} value={n} />)}
+                {Object.values(otherFeeByName).map(v => <option key={v.display} value={v.display} />)}
               </datalist>
             </div>
             <Inp ph="Açıklama *" val={recForm.description} set={v => setRecForm(f => ({ ...f, description: v }))} />
