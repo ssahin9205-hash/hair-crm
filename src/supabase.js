@@ -1535,6 +1535,8 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                   <div style={{ color: '#7A7062', fontSize: 10 }}>Tahsil: {fmt(r.paid_date)}</div>
                 </div>
                 <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 13 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
+                <button onClick={() => startEditRec(r)} style={{ padding: '4px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>✏️</button>
+                <button onClick={() => removeRec(r)} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>Sil</button>
               </div>
             ))}
           </details>
@@ -3142,6 +3144,7 @@ function MarketFisleri({ user, region }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
                 <button onClick={() => startEdit(r)} style={{ padding: '3px 7px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 10, cursor: 'pointer' }}>✏️</button>
+                <button onClick={() => removeReceipt(r.id)} style={{ padding: '3px 7px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 10, cursor: 'pointer' }}>🗑</button>
               </div>
             </div>
           ))}
