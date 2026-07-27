@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import jsPDF from 'jspdf';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   fetchAll,
   fetchLiderler,
@@ -230,6 +229,7 @@ function Modal({ title, onClose, children, wide }) {
 function Dashboard({ user, region, leads, patients }) {
   const reg = REGIONS[region];
   const [medikalAlert, setMedikalAlert] = useState(null);
+  const [premiumHairBalance, setPremiumHairBalance] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -244,8 +244,22 @@ function Dashboard({ user, region, leads, patients }) {
           setMedikalAlert({ lowStockCount: lowStock.length, acikCount: acikHesap.length, acikTotal, urgentCount });
         }
       } catch (e) {}
+      if (region === 'suudi') {
+        try {
+          const [ledgerData, paymentsData] = await Promise.all([fetchPremiumHairLedger(), fetchPatientPayments('suudi')]);
+          const opening = (ledgerData || []).find(e => e.type === 'acilis');
+          if (opening) {
+            const hastaGeliri = (paymentsData || [])
+              .filter(p => (p.kaynak || 'Premium Hair') === 'Premium Hair' && p.surgery_date && p.surgery_date >= opening.date)
+              .reduce((s, p) => s + Number(p.total_price || 0), 0);
+            const odemeAlinan = (ledgerData || []).filter(e => e.type === 'odeme').reduce((s, e) => s + Number(e.amount || 0), 0);
+            const balance = Number(opening.amount || 0) + hastaGeliri - odemeAlinan;
+            setPremiumHairBalance(balance);
+          }
+        } catch (e) {}
+      }
     })();
-  }, []);
+  }, [region]);
 
   return (
     <div>
@@ -253,7 +267,7 @@ function Dashboard({ user, region, leads, patients }) {
         <div style={{ color: '#33302A', fontSize: 20, fontWeight: 900 }}>Merhaba, {user.name.split(' ')[0]} 👋</div>
         <div style={{ color: reg.clr, fontSize: 13, marginTop: 3, fontWeight: 700 }}>{reg.flag} {reg.lbl} Şubesi</div>
       </div>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: medikalAlert ? 16 : 0 }}>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
         {[
           { ico: '📋', lbl: 'Lead', val: leads.length, clr: '#7E9A89' },
           { ico: '💎', lbl: 'Hasta', val: patients.length, clr: '#9B7B8C' },
@@ -264,6 +278,13 @@ function Dashboard({ user, region, leads, patients }) {
             <div style={{ color: k.clr, fontSize: 24, fontWeight: 900 }}>{k.val}</div>
           </div>
         ))}
+        {premiumHairBalance !== null && (
+          <div style={{ background: '#FFFFFF', border: '2px solid #7E9A89', borderRadius: 12, padding: '18px 20px', flex: 1, minWidth: 180 }}>
+            <div style={{ fontSize: 18, marginBottom: 6 }}>🏢</div>
+            <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 3 }}>Premium Hair'den Alacak</div>
+            <div style={{ color: '#7E9A89', fontSize: 24, fontWeight: 900 }}>${premiumHairBalance.toLocaleString()}</div>
+          </div>
+        )}
       </div>
       {medikalAlert && (
         <div style={{ background: 'rgba(193,85,74,0.08)', border: '1px solid #C1554A44', borderRadius: 12, padding: 16 }}>
@@ -892,6 +913,36 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   })();
 
   const [ledgerEntries, setLedgerEntries] = useState([]);
+  const [closingReminderDismissed, setClosingReminderDismissed] = useState(false);
+  const closingReminder = (() => {
+    const today = new Date();
+    // Bugünün gerçek dönemi (takvimden bağımsız, 13'ünden 13'üne)
+    let ty = today.getFullYear(), tm = today.getMonth();
+    if (today.getDate() < 13) { tm -= 1; if (tm < 0) { tm = 11; ty -= 1; } }
+    const currentRealPeriod = `${ty}-${String(tm + 1).padStart(2, '0')}`;
+    // Yeni dönem başlayalı en fazla 4 gün olduysa hatırlatma göster (13,14,15,16'sında)
+    if (today.getDate() > 16 || today.getDate() < 13) return null;
+    let py = ty, pm = tm - 1;
+    if (pm < 0) { pm = 11; py -= 1; }
+    const prevPeriodKey = `${py}-${String(pm + 1).padStart(2, '0')}`;
+    const prevPayments = payments.filter(p => getRecordMonth(p) === prevPeriodKey);
+    if (prevPayments.length === 0) return null;
+    const revenue = prevPayments.reduce((s, p) => s + Number(p.total_price || 0) + Number(p.seyit_fee || 0), 0);
+    const aliTotal = prevPayments.reduce((s, p) => s + Number(p.ali_haydar_fee || 0), 0);
+    const seyitTotal = prevPayments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
+    const otherTotal = prevPayments.reduce((s, p) => {
+      let arr = [];
+      try { arr = typeof p.fee_distribution === 'string' ? JSON.parse(p.fee_distribution || '[]') : (p.fee_distribution || []); } catch (e) {}
+      if (!arr || arr.length === 0) {
+        if (Number(p.yusuf_fee) > 0) arr.push({ amount: p.yusuf_fee });
+        if (Number(p.mete_fee) > 0) arr.push({ amount: p.mete_fee });
+      }
+      return s + arr.reduce((s2, r) => s2 + Number(r.amount || 0), 0);
+    }, 0);
+    const cost = aliTotal + seyitTotal + otherTotal;
+    return { label: getMonthLabel(prevPeriodKey), count: prevPayments.length, revenue, cost, profit: revenue - cost };
+  })();
+
   const [showLedgerAdd, setShowLedgerAdd] = useState(false);
   const [showLedgerOpening, setShowLedgerOpening] = useState(false);
   const [ledgerForm, setLedgerForm] = useState({ amount: '', currency: 'USD', date: dd(0), notes: '' });
@@ -929,13 +980,27 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     setShowLedgerOpening(false);
   };
 
+  const [editingLedgerPayment, setEditingLedgerPayment] = useState(null);
+
   const saveLedgerPayment = async () => {
     if (!ledgerForm.amount) return;
     const row = { type: 'odeme', amount: Number(ledgerForm.amount) || 0, currency: ledgerForm.currency, date: ledgerForm.date, notes: ledgerForm.notes };
-    const saved = await insertPremiumHairLedger(row);
-    if (saved) setLedgerEntries(es => [...es, saved]);
+    if (editingLedgerPayment) {
+      const updated = await updatePremiumHairLedger(editingLedgerPayment.id, row);
+      if (updated) setLedgerEntries(es => es.map(e => e.id === editingLedgerPayment.id ? updated : e));
+      setEditingLedgerPayment(null);
+    } else {
+      const saved = await insertPremiumHairLedger(row);
+      if (saved) setLedgerEntries(es => [...es, saved]);
+    }
     setShowLedgerAdd(false);
     setLedgerForm({ amount: '', currency: 'USD', date: dd(0), notes: '' });
+  };
+
+  const startEditLedgerPayment = (e) => {
+    setLedgerForm({ amount: e.amount, currency: e.currency || 'USD', date: e.date || dd(0), notes: e.notes || '' });
+    setEditingLedgerPayment(e);
+    setShowLedgerAdd(true);
   };
 
   const removeLedgerPayment = async (id) => {
@@ -1035,10 +1100,10 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const toUSD = (r) => {
     const amt = Number(r.amount || 0);
     const cur = r.currency || 'TRY';
-    if (cur === 'USD') return amt;
-    if (cur === 'SAR') return amt / SAR_USD_RATE;
-    if (cur === 'TRY') return usdTryRate ? amt / usdTryRate : amt;
-    return amt;
+    let usd = amt;
+    if (cur === 'SAR') usd = amt / SAR_USD_RATE;
+    else if (cur === 'TRY') usd = usdTryRate ? amt / usdTryRate : amt;
+    return Math.round(usd);
   };
   const giderFor = (name) => kisiselGiderler
     .filter(g => getPeriodKeyFromDateStr(g.date) === selectedMonth && normKey(g.person) === normKey(name))
@@ -1046,9 +1111,10 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
 
   // Bir kişiye verilen avans/harcama, tahsil edilse de edilmese de o kişinin hesabından
   // kalıcı olarak düşülür (eksi bakiye gibi işler).
-  const teamDeductionFor = (name) => periodReceivables
+  const receivablesOnlyFor = (name) => periodReceivables
     .filter(r => normKey(r.person) === normKey(name))
-    .reduce((s, r) => s + toUSD(r), 0) + giderFor(name);
+    .reduce((s, r) => s + toUSD(r), 0);
+  const teamDeductionFor = (name) => receivablesOnlyFor(name) + giderFor(name);
 
   const pendingAli = teamDeductionFor('Ali Haydar');
   const pendingSeyitDirect = teamDeductionFor('Seyit');
@@ -1064,11 +1130,13 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     })
     .reduce((s, r) => s + toUSD(r), 0);
 
-  const netAli = totalAli - pendingAli;
-  const netSeyit = totalSeyit - pendingSeyitDirect + seyitReimbursement;
+  // Not: Net Ödenecek artık sadece Hak Ediş'i gösterir. Alacaklar ve Kişisel Giderler
+  // ayrı bölümlerde takip edilir, otomatik düşülmez — kullanıcı hesabı en sonda kendisi netleştirir.
+  const netAli = totalAli;
+  const netSeyit = totalSeyit;
   const otherTeamRows = Object.values(otherFeeByName).map(({ display, total, count }) => {
     const pending = teamDeductionFor(display);
-    return { name: display, earned: total, count, pending, net: total - pending };
+    return { name: display, earned: total, count, pending, net: total };
   });
 
   const generateMonthlyReportPDF = () => {
@@ -1160,6 +1228,22 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     <div>
       <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900, marginBottom: 18 }}>💰 Muhasebe - 🇸🇦 Suudi Arabistan</div>
 
+      {closingReminder && !closingReminderDismissed && (
+        <div style={{ background: '#FFFFFF', border: '2px solid #B8952E', borderRadius: 12, padding: 18, marginBottom: 18 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ color: '#B8952E', fontWeight: 900, fontSize: 14 }}>📋 Yeni Dönem Başladı — {closingReminder.label} Kapandı</div>
+            <button onClick={() => setClosingReminderDismissed(true)} style={{ background: 'none', border: 'none', color: '#7A7062', fontSize: 16, cursor: 'pointer' }}>×</button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(120px,1fr))', gap: 10, marginTop: 12 }}>
+            <div><div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>HASTA SAYISI</div><div style={{ color: '#33302A', fontWeight: 800, fontSize: 16 }}>{closingReminder.count}</div></div>
+            <div><div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>TOPLAM GELİR</div><div style={{ color: '#6B8F5E', fontWeight: 800, fontSize: 16 }}>${closingReminder.revenue.toLocaleString()}</div></div>
+            <div><div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>EKİP MALİYETİ</div><div style={{ color: '#C1554A', fontWeight: 800, fontSize: 16 }}>${closingReminder.cost.toLocaleString()}</div></div>
+            <div><div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>NET KÂR</div><div style={{ color: closingReminder.profit >= 0 ? '#6B8F5E' : '#C1554A', fontWeight: 900, fontSize: 16 }}>${closingReminder.profit.toLocaleString()}</div></div>
+          </div>
+          <div style={{ color: '#7A7062', fontSize: 11, marginTop: 10 }}>◀ ok butonuyla {closingReminder.label} dönemine gidip detaylı inceleyebilir, açık avans/alacak varsa kapatabilirsiniz.</div>
+        </div>
+      )}
+
       <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <span style={{ color: '#7A7062', fontSize: 12 }}>💱 Güncel Kur: 1$ =</span>
         <input
@@ -1216,6 +1300,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 13 }}>{e.currency === 'USD' ? '$' : e.currency === 'SAR' ? 'SAR ' : '₺'}{Number(e.amount).toLocaleString()}</div>
+                      <button onClick={() => startEditLedgerPayment(e)} style={{ padding: '3px 7px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 10, cursor: 'pointer' }}>✏️</button>
                       <button onClick={() => removeLedgerPayment(e.id)} style={{ padding: '3px 7px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 10, cursor: 'pointer' }}>🗑</button>
                     </div>
                   </div>
@@ -1248,7 +1333,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       )}
 
       {showLedgerAdd && (
-        <Modal title="Premium Hair'den Ödeme Aldım" onClose={() => setShowLedgerAdd(false)}>
+        <Modal title={editingLedgerPayment ? 'Ödeme Kaydını Düzenle' : "Premium Hair'den Ödeme Aldım"} onClose={() => { setShowLedgerAdd(false); setEditingLedgerPayment(null); setLedgerForm({ amount: '', currency: 'USD', date: dd(0), notes: '' }); }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8 }}>
               <Inp ph="Tutar *" type="number" val={ledgerForm.amount} set={v => setLedgerForm(f => ({ ...f, amount: v }))} />
@@ -1257,8 +1342,8 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
             <Inp type="date" ph="" val={ledgerForm.date} set={v => setLedgerForm(f => ({ ...f, date: v }))} />
             <Inp ph="Not (opsiyonel)" val={ledgerForm.notes} set={v => setLedgerForm(f => ({ ...f, notes: v }))} />
             <div style={{ display: 'flex', gap: 8 }}>
-              <Btn v="s" onClick={() => setShowLedgerAdd(false)}>İptal</Btn>
-              <Btn onClick={saveLedgerPayment}>Kaydet</Btn>
+              <Btn v="s" onClick={() => { setShowLedgerAdd(false); setEditingLedgerPayment(null); setLedgerForm({ amount: '', currency: 'USD', date: dd(0), notes: '' }); }}>İptal</Btn>
+              <Btn onClick={saveLedgerPayment}>{editingLedgerPayment ? 'Güncelle' : 'Kaydet'}</Btn>
             </div>
           </div>
         </Modal>
@@ -1302,21 +1387,75 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
         <Btn sm v="s" onClick={generateMonthlyReportPDF}>📄 Aylık Rapor PDF</Btn>
       </div>
 
-      {/* TREND GRAFİĞİ */}
+      {/* DÖNEM KAPANIŞ HATIRLATMASI */}
+      {showPeriodReminder && selectedMonth === getPeriodKeyFromDateStr(dd(0)) && (() => {
+        const [py, pm] = selectedMonth.split('-').map(Number);
+        let prevM = pm - 1, prevY = py;
+        if (prevM < 1) { prevM = 12; prevY -= 1; }
+        const previousPeriodKey = `${prevY}-${String(prevM).padStart(2, '0')}`;
+        const prevPayments = payments.filter(p => getRecordMonth(p) === previousPeriodKey);
+        if (prevPayments.length === 0) return null;
+
+        const prevRevenue = prevPayments.reduce((s, p) => s + Number(p.total_price || 0) + Number(p.seyit_fee || 0), 0);
+        const prevAli = prevPayments.reduce((s, p) => s + Number(p.ali_haydar_fee || 0), 0);
+        const prevSeyit = prevPayments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
+        let prevOther = 0;
+        prevPayments.forEach(p => {
+          let arr = [];
+          try { arr = typeof p.fee_distribution === 'string' ? JSON.parse(p.fee_distribution || '[]') : (p.fee_distribution || []); } catch (e) {}
+          if (!arr || arr.length === 0) {
+            if (Number(p.yusuf_fee) > 0) arr.push({ amount: p.yusuf_fee });
+            if (Number(p.mete_fee) > 0) arr.push({ amount: p.mete_fee });
+          }
+          arr.forEach(r => { prevOther += Number(r.amount || 0); });
+        });
+        const prevNet = prevRevenue - prevAli - prevSeyit - prevOther;
+
+        return (
+          <div style={{ background: 'rgba(184,149,46,0.1)', border: '1px solid #B8952E44', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ color: '#B8952E', fontWeight: 900, fontSize: 14 }}>📋 Önceki Dönem Özeti — {getMonthLabel(previousPeriodKey)}</div>
+              <button onClick={() => setShowPeriodReminder(false)} style={{ background: 'none', border: 'none', color: '#7A7062', fontSize: 16, cursor: 'pointer' }}>×</button>
+            </div>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12 }}>
+              <span style={{ color: '#33302A' }}>👥 {prevPayments.length} hasta</span>
+              <span style={{ color: '#6B8F5E', fontWeight: 700 }}>Toplam Gelir: ${prevRevenue.toLocaleString()}</span>
+              <span style={{ color: '#33302A' }}>Ali Haydar: ${prevAli.toLocaleString()}</span>
+              <span style={{ color: '#33302A' }}>Diğer Ekip: ${prevOther.toLocaleString()}</span>
+              <span style={{ color: '#33302A' }}>Seyit: ${prevSeyit.toLocaleString()}</span>
+              <span style={{ color: prevNet >= 0 ? '#6B8F5E' : '#C1554A', fontWeight: 900 }}>Net Kâr: ${prevNet.toLocaleString()}</span>
+            </div>
+            <div style={{ color: '#7A7062', fontSize: 10, marginTop: 8 }}>💡 Bu dönem geride kaldı — hesap kapandıysa Alacaklar/Kişisel Giderler bölümlerinden bu döneme ait açık kalan bir şey olmadığından emin olun.</div>
+          </div>
+        );
+      })()}
+
+      {/* TREND GRAFİĞİ (harici kütüphane gerektirmeyen basit görsel) */}
       {trendData.length > 1 && (
         <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 18, marginBottom: 18 }}>
-          <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14, marginBottom: 14 }}>📈 Son {trendData.length} Dönem Trend</div>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E3D9C7" />
-              <XAxis dataKey="period" stroke="#7A7062" fontSize={11} />
-              <YAxis stroke="#7A7062" fontSize={11} />
-              <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #D4C7AE', borderRadius: 8, color: '#33302A' }} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="Gelir" stroke="#6B8F5E" strokeWidth={2} />
-              <Line type="monotone" dataKey="Kâr" stroke="#7E9A89" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
+          <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>📈 Son {trendData.length} Dönem Trend</div>
+          <div style={{ display: 'flex', gap: 14, marginBottom: 14, fontSize: 11 }}>
+            <span style={{ color: '#6B8F5E', fontWeight: 700 }}>● Gelir</span>
+            <span style={{ color: '#7E9A89', fontWeight: 700 }}>● Kâr</span>
+          </div>
+          {(() => {
+            const maxVal = Math.max(1, ...trendData.map(d => Math.max(d.Gelir, d.Kâr, 0)));
+            return (
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, height: 180, paddingBottom: 4 }}>
+                {trendData.map((d, i) => (
+                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: '100%', width: '100%', justifyContent: 'center' }}>
+                      <div title={`Gelir: $${d.Gelir.toLocaleString()}`} style={{ width: '38%', maxWidth: 26, height: `${Math.max(2, (d.Gelir / maxVal) * 100)}%`, background: '#6B8F5E', borderRadius: '4px 4px 0 0' }} />
+                      <div title={`Kâr: $${d.Kâr.toLocaleString()}`} style={{ width: '38%', maxWidth: 26, height: `${Math.max(2, (Math.abs(d.Kâr) / maxVal) * 100)}%`, background: d.Kâr >= 0 ? '#7E9A89' : '#C1554A', borderRadius: '4px 4px 0 0' }} />
+                    </div>
+                    <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700, marginTop: 6 }}>{d.period}</div>
+                    <div style={{ color: '#6B8F5E', fontSize: 9, marginTop: 2 }}>${d.Gelir.toLocaleString()}</div>
+                    <div style={{ color: d.Kâr >= 0 ? '#7E9A89' : '#C1554A', fontSize: 9 }}>${d.Kâr.toLocaleString()}</div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -1391,7 +1530,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #E3D9C7' }}>
-                {['Kişi', 'Vaka Sayısı', 'Hak Ediş', 'Alacak/Verecek (Avans, Market, Kişisel Gider vs.)', 'Net Ödenecek'].map(h => (
+                {['Kişi', 'Vaka Sayısı', 'Hak Ediş', 'Alacak/Verecek (bilgi amaçlı, dahil değil)', 'Net Ödenecek (Hak Ediş)'].map(h => (
                   <th key={h} style={{ color: '#7A7062', fontWeight: 700, padding: '8px 10px', textAlign: 'left' }}>{h}</th>
                 ))}
               </tr>
@@ -1427,10 +1566,11 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
 
       {/* SEYİT'İN AYLIK HESAP ÖZETİ */}
       <div style={{ background: 'rgba(155,123,140,0.08)', border: '1px solid #9B7B8C44', borderRadius: 12, padding: 18, marginBottom: 14 }}>
-        <div style={{ color: '#9B7B8C', fontWeight: 900, fontSize: 15, marginBottom: 14 }}>👑 Seyit'in Aylık Hesap Özeti — {getMonthLabel(selectedMonth)}</div>
+        <div style={{ color: '#9B7B8C', fontWeight: 900, fontSize: 15, marginBottom: 4 }}>👑 Seyit'in Aylık Hesap Özeti — {getMonthLabel(selectedMonth)}</div>
+        <div style={{ color: '#7A7062', fontSize: 11, marginBottom: 14 }}>Alacaklar ve kişisel giderler bilgi amaçlıdır, aşağıdaki NET TOPLAM'a otomatik dahil edilmez — hesap yaparken siz elle düşersiniz.</div>
         {(() => {
           const seyitGiderTotal = giderFor('Seyit');
-          const seyitAlacakTotal = pendingSeyitDirect;
+          const seyitAlacakTotal = receivablesOnlyFor('Seyit');
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
@@ -1438,19 +1578,19 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                 <span style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 13 }}>+${totalSeyit.toLocaleString()}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
-                <span style={{ color: '#33302A', fontSize: 13 }}>Kişisel Giderler (uçak bileti vb.)</span>
-                <span style={{ color: seyitGiderTotal > 0 ? '#C1554A' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitGiderTotal > 0 ? `-$${seyitGiderTotal.toLocaleString()}` : '-'}</span>
+                <span style={{ color: '#7A7062', fontSize: 12 }}>ℹ️ Kişisel Giderler (uçak bileti vb.) — bilgi amaçlı</span>
+                <span style={{ color: '#7A7062', fontWeight: 700, fontSize: 12 }}>{seyitGiderTotal > 0 ? `$${seyitGiderTotal.toLocaleString()}` : '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
-                <span style={{ color: '#33302A', fontSize: 13 }}>Diğer Alacaklar (Kendi avansı vb.)</span>
-                <span style={{ color: seyitAlacakTotal > 0 ? '#C1554A' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitAlacakTotal > 0 ? `-$${seyitAlacakTotal.toLocaleString()}` : '-'}</span>
+                <span style={{ color: '#7A7062', fontSize: 12 }}>ℹ️ Diğer Alacaklar (Kendi avansı vb.) — bilgi amaçlı</span>
+                <span style={{ color: '#7A7062', fontWeight: 700, fontSize: 12 }}>{seyitAlacakTotal > 0 ? `$${seyitAlacakTotal.toLocaleString()}` : '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #9B7B8C22' }}>
-                <span style={{ color: '#33302A', fontSize: 13 }}>Ekip Avans Tahsilatı (Ali/Muhammed Ali/Sergen/Furkan'a verilip ✓ Tahsil edilenler)</span>
-                <span style={{ color: seyitReimbursement > 0 ? '#6B8F5E' : '#7A7062', fontWeight: 700, fontSize: 13 }}>{seyitReimbursement > 0 ? `+$${seyitReimbursement.toLocaleString()}` : '-'}</span>
+                <span style={{ color: '#7A7062', fontSize: 12 }}>ℹ️ Ekip Avans Tahsilatı (✓ Tahsil edilenler) — bilgi amaçlı</span>
+                <span style={{ color: '#7A7062', fontWeight: 700, fontSize: 12 }}>{seyitReimbursement > 0 ? `$${seyitReimbursement.toLocaleString()}` : '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 0 0' }}>
-                <span style={{ color: '#33302A', fontWeight: 900, fontSize: 15 }}>NET TOPLAM</span>
+                <span style={{ color: '#33302A', fontWeight: 900, fontSize: 15 }}>NET TOPLAM (Hak Ediş)</span>
                 <span style={{ color: netSeyit >= 0 ? '#6B8F5E' : '#C1554A', fontWeight: 900, fontSize: 20 }}>${netSeyit.toLocaleString()}</span>
               </div>
             </div>
@@ -1497,6 +1637,8 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                   <div style={{ color: '#7A7062', fontSize: 10 }}>Tahsil: {fmt(r.paid_date)}</div>
                 </div>
                 <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 13 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
+                <button onClick={() => startEditRec(r)} style={{ padding: '4px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>✏️</button>
+                <button onClick={() => removeRec(r)} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>Sil</button>
               </div>
             ))}
           </details>
@@ -3104,6 +3246,7 @@ function MarketFisleri({ user, region }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 12 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
                 <button onClick={() => startEdit(r)} style={{ padding: '3px 7px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 10, cursor: 'pointer' }}>✏️</button>
+                <button onClick={() => removeReceipt(r.id)} style={{ padding: '3px 7px', background: 'rgba(193,85,74,0.15)', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 10, cursor: 'pointer' }}>🗑</button>
               </div>
             </div>
           ))}
