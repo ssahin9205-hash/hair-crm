@@ -230,6 +230,7 @@ function Dashboard({ user, region, leads, patients }) {
   const reg = REGIONS[region];
   const [medikalAlert, setMedikalAlert] = useState(null);
   const [premiumHairBalance, setPremiumHairBalance] = useState(null);
+  const [verecekSummary, setVerecekSummary] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -256,6 +257,15 @@ function Dashboard({ user, region, leads, patients }) {
             const balance = Number(opening.amount || 0) + hastaGeliri - odemeAlinan;
             setPremiumHairBalance(balance);
           }
+        } catch (e) {}
+        try {
+          const recData = await fetchReceivables('suudi');
+          const pending = (recData || []).filter(r => !r.paid && r.person && r.person !== 'Premium Hair (Market)' && r.person !== 'Genel');
+          const norm = (s) => (s || '').trim().toLowerCase();
+          const aliTotal = pending.filter(r => norm(r.person) === 'ali haydar').reduce((s, r) => s + Number(r.amount || 0), 0);
+          const digerNames = new Set(pending.filter(r => norm(r.person) !== 'ali haydar').map(r => r.person));
+          const digerTotal = pending.filter(r => norm(r.person) !== 'ali haydar').reduce((s, r) => s + Number(r.amount || 0), 0);
+          setVerecekSummary({ aliTotal, digerTotal, digerCount: digerNames.size });
         } catch (e) {}
       }
     })();
@@ -286,6 +296,15 @@ function Dashboard({ user, region, leads, patients }) {
           </div>
         )}
       </div>
+      {verecekSummary && (verecekSummary.aliTotal > 0 || verecekSummary.digerTotal > 0) && (
+        <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: '14px 18px', marginBottom: 16 }}>
+          <div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 8 }}>📤 Bekleyen Verecekler (özet)</div>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+            {verecekSummary.aliTotal > 0 && <div style={{ color: '#C1554A', fontSize: 13, fontWeight: 700 }}>Ali Haydar: {verecekSummary.aliTotal.toLocaleString()}</div>}
+            {verecekSummary.digerTotal > 0 && <div style={{ color: '#C1554A', fontSize: 13, fontWeight: 700 }}>Diğer ({verecekSummary.digerCount} kişi): {verecekSummary.digerTotal.toLocaleString()}</div>}
+          </div>
+        </div>
+      )}
       {medikalAlert && (
         <div style={{ background: 'rgba(193,85,74,0.08)', border: '1px solid #C1554A44', borderRadius: 12, padding: 16 }}>
           <div style={{ color: '#33302A', fontWeight: 800, fontSize: 13, marginBottom: 8 }}>💊 Medikal Uyarıları</div>
@@ -784,7 +803,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const [editItem, setEditItem] = useState(null);
   const [showAddRec, setShowAddRec] = useState(false);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
-  const [recForm, setRecForm] = useState({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0) });
+  const [recForm, setRecForm] = useState({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0), yon: 'verecek' });
   const [form, setForm] = useState({ patient_name: '', surgery_date: '', technique: 'DHI', total_price: '', ali_haydar_fee: '', seyit_fee: '', notes: '', kaynak: 'Premium Hair', otherFees: [{ name: '', amount: '' }] });
   const addOtherFeeRow = () => setForm(f => ({ ...f, otherFees: [...f.otherFees, { name: '', amount: '' }] }));
   const removeOtherFeeRow = (idx) => setForm(f => ({ ...f, otherFees: f.otherFees.filter((_, i) => i !== idx) }));
@@ -913,35 +932,6 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   })();
 
   const [ledgerEntries, setLedgerEntries] = useState([]);
-  const [closingReminderDismissed, setClosingReminderDismissed] = useState(false);
-  const closingReminder = (() => {
-    const today = new Date();
-    // Bugünün gerçek dönemi (takvimden bağımsız, 13'ünden 13'üne)
-    let ty = today.getFullYear(), tm = today.getMonth();
-    if (today.getDate() < 13) { tm -= 1; if (tm < 0) { tm = 11; ty -= 1; } }
-    const currentRealPeriod = `${ty}-${String(tm + 1).padStart(2, '0')}`;
-    // Yeni dönem başlayalı en fazla 4 gün olduysa hatırlatma göster (13,14,15,16'sında)
-    if (today.getDate() > 16 || today.getDate() < 13) return null;
-    let py = ty, pm = tm - 1;
-    if (pm < 0) { pm = 11; py -= 1; }
-    const prevPeriodKey = `${py}-${String(pm + 1).padStart(2, '0')}`;
-    const prevPayments = payments.filter(p => getRecordMonth(p) === prevPeriodKey);
-    if (prevPayments.length === 0) return null;
-    const revenue = prevPayments.reduce((s, p) => s + Number(p.total_price || 0) + Number(p.seyit_fee || 0), 0);
-    const aliTotal = prevPayments.reduce((s, p) => s + Number(p.ali_haydar_fee || 0), 0);
-    const seyitTotal = prevPayments.reduce((s, p) => s + Number(p.seyit_fee || 0), 0);
-    const otherTotal = prevPayments.reduce((s, p) => {
-      let arr = [];
-      try { arr = typeof p.fee_distribution === 'string' ? JSON.parse(p.fee_distribution || '[]') : (p.fee_distribution || []); } catch (e) {}
-      if (!arr || arr.length === 0) {
-        if (Number(p.yusuf_fee) > 0) arr.push({ amount: p.yusuf_fee });
-        if (Number(p.mete_fee) > 0) arr.push({ amount: p.mete_fee });
-      }
-      return s + arr.reduce((s2, r) => s2 + Number(r.amount || 0), 0);
-    }, 0);
-    const cost = aliTotal + seyitTotal + otherTotal;
-    return { label: getMonthLabel(prevPeriodKey), count: prevPayments.length, revenue, cost, profit: revenue - cost };
-  })();
 
   const [showLedgerAdd, setShowLedgerAdd] = useState(false);
   const [showLedgerOpening, setShowLedgerOpening] = useState(false);
@@ -1092,6 +1082,8 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   const hairIntlRevenue = hairIntlPayments.reduce((s, p) => s + Number(p.total_price || 0), 0);
 
   const getReceivableDateStr = (r) => r.date_added || r.created_at;
+  // Eski kayıtlarda 'yon' alanı olmayabilir — geriye dönük uyumluluk için tahmin edilir
+  const getYon = (r) => r.yon || (r.person === 'Premium Hair (Market)' ? 'alacak' : 'verecek');
   const periodReceivables = receivables.filter(r => getPeriodKeyFromDateStr(getReceivableDateStr(r)) === selectedMonth);
   const pendingRec = periodReceivables.filter(r => !r.paid);
   const paidRec = periodReceivables.filter(r => r.paid);
@@ -1189,7 +1181,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     setUploadingReceipt(true);
     let receiptUrl = editingRec ? editingRec.receipt_url : null;
     if (recForm.receiptFile) receiptUrl = await uploadReceipt(recForm.receiptFile);
-    const row = { region, description: recForm.description, amount: Number(recForm.amount), currency: recForm.currency, notes: recForm.notes, receipt_url: receiptUrl, person: recForm.person || 'Genel', date_added: recForm.date || dd(0) };
+    const row = { region, description: recForm.description, amount: Number(recForm.amount), currency: recForm.currency, notes: recForm.notes, receipt_url: receiptUrl, person: recForm.person || 'Genel', date_added: recForm.date || dd(0), yon: recForm.yon || 'verecek' };
     if (editingRec) {
       const updated = await updateReceivable(editingRec.id, row);
       if (updated) setReceivables(rs => rs.map(r => r.id === editingRec.id ? updated : r));
@@ -1199,7 +1191,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
       if (saved) setReceivables(rs => [saved, ...rs]);
     }
     setShowAddRec(false);
-    setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0) });
+    setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0), yon: 'verecek' });
     setUploadingReceipt(false);
   };
 
@@ -1207,6 +1199,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
     setRecForm({
       description: r.description || '', amount: r.amount || '', currency: r.currency || 'TRY',
       notes: r.notes || '', receiptFile: null, person: r.person || 'Genel', date: r.date_added || dd(0),
+      yon: r.yon || (r.person === 'Premium Hair (Market)' ? 'alacak' : 'verecek'),
     });
     setEditingRec(r);
     setShowAddRec(true);
@@ -1227,22 +1220,6 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
   return (
     <div>
       <div style={{ color: '#33302A', fontSize: 18, fontWeight: 900, marginBottom: 18 }}>💰 Muhasebe - 🇸🇦 Suudi Arabistan</div>
-
-      {closingReminder && !closingReminderDismissed && (
-        <div style={{ background: '#FFFFFF', border: '2px solid #B8952E', borderRadius: 12, padding: 18, marginBottom: 18 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div style={{ color: '#B8952E', fontWeight: 900, fontSize: 14 }}>📋 Yeni Dönem Başladı — {closingReminder.label} Kapandı</div>
-            <button onClick={() => setClosingReminderDismissed(true)} style={{ background: 'none', border: 'none', color: '#7A7062', fontSize: 16, cursor: 'pointer' }}>×</button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(120px,1fr))', gap: 10, marginTop: 12 }}>
-            <div><div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>HASTA SAYISI</div><div style={{ color: '#33302A', fontWeight: 800, fontSize: 16 }}>{closingReminder.count}</div></div>
-            <div><div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>TOPLAM GELİR</div><div style={{ color: '#6B8F5E', fontWeight: 800, fontSize: 16 }}>${closingReminder.revenue.toLocaleString()}</div></div>
-            <div><div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>EKİP MALİYETİ</div><div style={{ color: '#C1554A', fontWeight: 800, fontSize: 16 }}>${closingReminder.cost.toLocaleString()}</div></div>
-            <div><div style={{ color: '#7A7062', fontSize: 10, fontWeight: 700 }}>NET KÂR</div><div style={{ color: closingReminder.profit >= 0 ? '#6B8F5E' : '#C1554A', fontWeight: 900, fontSize: 16 }}>${closingReminder.profit.toLocaleString()}</div></div>
-          </div>
-          <div style={{ color: '#7A7062', fontSize: 11, marginTop: 10 }}>◀ ok butonuyla {closingReminder.label} dönemine gidip detaylı inceleyebilir, açık avans/alacak varsa kapatabilirsiniz.</div>
-        </div>
-      )}
 
       <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 10, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <span style={{ color: '#7A7062', fontSize: 12 }}>💱 Güncel Kur: 1$ =</span>
@@ -1598,52 +1575,65 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
         })()}
       </div>
 
-      {/* ALACAKLAR */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 18, marginBottom: 14 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <div>
-            <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14 }}>📋 Alacaklar — {getMonthLabel(selectedMonth)}</div>
-            <div style={{ color: '#C68A3D', fontSize: 11, marginTop: 2 }}>Bekleyen: ₺{totalPending.toLocaleString()}</div>
-          </div>
-          <Btn sm onClick={() => setShowAddRec(true)}>+ Alacak</Btn>
-        </div>
-        {pendingRec.length === 0 ? (
-          <div style={{ color: '#7A7062', fontSize: 12, textAlign: 'center', padding: 20 }}>Bekleyen alacak yok.</div>
-        ) : pendingRec.map(r => (
-          <div key={r.id} style={{ background: '#F1EBDE', border: '1px solid #C68A3D33', borderRadius: 8, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+      {/* ALACAK / VERECEK — yön bazlı, kişiden bağımsız */}
+      {(() => {
+        const renderRow = (r, isPaid, accentColor) => (
+          <div key={r.id} style={{ background: '#F1EBDE', borderLeft: isPaid ? '3px solid #6B8F5E' : 'none', border: isPaid ? 'none' : `1px solid ${accentColor}33`, borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 140 }}>
-              <div style={{ color: '#33302A', fontSize: 13, fontWeight: 700 }}>
-                {r.description}
-                <span style={{ marginLeft: 8, padding: '2px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A8944', borderRadius: 10, color: '#7E9A89', fontSize: 10, fontWeight: 700 }}>
-                  {r.person || 'Genel'}
-                </span>
-              </div>
-              <div style={{ color: '#7A7062', fontSize: 11 }}>{fmt(r.date_added)} {r.notes && `· ${r.notes}`}</div>
+              <div style={{ color: '#33302A', fontSize: 13, fontWeight: 700 }}>{r.description}</div>
+              <div style={{ color: '#7A7062', fontSize: 11 }}>{fmt(isPaid ? r.paid_date : r.date_added)} {r.notes && `· ${r.notes}`}</div>
               {r.receipt_url && <a href={r.receipt_url} target="_blank" rel="noreferrer" style={{ color: '#7E9A89', fontSize: 11 }}>📷 Fiş</a>}
             </div>
-            <div style={{ color: '#C68A3D', fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : r.currency === 'EUR' ? '€' : '₺'}{Number(r.amount).toLocaleString()}</div>
-            <button onClick={() => markPaid(r)} style={{ padding: '5px 10px', background: '#6B8F5E', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Tahsil</button>
+            <div style={{ color: isPaid ? '#6B8F5E' : accentColor, fontWeight: 800, fontSize: 14 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : r.currency === 'EUR' ? '€' : '₺'}{Number(r.amount).toLocaleString()}</div>
+            {!isPaid && <button onClick={() => markPaid(r)} style={{ padding: '5px 10px', background: '#6B8F5E', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Kapat</button>}
             <button onClick={() => startEditRec(r)} style={{ padding: '5px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>✏️</button>
             <button onClick={() => removeRec(r)} style={{ padding: '5px 8px', background: 'transparent', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>Sil</button>
           </div>
-        ))}
-        {paidRec.length > 0 && (
-          <details style={{ marginTop: 14 }}>
-            <summary style={{ color: '#6B8F5E', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>✅ Tahsil Edilenler ({paidRec.length})</summary>
-            {paidRec.map(r => (
-              <div key={r.id} style={{ background: '#F1EBDE', borderLeft: '3px solid #6B8F5E', borderRadius: 6, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ color: '#33302A', fontSize: 12 }}>{r.description}</div>
-                  <div style={{ color: '#7A7062', fontSize: 10 }}>Tahsil: {fmt(r.paid_date)}</div>
+        );
+
+        const renderYonBlock = (yon, icon, title, accentColor, defaultPerson) => {
+          const pending = pendingRec.filter(r => getYon(r) === yon);
+          const paid = paidRec.filter(r => getYon(r) === yon);
+          const aliP = pending.filter(r => normKey(r.person) === 'ali haydar');
+          const premiumP = pending.filter(r => normKey(r.person) === 'premium hair (market)');
+          const digerP = pending.filter(r => normKey(r.person) !== 'ali haydar' && normKey(r.person) !== 'premium hair (market)');
+          const total = pending.reduce((s, r) => s + Number(r.amount || 0), 0);
+          return (
+            <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 18, marginBottom: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <div>
+                  <div style={{ color: '#33302A', fontWeight: 800, fontSize: 14 }}>{icon} {title} — {getMonthLabel(selectedMonth)}</div>
+                  <div style={{ color: accentColor, fontSize: 11, marginTop: 2 }}>Bekleyen toplam: {total.toLocaleString()}</div>
                 </div>
-                <div style={{ color: '#6B8F5E', fontWeight: 700, fontSize: 13 }}>{r.currency === 'USD' ? '$' : r.currency === 'SAR' ? 'SAR ' : '₺'}{Number(r.amount).toLocaleString()}</div>
-                <button onClick={() => startEditRec(r)} style={{ padding: '4px 8px', background: 'rgba(126,154,137,0.15)', border: '1px solid #7E9A89', borderRadius: 6, color: '#7E9A89', fontSize: 11, cursor: 'pointer' }}>✏️</button>
-                <button onClick={() => removeRec(r)} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #C1554A', borderRadius: 6, color: '#C1554A', fontSize: 11, cursor: 'pointer' }}>Sil</button>
+                <Btn sm v={yon === 'verecek' ? 's' : undefined} onClick={() => { setRecForm(f => ({ ...f, person: defaultPerson, yon })); setShowAddRec(true); }}>+ {title.split(' ')[0]}</Btn>
               </div>
-            ))}
-          </details>
-        )}
-      </div>
+
+              <div style={{ color: '#7A7062', fontSize: 11, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase' }}>👤 Ali Haydar</div>
+              {aliP.length === 0 ? <div style={{ color: '#7A7062', fontSize: 12, padding: '4px 0 12px 0' }}>Yok.</div> : aliP.map(r => renderRow(r, false, accentColor))}
+
+              <div style={{ color: '#7A7062', fontSize: 11, fontWeight: 700, margin: '10px 0 8px 0', textTransform: 'uppercase' }}>🏢 Premium Hair</div>
+              {premiumP.length === 0 ? <div style={{ color: '#7A7062', fontSize: 12, padding: '4px 0 12px 0' }}>Yok.</div> : premiumP.map(r => renderRow(r, false, accentColor))}
+
+              <div style={{ color: '#7A7062', fontSize: 11, fontWeight: 700, margin: '10px 0 8px 0', textTransform: 'uppercase' }}>👥 Diğer</div>
+              {digerP.length === 0 ? <div style={{ color: '#7A7062', fontSize: 12, padding: '4px 0 12px 0' }}>Yok.</div> : digerP.map(r => renderRow(r, false, accentColor))}
+
+              {paid.length > 0 && (
+                <details style={{ marginTop: 14 }}>
+                  <summary style={{ color: '#6B8F5E', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>✅ Kapatılanlar ({paid.length})</summary>
+                  <div style={{ marginTop: 8 }}>{paid.map(r => renderRow(r, true, accentColor))}</div>
+                </details>
+              )}
+            </div>
+          );
+        };
+
+        return (
+          <>
+            {renderYonBlock('alacak', '📥', 'Alacaklarımız', '#C68A3D', 'Premium Hair (Market)')}
+            {renderYonBlock('verecek', '📤', 'Vereceklerimiz', '#C1554A', 'Ali Haydar')}
+          </>
+        );
+      })()}
 
       {/* AYLIK MASRAF ÖZETİ (Tüm Zamanlar - Analiz için) */}
       <div style={{ background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 12, padding: 18, marginBottom: 14 }}>
@@ -1816,12 +1806,19 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
 
       {/* ALACAK EKLE MODAL */}
       {showAddRec && (
-        <Modal title={editingRec ? 'Alacağı Düzenle' : 'Alacak Ekle'} onClose={() => { setShowAddRec(false); setEditingRec(null); setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0) }); }}>
+        <Modal title={editingRec ? 'Kaydı Düzenle' : 'Alacak / Verecek Ekle'} onClose={() => { setShowAddRec(false); setEditingRec(null); setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0), yon: 'verecek' }); }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div>
-              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>KİM İÇİN? (kişisel harcama sahibi)</div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>YÖN</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="button" onClick={() => setRecForm(f => ({ ...f, yon: 'alacak' }))} style={{ flex: 1, padding: '10px', borderRadius: 8, border: `1px solid ${recForm.yon === 'alacak' ? '#C68A3D' : '#E3D9C7'}`, background: recForm.yon === 'alacak' ? 'rgba(198,138,61,0.12)' : '#FFFFFF', color: recForm.yon === 'alacak' ? '#C68A3D' : '#7A7062', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>📥 Alacağımız (bize borçlu)</button>
+                <button type="button" onClick={() => setRecForm(f => ({ ...f, yon: 'verecek' }))} style={{ flex: 1, padding: '10px', borderRadius: 8, border: `1px solid ${recForm.yon === 'verecek' ? '#C1554A' : '#E3D9C7'}`, background: recForm.yon === 'verecek' ? 'rgba(193,85,74,0.1)' : '#FFFFFF', color: recForm.yon === 'verecek' ? '#C1554A' : '#7A7062', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>📤 Vereceğimiz (biz borçluyuz)</button>
+              </div>
+            </div>
+            <div>
+              <div style={{ color: '#7A7062', fontSize: 10, marginBottom: 4 }}>KİM?</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-                {['Genel', 'Ali Haydar', 'Seyit', 'Premium Hair (Market)'].map(p => (
+                {['Ali Haydar', 'Premium Hair (Market)', 'Genel'].map(p => (
                   <button key={p} type="button" onClick={() => setRecForm(f => ({ ...f, person: p }))} style={{ padding: '6px 12px', borderRadius: 20, border: `1px solid ${recForm.person === p ? '#7E9A89' : '#E3D9C7'}`, background: recForm.person === p ? 'rgba(126,154,137,0.15)' : '#FFFFFF', color: recForm.person === p ? '#7E9A89' : '#A79B88', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{p}</button>
                 ))}
               </div>
@@ -1829,7 +1826,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
                 list="rec-person-list"
                 value={recForm.person}
                 onChange={(e) => setRecForm(f => ({ ...f, person: e.target.value }))}
-                placeholder="Ya da başka bir isim yazın (değişken ekip üyesi)"
+                placeholder="Diğer — istediğiniz ismi yazın (Mete, Furkan, vb.)"
                 style={{ width: '100%', padding: '9px 12px', background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 13, boxSizing: 'border-box' }}
               />
               <datalist id="rec-person-list">
@@ -1851,7 +1848,7 @@ function SuudiFinance({ user, region, patients, receivables, setReceivables }) {
               <input type="file" accept="image/*" onChange={e => setRecForm(f => ({ ...f, receiptFile: e.target.files[0] }))} style={{ width: '100%', padding: 8, background: '#FFFFFF', border: '1px solid #E3D9C7', borderRadius: 8, color: '#33302A', fontSize: 12 }} />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <Btn v="s" onClick={() => { setShowAddRec(false); setEditingRec(null); setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0) }); }}>İptal</Btn>
+              <Btn v="s" onClick={() => { setShowAddRec(false); setEditingRec(null); setRecForm({ description: '', amount: '', currency: 'TRY', notes: '', receiptFile: null, person: 'Genel', date: dd(0), yon: 'verecek' }); }}>İptal</Btn>
               <Btn onClick={saveReceivable} disabled={uploadingReceipt}>{uploadingReceipt ? 'Yükleniyor...' : (editingRec ? 'Güncelle' : 'Kaydet')}</Btn>
             </div>
           </div>
